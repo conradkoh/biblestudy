@@ -1,0 +1,22 @@
+{
+  "name": "biblestudy",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/conradkoh/biblestudy.git",
+  "author": "conradkoh <conradkoh@gmail.com>",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "yarn workspaces run dev",
+    "deploy": "yarn workspaces run deploy",
+    "lint": "yarn biome lint --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "typescript": "^5.5.4"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ]
+}
