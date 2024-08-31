@@ -1,4 +1,4 @@
-import type { TelegramMessageOutgoing } from "../types";
+import type { TelegramMessageOutgoing } from '../types';
 export class TelegramMessageBuilder {
   private payload: Partial<TelegramMessageOutgoing> = {};
 
@@ -13,7 +13,7 @@ export class TelegramMessageBuilder {
   }
 
   public parseMode(
-    mode: "MarkdownV2" | "HTML" | "Markdown",
+    mode: 'MarkdownV2' | 'HTML' | 'Markdown',
   ): TelegramMessageBuilder {
     this.payload.parse_mode = mode;
     return this;
@@ -45,10 +45,10 @@ export class TelegramMessageBuilder {
 
   public build(): TelegramMessageOutgoing {
     if (!this.payload.chat_id) {
-      throw new Error("Chat ID is required");
+      throw new Error('Chat ID is required');
     }
     if (!this.payload.text) {
-      throw new Error("Message text is required");
+      throw new Error('Message text is required');
     }
     return this.payload as TelegramMessageOutgoing;
   }

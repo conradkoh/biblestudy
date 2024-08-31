@@ -1,5 +1,5 @@
-import { zodToConvex } from "@/utils/convex";
-import { z } from "zod";
+import { zodToConvex } from '@/utils/convex';
+import { z } from 'zod';
 // -----------------------------
 // Webhook Payload
 // -----------------------------
@@ -59,7 +59,7 @@ const telegramMessageOutgoingZodSchema = z.object({
   chat_id: z.union([z.number(), z.string()]),
   message_thread_id: z.number().optional(),
   text: z.string(),
-  parse_mode: z.enum(["MarkdownV2", "HTML", "Markdown"]).optional(),
+  parse_mode: z.enum(['MarkdownV2', 'HTML', 'Markdown']).optional(),
   entities: z
     .array(
       z.object({

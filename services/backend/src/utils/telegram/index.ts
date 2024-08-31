@@ -1,7 +1,7 @@
-import { TelegramMessageBuilder } from "@/utils/telegram/classes/TelegramMessageBuilder";
-import { telegramMessageOutgoingConvexSchema } from "@/utils/telegram/types";
-import { internal } from "convex/_generated/api";
-import { type ActionCtx, internalAction } from "convex/_generated/server";
+import { TelegramMessageBuilder } from '@/utils/telegram/classes/TelegramMessageBuilder';
+import { telegramMessageOutgoingConvexSchema } from '@/utils/telegram/types';
+import { internal } from 'convex/_generated/api';
+import { type ActionCtx, internalAction } from 'convex/_generated/server';
 
 /**
  * Register webhook with telegram.
@@ -12,13 +12,13 @@ export const registerWebhookAction = internalAction({
   handler: async () => {
     const url = `${process.env.CONVEX_SITE_URL}/onMessage?token=${process.env.TELEGRAM_WEBHOOK_SECRET}`;
     const response = await fetch(
-      "https://api.telegram.org/bot" +
+      'https://api.telegram.org/bot' +
         process.env.TELEGRAM_BOT_TOKEN +
-        "/setWebhook",
+        '/setWebhook',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           url: url,
@@ -26,7 +26,7 @@ export const registerWebhookAction = internalAction({
       },
     );
     if (response.status !== 200) {
-      throw new Error("Failed to register webhook");
+      throw new Error('Failed to register webhook');
     }
   },
 });
@@ -39,19 +39,19 @@ export const sendMessageAction = internalAction({
   args: telegramMessageOutgoingConvexSchema,
   handler: async (ctx, args) => {
     const response = await fetch(
-      "https://api.telegram.org/bot" +
+      'https://api.telegram.org/bot' +
         process.env.TELEGRAM_BOT_TOKEN +
-        "/sendMessage",
+        '/sendMessage',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(args),
       },
     );
     if (response.status !== 200) {
-      console.error("failed to send telegram message:", {
+      console.error('failed to send telegram message:', {
         input: args,
         request: {
           body: args,
@@ -61,7 +61,7 @@ export const sendMessageAction = internalAction({
           body: await response.json(),
         },
       });
-      throw new Error("Failed to send message");
+      throw new Error('Failed to send message');
     }
   },
 });
@@ -89,4 +89,4 @@ export const sendMessage = async (
 };
 
 //export all types from the telegram helpers
-export * from "./types";
+export * from './types';

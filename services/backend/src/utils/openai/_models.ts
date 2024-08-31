@@ -1,6 +1,6 @@
 export enum OpenAIModel {
-  GPT_4o = "gpt-4o-2024-08-06",
-  GPT_4o_mini = "gpt-4o-mini-2024-07-18",
+  GPT_4o = 'gpt-4o-2024-08-06',
+  GPT_4o_mini = 'gpt-4o-mini-2024-07-18',
 }
 
 /**

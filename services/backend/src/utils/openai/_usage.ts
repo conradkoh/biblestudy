@@ -1,8 +1,8 @@
-import { zodToConvex } from "@/utils/convex";
-import { MODEL_PRICING } from "@/utils/openai/_models";
-import type { OpenAIModel } from "@/utils/openai/_models";
-import type OpenAI from "openai";
-import { z } from "zod";
+import { zodToConvex } from '@/utils/convex';
+import { MODEL_PRICING } from '@/utils/openai/_models';
+import type { OpenAIModel } from '@/utils/openai/_models';
+import type OpenAI from 'openai';
+import { z } from 'zod';
 
 /**
  * Estimate the cost of a given chat completion
@@ -12,7 +12,7 @@ import { z } from "zod";
  */
 export function getUsage(
   model: OpenAIModel,
-  chatCompletion: Pick<OpenAI.ChatCompletion, "usage">,
+  chatCompletion: Pick<OpenAI.ChatCompletion, 'usage'>,
 ): OpenAICompletionUtilization {
   const pricing = MODEL_PRICING[model];
   if (!pricing) {
@@ -37,7 +37,7 @@ export function getUsage(
       input: costEstimates.input,
       output: costEstimates.output,
       total: costEstimates.input + costEstimates.output,
-      currency: "USD" as const,
+      currency: 'USD' as const,
     },
   };
 }
@@ -56,7 +56,7 @@ const openAICompletionUtilization_zodSchema = z.object({
     total: z.number(),
   }),
   cost: z.object({
-    currency: z.literal("USD"),
+    currency: z.literal('USD'),
     total: z.number(),
     input: z.number(),
     output: z.number(),
