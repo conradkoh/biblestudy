@@ -3,21 +3,17 @@ import { z } from 'zod';
 //========================================
 // Types
 //========================================
-export type BibleChapter = z.infer<typeof bibleChapterZodSchema>;
+export type BibleVerse = z.infer<typeof bibleVerseZodSchema>;
 
 // zod
-const bibleChapterZodSchema = z.object({
+const bibleVerseZodSchema = z.object({
   version: z.string(),
   bookIdx: z.number(),
   bookName: z.string(),
   chapter: z.number(),
-  verses: z.array(
-    z.object({
-      verse: z.number(),
-      text: z.string(),
-    }),
-  ),
+  verse: z.number(),
+  text: z.string(),
 });
 
 // convex
-export const bibleChapterConvexSchema = zodToConvex(bibleChapterZodSchema);
+export const bibleVerseConvexSchema = zodToConvex(bibleVerseZodSchema);

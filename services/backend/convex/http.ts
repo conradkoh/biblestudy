@@ -1,7 +1,6 @@
 import { parseTelegramPayload, sendMessage } from '@/utils/telegram';
 import { httpRouter } from 'convex/server';
 import { httpAction } from './_generated/server';
-import type { BRAND } from 'zod';
 import {
   processMessage,
   ProcessMessageParams,

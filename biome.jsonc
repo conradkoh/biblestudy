@@ -24,7 +24,8 @@
       },
       "style": {
         "noUnusedTemplateLiteral": "off",
-        "useTemplate": "off"
+        "useTemplate": "off",
+        "useImportType": "off"
       }
     }
   },

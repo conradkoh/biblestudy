@@ -24,6 +24,7 @@ export const loadKJV = async (ctx: ActionCtx) => {
       chapterIdx++
     ) {
       const chapter = bookData.chapters[chapterIdx];
+      // load chapters
       await ctx.runMutation(internal.bible._writeChapter, {
         version: 'kjv',
         bookName: book,
@@ -34,6 +35,18 @@ export const loadKJV = async (ctx: ActionCtx) => {
           text: v.text,
         })),
       });
+      // load verses
+      const tasks = chapter.verses.map((v) => {
+        return ctx.runMutation(internal.bible._writeVerse, {
+          version: 'kjv',
+          bookName: book,
+          bookIdx, //starts at 0
+          chapter: Number.parseInt(chapter.chapter),
+          verse: Number.parseInt(v.verse),
+          text: v.text,
+        });
+      });
+      await Promise.all(tasks);
     }
   }
 };

@@ -16,6 +16,7 @@ import type {
 import type * as bible from "../bible.js";
 import type * as http from "../http.js";
 import type * as models_bible_bible_chapters from "../models/bible/bible_chapters.js";
+import type * as models_bible_bible_verses from "../models/bible/bible_verses.js";
 import type * as system from "../system.js";
 import type * as telegram from "../telegram.js";
 
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   bible: typeof bible;
   http: typeof http;
   "models/bible/bible_chapters": typeof models_bible_bible_chapters;
+  "models/bible/bible_verses": typeof models_bible_bible_verses;
   system: typeof system;
   telegram: typeof telegram;
 }>;
