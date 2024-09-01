@@ -13,6 +13,11 @@ This is needed because each bot can only send messages to one webhook. With mult
 
 3. Run the `telegram.registerWebhook` function from the [convex console](https://dashboard.convex.dev/t/conradkoh/biblestudy/strong-pheasant-324/functions).
 
+## Setting your dev environment
+Go to the [convex console](https://dashboard.convex.dev/t/conradkoh/biblestudy/insightful-lyrebird-945/functions?function=system:install) and run the `system:install` function.
+
+This will load the necessary databases for development.
+
 ### Testing
 If all these have worked fine, you can test these out by sending a message to the telegram bot.
 

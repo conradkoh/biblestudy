@@ -1,10 +1,9 @@
+import { bibleChaptersConvexSchema } from 'convex/models/bible/bible_chapters';
 import { defineSchema, defineTable } from 'convex/server';
-import { v } from 'convex/values';
 
 export default defineSchema({
-  user: defineTable({
-    id: v.id('user'),
-    name: v.string(),
-    status: v.literal('active'),
-  }),
+  bible_chapters: defineTable(bibleChaptersConvexSchema).index(
+    'by_version_by_book_by_chapter',
+    ['version', 'bookIdx', 'chapter'],
+  ),
 });
