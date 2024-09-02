@@ -35,18 +35,16 @@ export const loadKJV = async (ctx: ActionCtx) => {
           text: v.text,
         })),
       });
-      // load verses
-      const tasks = chapter.verses.map((v) => {
-        return ctx.runMutation(internal.bible._writeVerse, {
+      await ctx.runMutation(internal.bible._batchWriteVerses, {
+        verses: chapter.verses.map((v) => ({
           version: 'kjv',
           bookName: book,
           bookIdx, //starts at 0
           chapter: Number.parseInt(chapter.chapter),
           verse: Number.parseInt(v.verse),
           text: v.text,
-        });
+        })),
       });
-      await Promise.all(tasks);
     }
   }
 };

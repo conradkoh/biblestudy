@@ -4,6 +4,7 @@ import type { BibleChapter } from 'convex/models/bible/bible_chapters';
 import { bibleChapterConvexSchema } from 'convex/models/bible/bible_chapters';
 import type { BibleVerse } from 'convex/models/bible/bible_verses';
 import { bibleVerseConvexSchema } from 'convex/models/bible/bible_verses';
+import { v } from 'convex/values';
 
 export const _importKJV = internalAction({
   args: {},
@@ -40,32 +41,40 @@ export const _writeChapter = internalMutation({
 });
 
 //========================================
-// Mutation: Write Verse
+// Mutation: Batch Write Verse
 //========================================
-export const _writeVerse = internalMutation({
-  args: bibleVerseConvexSchema,
+
+export const _batchWriteVerses = internalMutation({
+  args: v.object({
+    verses: v.array(bibleVerseConvexSchema),
+  }),
   handler: async (ctx, args) => {
-    const { version, bookIdx, chapter, verse } = args;
-    // check if already exists
-    const existingVerse = await ctx.db
-      .query('bible_verses')
-      .withIndex('by_version_by_book_by_chapter_by_verse', (f) =>
-        f
-          .eq('version', version)
-          .eq('bookIdx', bookIdx)
-          .eq('chapter', chapter)
-          .eq('verse', verse),
-      )
-      .first();
+    const tasks = args.verses.map((v) => {
+      const { version, bookIdx, chapter, verse } = v;
+      return (async () => {
+        // check if already exists
+        const existingVerse = await ctx.db
+          .query('bible_verses')
+          .withIndex('by_version_by_book_by_chapter_by_verse', (f) =>
+            f
+              .eq('version', version)
+              .eq('bookIdx', bookIdx)
+              .eq('chapter', chapter)
+              .eq('verse', verse),
+          )
+          .first();
 
-    const rec: BibleVerse = args;
+        const rec: BibleVerse = v;
 
-    if (existingVerse) {
-      // update
-      await ctx.db.replace(existingVerse._id, rec);
-    } else {
-      // insert
-      await ctx.db.insert('bible_verses', rec);
-    }
+        if (existingVerse) {
+          // update
+          await ctx.db.replace(existingVerse._id, rec);
+        } else {
+          // insert
+          await ctx.db.insert('bible_verses', rec);
+        }
+      })();
+    });
+    await Promise.all(tasks);
   },
 });
