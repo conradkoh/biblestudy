@@ -3,8 +3,8 @@ import {
   BibleBookEnum,
 } from '@/domain/entities/bible-books';
 import { bookSchema } from '@/features/import-bible/kjv/types';
-import { internal } from 'convex/_generated/api';
-import type { ActionCtx } from 'convex/_generated/server';
+import { internal } from '@/../convex/_generated/api';
+import type { ActionCtx } from '@/../convex/_generated/server';
 /**
  * Imports the KJV bible from the local file system into the DB
  * @param ctx

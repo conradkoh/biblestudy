@@ -1,5 +1,5 @@
-import { bibleChapterConvexSchema } from 'convex/models/bible/bible_chapters';
-import { bibleVerseConvexSchema } from 'convex/models/bible/bible_verses';
+import { bibleChapterConvexSchema } from '@/../convex/models/bible/bible_chapters';
+import { bibleVerseConvexSchema } from '@/../convex/models/bible/bible_verses';
 import { defineSchema, defineTable } from 'convex/server';
 
 export default defineSchema({
