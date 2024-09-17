@@ -5,7 +5,13 @@ import { useThemeColor } from "@/src/hooks/useThemeColor";
 export type TTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: "default" | "title" | "defaultSemiBold" | "subtitle" | "link";
+  type?:
+    | "default"
+    | "title"
+    | "defaultSemiBold"
+    | "subtitle"
+    | "link"
+    | "paragraph";
 };
 
 export function TText({
@@ -26,6 +32,7 @@ export function TText({
         type === "defaultSemiBold" ? styles.defaultSemiBold : undefined,
         type === "subtitle" ? styles.subtitle : undefined,
         type === "link" ? styles.link : undefined,
+        type === "paragraph" ? styles.paragraph : undefined,
         style,
       ]}
       {...rest}
@@ -56,5 +63,9 @@ const styles = StyleSheet.create({
     lineHeight: 30,
     fontSize: 16,
     color: "#0a7ea4",
+  },
+  paragraph: {
+    fontSize: 17,
+    lineHeight: 28,
   },
 });
