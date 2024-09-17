@@ -13,9 +13,13 @@ export default function TabLayout() {
     <ConvexProvider client={convex}>
       <Tabs
         screenOptions={{
+          tabBarStyle: {
+            backgroundColor: ThemeColors[colorScheme ?? "light"].background,
+          },
           tabBarActiveTintColor: ThemeColors[colorScheme ?? "light"].text,
           headerShown: false,
         }}
+        initialRouteName="read-screen"
       >
         <Tabs.Screen
           name="read-screen"
