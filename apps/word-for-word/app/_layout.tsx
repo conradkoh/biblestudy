@@ -2,13 +2,13 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { TabBarIcon } from "@/src/components/navigation/TabBarIcon";
 import { ThemeColors } from "@/src/constants/ThemeColors";
-import { useColorScheme } from "@/src/hooks/useColorScheme";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { ConvexProvider } from "convex/react";
 import { convex } from "@/src/services/convex";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const themeColors = useThemeColors();
 
   return (
     <ConvexProvider client={convex}>
@@ -16,9 +16,9 @@ export default function TabLayout() {
         <Tabs
           screenOptions={{
             tabBarStyle: {
-              backgroundColor: ThemeColors[colorScheme ?? "light"].background,
+              backgroundColor: themeColors.background,
             },
-            tabBarActiveTintColor: ThemeColors[colorScheme ?? "light"].text,
+            tabBarActiveTintColor: themeColors.text,
             headerShown: false,
           }}
           initialRouteName="read-screen"

@@ -3,6 +3,8 @@
   "compilerOptions": {
     "module": "ESNext",
     "strict": true,
+    "strictNullChecks": true,
+    "allowArbitraryExtensions": true,
     "paths": {
       "@/*": ["./*"],
       "@backend/*": ["../../services/backend/*"],

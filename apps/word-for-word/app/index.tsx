@@ -1,34 +1,42 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import { create } from "zustand";
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from "react-native";
+import SearchBox from "@/src/components/search-box";
 import { ThemeColors } from "@/src/constants/ThemeColors";
+import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
+import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { LexiconWord, useBibleCursor } from "@/src/stores/bible-store";
+import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetBackdrop,
   BottomSheetView,
   BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
+import classNames from "classnames";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { LexiconWord, useBibleCursor } from "@/src/stores/bible-store";
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Gesture } from "react-native-gesture-handler";
 import Animated, {
   Extrapolate,
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import classNames from "classnames";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function ReadScreen() {
   const bible = useBibleCursor();
-  const colorScheme = useColorScheme();
+  const themeColors = useThemeColors();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useEvent(CommonEvents, "ON_CHAPTER_CHANGE", () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+  });
 
   const bottomSheetRef = useRef<BottomSheet>(null);
 
@@ -40,6 +48,7 @@ export default function ReadScreen() {
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
     LexiconWord | undefined
   >();
+  const [isSearchVisible, setIsSearchVisible] = useState(true);
 
   function onPressVerse(verseNum: number) {
     bible.setInterlinearVerseNumber(verseNum);
@@ -58,7 +67,7 @@ export default function ReadScreen() {
       <SafeAreaView
         style={{
           flex: 1,
-          backgroundColor: ThemeColors[colorScheme ?? "light"].background,
+          backgroundColor: themeColors.background,
         }}
       >
         <TView
@@ -68,8 +77,11 @@ export default function ReadScreen() {
             alignItems: "center",
           }}
         >
-          <ScrollView>
+          <ScrollView ref={scrollViewRef}>
             <TView className="px-3">
+              <TText type="title" className="my-2">
+                {bible.getCurrentBookName()} {bible.chapterIdx + 1}
+              </TText>
               <TText>
                 {bible.getCurrentChapterFormatted().map((verse, i) => {
                   return (
@@ -82,20 +94,63 @@ export default function ReadScreen() {
               </TText>
             </TView>
           </ScrollView>
+          <View
+            className="flex flex-row items-center justify-between px-2 h-10"
+            style={{
+              backgroundColor: themeColors.backgroundSecondary,
+            }}
+          >
+            <TouchableOpacity
+              hitSlop={HITSLOP_DEFAULT}
+              onPress={() => bible.goPrev()}
+            >
+              <Ionicons
+                size={20}
+                name="arrow-back-sharp"
+                style={{ color: themeColors.text }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex flex-row items-center justify-center flex-1"
+              onPress={() => setIsSearchVisible(true)}
+            >
+              <Ionicons
+                size={18}
+                name="search-sharp"
+                style={{ color: themeColors.text }}
+              />
+              <TText className="font-bold text-[18px] ml-1">
+                {bible.getCurrentBookName()} Chapter {bible.chapterIdx + 1}
+              </TText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              hitSlop={HITSLOP_DEFAULT}
+              onPress={() => bible.goNext()}
+            >
+              <Ionicons
+                size={20}
+                name="arrow-forward-sharp"
+                style={{ color: themeColors.text }}
+              />
+            </TouchableOpacity>
+          </View>
         </TView>
       </SafeAreaView>
-
+      <SearchBox
+        isVisible={isSearchVisible}
+        setIsVisible={setIsSearchVisible}
+      />
       <BottomSheet
         ref={bottomSheetRef}
         onChange={handleSheetChanges}
         snapPoints={["50%", "90%"]}
         enablePanDownToClose
+        index={-1}
         handleIndicatorStyle={{
-          backgroundColor: ThemeColors[colorScheme ?? "light"].text,
+          backgroundColor: themeColors.text,
         }}
         backgroundStyle={{
-          backgroundColor:
-            ThemeColors[colorScheme ?? "light"].backgroundSecondary,
+          backgroundColor: themeColors.backgroundSecondary,
         }}
         backdropComponent={CustomBackdrop}
       >
@@ -105,7 +160,7 @@ export default function ReadScreen() {
               <Ionicons
                 size={20}
                 name="book"
-                style={{ color: ThemeColors[colorScheme ?? "light"].text }}
+                style={{ color: themeColors.text }}
               />
               <TText className="text-[17px] font-bold">
                 {bible.getCurrentInterlinearVerseName()}
@@ -197,12 +252,11 @@ const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
       style,
       {
         backgroundColor: "black",
-        pointerEvents: "none",
       },
       containerAnimatedStyle,
     ],
     [style, containerAnimatedStyle]
   );
 
-  return <Animated.View style={containerStyle} />;
+  return <Animated.View style={containerStyle} pointerEvents="none" />;
 };
