@@ -76,6 +76,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
     <Modal
       visible={isVisible}
       onRequestClose={() => setIsVisible(false)}
+      presentationStyle="overFullScreen"
       transparent={true}
     >
       <TouchableOpacity
@@ -103,6 +104,8 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                 backgroundColor: themeColors.backgroundSecondary,
               }}
               // on return key, focus next
+              autoComplete="off"
+              autoCorrect={false}
               onSubmitEditing={onSubmitBook}
               onFocus={() => setCurrentFocus("book")}
               onBlur={() => setCurrentFocus(null)}

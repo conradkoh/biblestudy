@@ -72,8 +72,8 @@ export const bookNames = Object.values(mapBookSlugToName);
 export const BOOK_COUNT = bookSlugs.length;
 
 /**
- * song(s) of songs => song of solomon
- * II John => 2 John
+ * song(s) of songs => song_of_solomon
+ * 2 John => ii_John
  */
 export function bookNameToSlug(bookName: string) {
   let normalizedBookName = bookName.toLowerCase();
@@ -88,9 +88,9 @@ export function bookNameToSlug(bookName: string) {
   normalizedBookName = normalizedBookName.replace(/of\ssongs/g, "of solomon");
 
   // Handle ii vs 1/2/3
-  normalizedBookName = normalizedBookName.replace(/i(?=\s[a-z]+)/g, "1");
-  normalizedBookName = normalizedBookName.replace(/ii(?=\s[a-z]+)/g, "2");
-  normalizedBookName = normalizedBookName.replace(/iii(?=\s[a-z]+)/g, "3");
+  normalizedBookName = normalizedBookName.replace(/1(?=\s[a-z]+)/g, "i");
+  normalizedBookName = normalizedBookName.replace(/2(?=\s[a-z]+)/g, "ii");
+  normalizedBookName = normalizedBookName.replace(/3(?=\s[a-z]+)/g, "iii");
 
   normalizedBookName = normalizedBookName.replaceAll(/\s+/g, "_");
 

@@ -1,28 +1,18 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import SearchBox from "@/src/components/search-box";
-import { ThemeColors } from "@/src/constants/ThemeColors";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { LexiconWord, useBibleCursor } from "@/src/stores/bible-store";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
-  BottomSheetScrollView,
-  BottomSheetBackdrop,
-  BottomSheetView,
   BottomSheetBackdropProps,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { Gesture } from "react-native-gesture-handler";
+import { SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
 import Animated, {
   Extrapolate,
   interpolate,
@@ -48,7 +38,7 @@ export default function ReadScreen() {
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
     LexiconWord | undefined
   >();
-  const [isSearchVisible, setIsSearchVisible] = useState(true);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   function onPressVerse(verseNum: number) {
     bible.setInterlinearVerseNumber(verseNum);

@@ -3,8 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "android": "expo run:android",
     "ios": "npx expo run:ios",
+    "android": "expo run:android",
+    "build-ios-preview": "eas build --profile preview --platform ios",
     "test": "jest --watchAll",
     "lint": "expo lint"
   },
