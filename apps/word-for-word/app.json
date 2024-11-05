@@ -2,7 +2,7 @@
   "expo": {
     "name": "word-for-word",
     "slug": "word-for-word",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -38,6 +38,12 @@
       "eas": {
         "projectId": "11a923c2-2e0b-49f3-b1ba-9fb3fc11eaf1"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/11a923c2-2e0b-49f3-b1ba-9fb3fc11eaf1"
     }
   }
 }

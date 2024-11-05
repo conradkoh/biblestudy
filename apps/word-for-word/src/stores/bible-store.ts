@@ -6,6 +6,7 @@ import interlinear, {
 } from "@/assets/interlinear/interlinear.json";
 import greekLexicon from "@/assets/lexicon/greek.json";
 import hebrewLexicon from "@/assets/lexicon/hebrew.json";
+import strongs from "@/src/libraries/strongs";
 import {
   BOOK_COUNT,
   bookSlugs,
@@ -84,7 +85,7 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     return `${bookName} ${chapterIdx + 1}:${currentInterlinearVerseIdx + 1}`;
   },
   setInterlinearVerseNumber: (verseNum) => {
-    set({ currentInterlinearVerseIdx: verseNum });
+    set({ currentInterlinearVerseIdx: verseNum && verseNum - 1 });
   },
   getCurrentInterlinearForVerse: () => {
     const { bookIdx, chapterIdx, interlinear, currentInterlinearVerseIdx } =
@@ -97,7 +98,15 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
   },
   lookupStrongsNumber: (strongsNumber: string) => {
     const lexicon = strongsNumber[0] === "h" ? hebrewLexicon : greekLexicon;
-    return lexicon.find((w) => w.strongs === strongsNumber);
+    const lexiconReference = lexicon.find((w) => w.strongs === strongsNumber);
+    const strongsDefinition = strongs[strongsNumber.toUpperCase()];
+    if (!lexiconReference) return undefined;
+    return {
+      ...lexiconReference,
+      originalWord: strongsDefinition?.lemma,
+      transliteration: strongsDefinition?.translit ?? strongsDefinition.xlit,
+      pronounciation: strongsDefinition.pron,
+    };
   },
   goNext: () => {
     const { bookIdx, chapterIdx, translation, setBookIdx, setChapterIdx } =
@@ -136,4 +145,7 @@ export type LexiconWord = {
       long?: (string | (string | string[])[])[];
     };
   };
+  originalWord?: string; // original greek/hebrew
+  transliteration?: string; // in english letters
+  pronounciation?: string; // how to pronounce
 };

@@ -5,6 +5,7 @@ import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { LexiconWord, useBibleCursor } from "@/src/stores/bible-store";
+import { useSettingsStore } from "@/src/stores/settings-store";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdropProps,
@@ -21,6 +22,7 @@ import Animated, {
 
 export default function ReadScreen() {
   const bible = useBibleCursor();
+  const settings = useSettingsStore();
   const themeColors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -31,9 +33,14 @@ export default function ReadScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-  }, []);
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        bible.setInterlinearVerseNumber(null);
+      }
+    },
+    [bible]
+  );
 
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
     LexiconWord | undefined
@@ -74,10 +81,37 @@ export default function ReadScreen() {
               </TText>
               <TText>
                 {bible.getCurrentChapterFormatted().map((verse, i) => {
+                  const isCurrentVerse =
+                    bible.currentInterlinearVerseIdx &&
+                    bible.currentInterlinearVerseIdx === i;
                   return (
                     <TText key={verse.name} onPress={() => onPressVerse(i + 1)}>
-                      <TText className="ml-1 font-bold"> {i + 1} </TText>
-                      <TText type="paragraph">{verse.text}</TText>
+                      <TText
+                        className="ml-1 font-bold"
+                        style={{
+                          // since this component comes first, line height determined here
+                          lineHeight: settings.lineHeight,
+                          color: isCurrentVerse
+                            ? themeColors.highlightText
+                            : undefined,
+                        }}
+                      >
+                        {" "}
+                        {i + 1}{" "}
+                      </TText>
+                      <TText
+                        type="paragraph"
+                        style={{
+                          fontSize: settings.textSize,
+                          fontWeight: settings.fontWeight,
+                          fontFamily: settings.fontFamily,
+                          color: isCurrentVerse
+                            ? themeColors.highlightText
+                            : undefined,
+                        }}
+                      >
+                        {verse.text}
+                      </TText>
                     </TText>
                   );
                 })}
@@ -200,9 +234,21 @@ export default function ReadScreen() {
             {currentStrongsWord && (
               <View className="mt-6">
                 <View className="flex flex-col" style={{ gap: 8 }}>
-                  <TText type="subtitle">
-                    Strongs Number: {currentStrongsWord.strongs}
+                  <TText className="text-xs font-semibold text-green-700">
+                    Strongs: {currentStrongsWord.strongs}
                   </TText>
+                  {/* Hebrew / Greek + Translit */}
+                  <TText type="subtitle" className="text-green-700">
+                    {currentStrongsWord.originalWord} -{" "}
+                    {currentStrongsWord.transliteration}
+                  </TText>
+                  {/* Pronunciation */}
+                  {currentStrongsWord.pronounciation && (
+                    <TText className="italic text-xs">
+                      {currentStrongsWord.pronounciation}
+                    </TText>
+                  )}
+                  {/* English Word */}
                   <TText>{currentStrongsWord.word}</TText>
                   <TText className="mt-3" type="subtitle">
                     Short Definition:
