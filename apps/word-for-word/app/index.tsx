@@ -25,9 +25,21 @@ export default function ReadScreen() {
   const settings = useSettingsStore();
   const themeColors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
+  const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});
 
   useEvent(CommonEvents, "ON_CHAPTER_CHANGE", () => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+  });
+
+  useEvent(CommonEvents, "ON_VERSE_CHANGE", (verseNum) => {
+    const verseIdx = verseNum - 1;
+    const y = verseYCoordsRef.current[verseIdx];
+    if (!y) {
+      console.warn(`Verse ${verseNum} element ref not found`);
+      return;
+    }
+
+    scrollViewRef.current?.scrollTo({ y, animated: false });
   });
 
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -85,34 +97,46 @@ export default function ReadScreen() {
                     bible.currentInterlinearVerseIdx &&
                     bible.currentInterlinearVerseIdx === i;
                   return (
-                    <TText key={verse.name} onPress={() => onPressVerse(i + 1)}>
+                    <>
                       <TText
-                        className="ml-1 font-bold"
-                        style={{
-                          // since this component comes first, line height determined here
-                          lineHeight: settings.lineHeight,
-                          color: isCurrentVerse
-                            ? themeColors.highlightText
-                            : undefined,
-                        }}
+                        key={verse.name}
+                        onPress={() => onPressVerse(i + 1)}
                       >
-                        {" "}
-                        {i + 1}{" "}
+                        <TText
+                          className="ml-1 font-bold"
+                          style={{
+                            // since this component comes first, line height determined here
+                            lineHeight: settings.lineHeight,
+                            color: isCurrentVerse
+                              ? themeColors.highlightText
+                              : undefined,
+                          }}
+                        >
+                          {" "}
+                          {i + 1}{" "}
+                        </TText>
+                        {/* Used as marker for position. Must be after first TText so it doesn't interfere with lineheight */}
+                        <View
+                          key={verse.name + "marker"}
+                          onLayout={(e) => {
+                            verseYCoordsRef.current[i] = e.nativeEvent.layout.y;
+                          }}
+                        />
+                        <TText
+                          type="paragraph"
+                          style={{
+                            fontSize: settings.textSize,
+                            fontWeight: settings.fontWeight,
+                            fontFamily: settings.fontFamily,
+                            color: isCurrentVerse
+                              ? themeColors.highlightText
+                              : undefined,
+                          }}
+                        >
+                          {verse.text}
+                        </TText>
                       </TText>
-                      <TText
-                        type="paragraph"
-                        style={{
-                          fontSize: settings.textSize,
-                          fontWeight: settings.fontWeight,
-                          fontFamily: settings.fontFamily,
-                          color: isCurrentVerse
-                            ? themeColors.highlightText
-                            : undefined,
-                        }}
-                      >
-                        {verse.text}
-                      </TText>
-                    </TText>
+                    </>
                   );
                 })}
               </TText>

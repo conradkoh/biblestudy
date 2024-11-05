@@ -9,6 +9,8 @@ import Fuse from "fuse.js";
 import { bookNames, bookNameToSlug } from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
+import { CommonEvents } from "@/src/hooks/useEvents";
 
 interface SearchBoxProps {
   isVisible: boolean;
@@ -26,10 +28,12 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
 
   const [bookNameSearch, setBookNameSearch] = useState("");
   const [chapterSearch, setChapterSearch] = useState("");
-  const [currentFocus, setCurrentFocus] = useState<"book" | "chapter" | null>(
-    null
-  );
+  const [verseSearch, setVerseSearch] = useState("-");
+  const [currentFocus, setCurrentFocus] = useState<
+    "book" | "chapter" | "verse" | null
+  >(null);
   const chapterTextInputRef = useRef<TextInput>(null);
+  const verseTextInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!isVisible) {
@@ -50,11 +54,26 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
   const maxChapterNumber = isValidBookName
     ? (bible.getBook(bookSlug)?.chapters.length ?? -1) + 1
     : 0;
+
   const chapterSearchNum = Number.parseInt(chapterSearch);
   const isValidChapterSearch =
     chapterSearchNum > 0 && chapterSearchNum <= maxChapterNumber;
 
-  const canSubmit = isValidBookName && isValidChapterSearch;
+  const maxVerseNumber =
+    isValidBookName && isValidChapterSearch
+      ? // biome-ignore lint/style/noNonNullAssertion: isValidBookName checks for valid book
+        bible.getBook(bookSlug)!.chapters[chapterSearchNum - 1].verses.length
+      : 0;
+  const verseSearchNum = Number.parseInt(verseSearch);
+  const isAnyVerse = verseSearch === "-" || !verseSearch.length;
+  const isValidVerseSearch =
+    isAnyVerse ||
+    (!Number.isNaN(verseSearchNum) &&
+      verseSearchNum > 0 &&
+      verseSearchNum <= maxVerseNumber);
+
+  const canSubmit =
+    isValidBookName && isValidChapterSearch && isValidVerseSearch;
 
   function onSubmitBook() {
     // Select first option, if any
@@ -65,11 +84,26 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
     }
   }
 
+  function onSubmitChapter() {
+    verseTextInputRef.current?.focus();
+  }
+
   function onSubmit() {
     if (!canSubmit) return;
     bible.setBookSlug(bookSlug);
     bible.setChapterIdx(chapterSearchNum - 1);
     setIsVisible(false);
+    // next tick
+    !Number.isNaN(verseSearchNum) &&
+      setTimeout(() => {
+        CommonEvents.emit("ON_VERSE_CHANGE", verseSearchNum);
+      }, 100);
+  }
+
+  function onSubmitAccessoryView() {
+    if (currentFocus === "book") onSubmitBook();
+    if (currentFocus === "chapter") onSubmitChapter();
+    if (currentFocus === "verse" && canSubmit) onSubmit();
   }
 
   return (
@@ -97,7 +131,10 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
               autoFocus
               selectTextOnFocus
               value={bookNameSearch}
-              onChangeText={setBookNameSearch}
+              onChangeText={(text) => {
+                setBookNameSearch(text);
+                setVerseSearch("-");
+              }}
               className="font-bold text-[18px] rounded-md p-2"
               style={{
                 color: themeColors.text,
@@ -117,6 +154,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
               onChangeText={(text) => {
                 const cleanText = text.replace(/[^0-9]/g, "");
                 setChapterSearch(cleanText);
+                setVerseSearch("-");
               }}
               keyboardType="numeric"
               className="font-bold text-[18px] rounded-md p-2"
@@ -126,8 +164,29 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                   : themeColors.negative,
                 backgroundColor: themeColors.backgroundSecondary,
               }}
-              onSubmitEditing={onSubmit}
+              onSubmitEditing={onSubmitChapter}
               onFocus={() => setCurrentFocus("chapter")}
+              onBlur={() => setCurrentFocus(null)}
+            />
+            <TText>:</TText>
+            <TextInput
+              ref={verseTextInputRef}
+              selectTextOnFocus
+              value={`${verseSearch}`}
+              onChangeText={(text) => {
+                const cleanText = text.replace(/[^0-9]/g, "");
+                setVerseSearch(cleanText);
+              }}
+              keyboardType="numeric"
+              className="font-bold text-[18px] rounded-md p-2"
+              style={{
+                color: isValidVerseSearch
+                  ? themeColors.text
+                  : themeColors.negative,
+                backgroundColor: themeColors.backgroundSecondary,
+              }}
+              onSubmitEditing={onSubmit}
+              onFocus={() => setCurrentFocus("verse")}
               onBlur={() => setCurrentFocus(null)}
             />
             <View className="flex-1" />
@@ -167,6 +226,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                     onPress={() => {
                       setBookNameSearch(book);
                       chapterTextInputRef.current?.focus();
+                      setVerseSearch("-");
                     }}
                   >
                     <TText>{book}</TText>
@@ -191,6 +251,23 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
           </ScrollView>
         </TView>
       </SafeAreaView>
+      <KeyboardStickyView className="absolute bottom-0 w-screen">
+        <TView className="w-full h-full flex items-center py-2 px-4">
+          <TouchableOpacity
+            className="ml-auto"
+            onPress={onSubmitAccessoryView}
+            hitSlop={HITSLOP_DEFAULT}
+            disabled={!canSubmit && currentFocus === "verse"}
+            style={{
+              opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
+            }}
+          >
+            <TText className="font-bold">
+              {currentFocus !== "verse" ? "Next" : "Done"}
+            </TText>
+          </TouchableOpacity>
+        </TView>
+      </KeyboardStickyView>
     </Modal>
   );
 };
