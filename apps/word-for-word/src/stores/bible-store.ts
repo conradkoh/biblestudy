@@ -93,7 +93,7 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     if (!currentInterlinearVerseIdx) return null;
 
     return interlinear[bookIdx].chapters[chapterIdx].verses[
-      currentInterlinearVerseIdx - 1
+      currentInterlinearVerseIdx
     ];
   },
   lookupStrongsNumber: (strongsNumber: string) => {

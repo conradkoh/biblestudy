@@ -1,3 +1,4 @@
+import React from "react";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import SearchBox from "@/src/components/search-box";
@@ -97,11 +98,8 @@ export default function ReadScreen() {
                     bible.currentInterlinearVerseIdx &&
                     bible.currentInterlinearVerseIdx === i;
                   return (
-                    <>
-                      <TText
-                        key={verse.name}
-                        onPress={() => onPressVerse(i + 1)}
-                      >
+                    <React.Fragment key={verse.name}>
+                      <TText onPress={() => onPressVerse(i + 1)}>
                         <TText
                           className="ml-1 font-bold"
                           style={{
@@ -136,7 +134,7 @@ export default function ReadScreen() {
                           {verse.text}
                         </TText>
                       </TText>
-                    </>
+                    </React.Fragment>
                   );
                 })}
               </TText>

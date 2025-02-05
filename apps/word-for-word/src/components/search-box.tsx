@@ -8,7 +8,7 @@ import { Modal, SafeAreaView, TextInput } from "react-native";
 import Fuse from "fuse.js";
 import { bookNames, bookNameToSlug } from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
+import { HITSLOP_DEFAULT, HITSLOP_LARGE } from "@/src/consts/hitslop";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { CommonEvents } from "@/src/hooks/useEvents";
 
@@ -27,8 +27,8 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
   const themeColors = useThemeColors();
 
   const [bookNameSearch, setBookNameSearch] = useState("");
-  const [chapterSearch, setChapterSearch] = useState("");
-  const [verseSearch, setVerseSearch] = useState("-");
+  const [chapterSearch, setChapterSearch] = useState("1");
+  const [verseSearch, setVerseSearch] = useState("1");
   const [currentFocus, setCurrentFocus] = useState<
     "book" | "chapter" | "verse" | null
   >(null);
@@ -65,12 +65,10 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
         bible.getBook(bookSlug)!.chapters[chapterSearchNum - 1].verses.length
       : 0;
   const verseSearchNum = Number.parseInt(verseSearch);
-  const isAnyVerse = verseSearch === "-" || !verseSearch.length;
   const isValidVerseSearch =
-    isAnyVerse ||
-    (!Number.isNaN(verseSearchNum) &&
-      verseSearchNum > 0 &&
-      verseSearchNum <= maxVerseNumber);
+    !Number.isNaN(verseSearchNum) &&
+    verseSearchNum > 0 &&
+    verseSearchNum <= maxVerseNumber;
 
   const canSubmit =
     isValidBookName && isValidChapterSearch && isValidVerseSearch;
@@ -79,7 +77,6 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
     // Select first option, if any
     if (filteredOptions.length > 0) {
       setBookNameSearch(filteredOptions[0]);
-      setChapterSearch("");
       chapterTextInputRef.current?.focus();
     }
   }
@@ -113,10 +110,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
       presentationStyle="overFullScreen"
       transparent={true}
     >
-      <TouchableOpacity
-        className="absolute h-screen w-screen bg-black opacity-40"
-        onPress={() => setIsVisible(false)}
-      />
+      <View className="absolute h-screen w-screen bg-black opacity-40" />
       <SafeAreaView>
         <TView
           style={{
@@ -133,7 +127,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
               value={bookNameSearch}
               onChangeText={(text) => {
                 setBookNameSearch(text);
-                setVerseSearch("-");
+                setVerseSearch("1");
               }}
               className="font-bold text-[18px] rounded-md p-2"
               style={{
@@ -154,7 +148,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
               onChangeText={(text) => {
                 const cleanText = text.replace(/[^0-9]/g, "");
                 setChapterSearch(cleanText);
-                setVerseSearch("-");
+                setVerseSearch("1");
               }}
               keyboardType="numeric"
               className="font-bold text-[18px] rounded-md p-2"
@@ -226,7 +220,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                     onPress={() => {
                       setBookNameSearch(book);
                       chapterTextInputRef.current?.focus();
-                      setVerseSearch("-");
+                      setVerseSearch("1");
                     }}
                   >
                     <TText>{book}</TText>
@@ -241,7 +235,7 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                         <Ionicons
                           size={20}
                           name="return-down-back-sharp"
-                          style={{ color: themeColors.text }}
+                          style={{ color: themeColors.contrastText }}
                         />
                       </View>
                     )}
@@ -252,18 +246,23 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
         </TView>
       </SafeAreaView>
       <KeyboardStickyView className="absolute bottom-0 w-screen">
-        <TView className="w-full h-full flex items-center py-2 px-4">
+        <TView className="w-full h-full flex flex-row items-center justify-between py-2 px-4">
           <TouchableOpacity
-            className="ml-auto"
+            onPress={() => setIsVisible(false)}
+            hitSlop={HITSLOP_LARGE}
+          >
+            <TText className="font-bold">Cancel</TText>
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={onSubmitAccessoryView}
-            hitSlop={HITSLOP_DEFAULT}
+            hitSlop={HITSLOP_LARGE}
             disabled={!canSubmit && currentFocus === "verse"}
             style={{
               opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
             }}
           >
             <TText className="font-bold">
-              {currentFocus !== "verse" ? "Next" : "Done"}
+              {currentFocus !== "verse" ? "Next" : "Go"}
             </TText>
           </TouchableOpacity>
         </TView>
