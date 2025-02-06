@@ -88,10 +88,19 @@ export default function ReadScreen() {
           }}
         >
           <ScrollView ref={scrollViewRef}>
-            <TView className="px-3">
-              <TText type="title" className="my-2">
-                {bible.getCurrentBookName()} {bible.chapterIdx + 1}
-              </TText>
+            <TView className="px-6">
+              <TView className="flex-row items-end mb-2 mt-12">
+                <TText type="title">
+                  {bible.getCurrentBookName()} {bible.chapterIdx + 1}
+                </TText>
+                <TText
+                  type="subtitle"
+                  className="text-sm mb-1 ml-1"
+                  style={{ color: themeColors.secondaryText }}
+                >
+                  KJV
+                </TText>
+              </TView>
               <TText>
                 {bible.getCurrentChapterFormatted().map((verse, i) => {
                   const isCurrentVerse =
@@ -125,7 +134,7 @@ export default function ReadScreen() {
                           style={{
                             fontSize: settings.textSize,
                             fontWeight: settings.fontWeight,
-                            fontFamily: settings.fontFamily,
+                            fontFamily: settings.paragraphFontFamily,
                             color: isCurrentVerse
                               ? themeColors.highlightText
                               : undefined,

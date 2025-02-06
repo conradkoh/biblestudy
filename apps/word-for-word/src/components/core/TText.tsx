@@ -1,6 +1,7 @@
 import { Text, type TextProps, StyleSheet } from "react-native";
 
 import { useThemeColor } from "@/src/hooks/useThemeColor";
+import { useSettingsStore } from "@/src/stores/settings-store";
 
 export type TTextProps = TextProps & {
   lightColor?: string;
@@ -21,6 +22,8 @@ export function TText({
   type = "default",
   ...rest
 }: TTextProps) {
+  const settings = useSettingsStore();
+
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
 
   return (
@@ -33,6 +36,7 @@ export function TText({
         type === "subtitle" ? styles.subtitle : undefined,
         type === "link" ? styles.link : undefined,
         type === "paragraph" ? styles.paragraph : undefined,
+        { fontFamily: settings.fontFamily },
         style,
       ]}
       {...rest}

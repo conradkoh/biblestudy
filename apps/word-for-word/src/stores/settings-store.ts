@@ -7,6 +7,7 @@ type SettingsStore = {
   lineHeight: number;
   fontWeight: TextStyle["fontWeight"];
   fontFamily: string;
+  paragraphFontFamily: string;
 };
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -14,4 +15,5 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   lineHeight: 32,
   fontWeight: "400",
   fontFamily: "Inter",
+  paragraphFontFamily: "Sahitya-Regular",
 }));

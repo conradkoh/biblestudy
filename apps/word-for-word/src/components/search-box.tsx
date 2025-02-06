@@ -150,7 +150,6 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                 setChapterSearch(cleanText);
                 setVerseSearch("1");
               }}
-              keyboardType="numeric"
               className="font-bold text-[18px] rounded-md p-2"
               style={{
                 color: isValidChapterSearch
@@ -171,7 +170,6 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                 const cleanText = text.replace(/[^0-9]/g, "");
                 setVerseSearch(cleanText);
               }}
-              keyboardType="numeric"
               className="font-bold text-[18px] rounded-md p-2"
               style={{
                 color: isValidVerseSearch
