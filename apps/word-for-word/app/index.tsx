@@ -98,7 +98,7 @@ export default function ReadScreen() {
                   className="text-sm mb-1 ml-1"
                   style={{ color: themeColors.secondaryText }}
                 >
-                  KJV
+                  {bible.currentVersion.toUpperCase()}
                 </TText>
               </TView>
               <TText>

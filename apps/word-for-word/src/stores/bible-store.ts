@@ -1,5 +1,9 @@
 import { create } from "zustand";
+import niv from "@/assets/bible-en/niv.json";
 import kjv from "@/assets/bible-en/kjv.json";
+
+const versions = { niv, kjv };
+
 import interlinear, {
   InterlinearBible,
   InterlinearVerse,
@@ -17,12 +21,13 @@ import { CommonEvents } from "@/src/hooks/useEvents";
 import { mod } from "@/src/utils/math";
 
 type BibleCursorStore = {
+  currentVersion: keyof typeof versions;
   bookIdx: number;
   chapterIdx: number;
   setBookIdx: (bookIdx: number) => void;
   setBookSlug: (bookSlug: string) => void;
   setChapterIdx: (chapterIdx: number) => void;
-  translation: GetBibleTranslation["books"];
+  getTranslation: () => GetBibleTranslation;
   getCurrentChapterFormatted: () => { text: string; name: string }[];
   interlinear: InterlinearBible["books"];
   currentInterlinearVerseIdx: number | null;
@@ -37,6 +42,7 @@ type BibleCursorStore = {
 };
 
 export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
+  currentVersion: "niv",
   bookIdx: 0,
   chapterIdx: 0,
   setBookIdx: (bookIdx: number) => {
@@ -55,21 +61,21 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     set({ chapterIdx });
     CommonEvents.emit("ON_CHAPTER_CHANGE");
   },
-  translation: kjv.books,
+  getTranslation: () => versions[get().currentVersion],
   interlinear: interlinear.books,
   /**
    * Returns an array of verses
    */
   getCurrentChapterFormatted: () => {
     const { bookIdx, chapterIdx } = get();
-    const book = get().translation[bookIdx];
+    const book = get().getTranslation().books[bookIdx];
     const chapter = book.chapters[chapterIdx];
     return chapter.verses;
   },
   getBook: (slug: string) => {
     const bookIdx = bookSlugs.indexOf(slug);
     if (bookIdx === -1) return;
-    const book = get().translation[bookIdx];
+    const book = get().getTranslation().books[bookIdx];
     return book;
   },
   getCurrentBookName() {
@@ -109,10 +115,10 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     };
   },
   goNext: () => {
-    const { bookIdx, chapterIdx, translation, setBookIdx, setChapterIdx } =
+    const { bookIdx, chapterIdx, getTranslation, setBookIdx, setChapterIdx } =
       get();
     const nextChapterIdx = chapterIdx + 1;
-    if (nextChapterIdx >= translation[bookIdx].chapters.length) {
+    if (nextChapterIdx >= getTranslation().books[bookIdx].chapters.length) {
       setBookIdx(bookIdx + 1);
       setChapterIdx(0);
       return;
@@ -120,12 +126,12 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     set({ chapterIdx: nextChapterIdx });
   },
   goPrev: () => {
-    const { bookIdx, chapterIdx, setBookIdx, setChapterIdx, translation } =
+    const { bookIdx, chapterIdx, setBookIdx, setChapterIdx, getTranslation } =
       get();
     if (chapterIdx === 0) {
       const newBookIdx = mod(bookIdx - 1, BOOK_COUNT);
       setBookIdx(newBookIdx);
-      setChapterIdx(translation[newBookIdx].chapters.length - 1);
+      setChapterIdx(getTranslation().books[newBookIdx].chapters.length - 1);
       return;
     }
     set({ chapterIdx: chapterIdx - 1 });
