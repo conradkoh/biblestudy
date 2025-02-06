@@ -90,7 +90,7 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
   getCurrentInterlinearForVerse: () => {
     const { bookIdx, chapterIdx, interlinear, currentInterlinearVerseIdx } =
       get();
-    if (!currentInterlinearVerseIdx) return null;
+    if (typeof currentInterlinearVerseIdx !== "number") return null;
 
     return interlinear[bookIdx].chapters[chapterIdx].verses[
       currentInterlinearVerseIdx
