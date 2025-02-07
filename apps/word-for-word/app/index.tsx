@@ -12,6 +12,7 @@ import BottomSheet, {
   BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
@@ -20,6 +21,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
+import { VersionSelector } from "@/src/components/version-selector";
 
 export default function ReadScreen() {
   const bible = useBibleCursor();
@@ -73,7 +75,7 @@ export default function ReadScreen() {
   }
 
   return (
-    <>
+    <BottomSheetModalProvider>
       <SafeAreaView
         style={{
           flex: 1,
@@ -93,13 +95,7 @@ export default function ReadScreen() {
                 <TText type="title">
                   {bible.getCurrentBookName()} {bible.chapterIdx + 1}
                 </TText>
-                <TText
-                  type="subtitle"
-                  className="text-sm mb-1 ml-1"
-                  style={{ color: themeColors.secondaryText }}
-                >
-                  {bible.currentVersion.toUpperCase()}
-                </TText>
+                <VersionSelector />
               </TView>
               <TText>
                 {bible.getCurrentChapterFormatted().map((verse, i) => {
@@ -299,7 +295,7 @@ export default function ReadScreen() {
           </View>
         </BottomSheetScrollView>
       </BottomSheet>
-    </>
+    </BottomSheetModalProvider>
   );
 }
 const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {

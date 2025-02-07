@@ -27,6 +27,7 @@ type BibleCursorStore = {
   setBookIdx: (bookIdx: number) => void;
   setBookSlug: (bookSlug: string) => void;
   setChapterIdx: (chapterIdx: number) => void;
+  setCurrentVersion: (version: keyof typeof versions) => void;
   getTranslation: () => GetBibleTranslation;
   getCurrentChapterFormatted: () => { text: string; name: string }[];
   interlinear: InterlinearBible["books"];
@@ -60,6 +61,9 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
   setChapterIdx: (chapterIdx: number) => {
     set({ chapterIdx });
     CommonEvents.emit("ON_CHAPTER_CHANGE");
+  },
+  setCurrentVersion: (version: keyof typeof versions) => {
+    set({ currentVersion: version });
   },
   getTranslation: () => versions[get().currentVersion],
   interlinear: interlinear.books,
