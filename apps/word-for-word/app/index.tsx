@@ -281,14 +281,49 @@ export default function ReadScreen() {
                     Short Definition:
                   </TText>
                   <TText>{currentStrongsWord.data.def?.short}</TText>
-                  <TText className="mt-3" type="subtitle">
-                    Long Definition:
+                  {/* Used in... section */}
+                  <TText className="mt-6" type="subtitle">
+                    Also used in...
                   </TText>
-                  <TText>{currentStrongsWord.data.def?.long?.join("\n")}</TText>
-                  <TText className="mt-3" type="subtitle">
-                    Comment:
-                  </TText>
-                  <TText className="">{currentStrongsWord.data.comment}</TText>
+                  <View className="flex flex-col" style={{ gap: 12 }}>
+                    {bible.findVersesByStrongsNumber(currentStrongsWord.strongs)
+                      .slice(0, 5) // Show only first 5 results
+                      .map((result, idx) => (
+                        <View key={idx} className="flex flex-col" style={{ gap: 4 }}>
+                          <TText className="text-xs font-semibold">
+                            {result.bookName} {result.chapter}:{result.verse}
+                          </TText>
+                          {/* English text */}
+                          <View className="flex flex-row flex-wrap">
+                            {result.contents.map((content, wordIdx) => (
+                              <TText
+                                key={wordIdx}
+                                className={classNames("mr-1", {
+                                  "text-green-700 font-semibold":
+                                    content.strongsNumber === currentStrongsWord.strongs,
+                                })}
+                              >
+                                {content.text}
+                              </TText>
+                            ))}
+                          </View>
+                          {/* Original language text */}
+                          <View className="flex flex-row flex-wrap">
+                            {result.contents.map((content, wordIdx) => (
+                              <TText
+                                key={wordIdx}
+                                className={classNames("mr-1 text-sm", {
+                                  "text-green-700 font-semibold":
+                                    content.strongsNumber === currentStrongsWord.strongs,
+                                })}
+                              >
+                                {content.originalWord}
+                              </TText>
+                            ))}
+                          </View>
+                        </View>
+                      ))}
+                  </View>
                 </View>
               </View>
             )}

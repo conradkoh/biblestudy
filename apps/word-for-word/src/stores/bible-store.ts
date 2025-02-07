@@ -38,6 +38,12 @@ type BibleCursorStore = {
   setInterlinearVerseNumber: (verseNum: number | null) => void;
   getCurrentInterlinearForVerse: () => InterlinearVerse | null;
   lookupStrongsNumber: (strongsNumber: string) => LexiconWord | undefined;
+  findVersesByStrongsNumber: (strongsNumber: string) => Array<{
+    bookName: string;
+    chapter: number;
+    verse: number;
+    contents: InterlinearVerse["contents"];
+  }>;
   goNext: () => void;
   goPrev: () => void;
 };
@@ -117,6 +123,34 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
       transliteration: strongsDefinition?.translit ?? strongsDefinition.xlit,
       pronounciation: strongsDefinition.pron,
     };
+  },
+  findVersesByStrongsNumber: (strongsNumber: string) => {
+    const { interlinear } = get();
+    const results: Array<{
+      bookName: string;
+      chapter: number;
+      verse: number;
+      contents: InterlinearVerse["contents"];
+    }> = [];
+
+    // Search through all books, chapters, and verses
+    interlinear.forEach((book) => {
+      book.chapters.forEach((chapter) => {
+        chapter.verses.forEach((verse) => {
+          // Check if this verse contains the Strong's number
+          if (verse.contents.some((content) => content.strongsNumber === strongsNumber)) {
+            results.push({
+              bookName: mapBookSlugToName[book.slug],
+              chapter: verse.chapter,
+              verse: verse.verse,
+              contents: verse.contents,
+            });
+          }
+        });
+      });
+    });
+
+    return results;
   },
   goNext: () => {
     const { bookIdx, chapterIdx, getTranslation, setBookIdx, setChapterIdx } =
