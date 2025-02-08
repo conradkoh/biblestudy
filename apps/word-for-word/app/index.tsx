@@ -271,142 +271,143 @@ export default function ReadScreen() {
                 })}
             </View>
 
-            {currentStrongsWord && !!bible.currentInterlinearVerseIdx && (
-              <View className="mt-6">
-                <View className="flex flex-col" style={{ gap: 8 }}>
-                  <TText className="text-xs font-semibold text-green-700">
-                    Strongs: {currentStrongsWord.strongs}
-                  </TText>
-                  {/* Hebrew / Greek + Translit */}
-                  <TText type="subtitle" className="text-green-700">
-                    {currentStrongsWord.originalWord} -{" "}
-                    {currentStrongsWord.transliteration}
-                  </TText>
-                  {/* Pronunciation */}
-                  {currentStrongsWord.pronounciation && (
-                    <TText className="italic text-xs">
-                      {currentStrongsWord.pronounciation}
+            {currentStrongsWord &&
+              bible.currentInterlinearVerseIdx !== null && (
+                <View className="mt-6">
+                  <View className="flex flex-col" style={{ gap: 8 }}>
+                    <TText className="text-xs font-semibold text-green-700">
+                      Strongs: {currentStrongsWord.strongs}
                     </TText>
-                  )}
-                  {/* English Word */}
-                  <TText>{currentStrongsWord.word}</TText>
-                  <TText className="mt-3" type="subtitle">
-                    Short Definition:
-                  </TText>
-                  <TText>{currentStrongsWord.data.def?.short}</TText>
-                  {/* Used in... section */}
-                  <TText className="mt-6" type="subtitle">
-                    Also used in...
-                  </TText>
-                  <TView className="flex flex-col" style={{ gap: 12 }}>
-                    {bible
-                      .findVersesByStrongsNumber(
-                        currentStrongsWord.strongs,
-                        bible.chapterIdx + 1,
-                        bible.currentInterlinearVerseIdx + 1
-                      )
-                      .slice(0, 5) // Show only first 5 results
-                      .map((result, idx) => (
-                        <TouchableOpacity
-                          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                          key={idx}
-                          className="flex flex-col"
-                          style={{ gap: 4 }}
-                          onPress={() => {
-                            bible.setBookSlug(result.bookSlug);
-                            bible.setChapterIdx(result.chapter - 1);
-                            // next tick
-                            !Number.isNaN(result.verse) &&
-                              setTimeout(() => {
-                                CommonEvents.emit(
-                                  "ON_VERSE_CHANGE",
-                                  result.verse
-                                );
-                              }, 100);
+                    {/* Hebrew / Greek + Translit */}
+                    <TText type="subtitle" className="text-green-700">
+                      {currentStrongsWord.originalWord} -{" "}
+                      {currentStrongsWord.transliteration}
+                    </TText>
+                    {/* Pronunciation */}
+                    {currentStrongsWord.pronounciation && (
+                      <TText className="italic text-xs">
+                        {currentStrongsWord.pronounciation}
+                      </TText>
+                    )}
+                    {/* English Word */}
+                    <TText>{currentStrongsWord.word}</TText>
+                    <TText className="mt-3" type="subtitle">
+                      Short Definition:
+                    </TText>
+                    <TText>{currentStrongsWord.data.def?.short}</TText>
+                    {/* Used in... section */}
+                    <TText className="mt-6" type="subtitle">
+                      Also used in...
+                    </TText>
+                    <TView className="flex flex-col" style={{ gap: 12 }}>
+                      {bible
+                        .findVersesByStrongsNumber(
+                          currentStrongsWord.strongs,
+                          bible.chapterIdx + 1,
+                          bible.currentInterlinearVerseIdx + 1
+                        )
+                        .slice(0, 5) // Show only first 5 results
+                        .map((result, idx) => (
+                          <TouchableOpacity
+                            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                            key={idx}
+                            className="flex flex-col"
+                            style={{ gap: 4 }}
+                            onPress={() => {
+                              bible.setBookSlug(result.bookSlug);
+                              bible.setChapterIdx(result.chapter - 1);
+                              // next tick
+                              !Number.isNaN(result.verse) &&
+                                setTimeout(() => {
+                                  CommonEvents.emit(
+                                    "ON_VERSE_CHANGE",
+                                    result.verse
+                                  );
+                                }, 100);
 
-                            bible.setInterlinearVerseNumber(result.verse);
-                            setCurrentStrongsWord(undefined);
-                            bottomSheetRef.current?.snapToIndex(0);
-                          }}
-                        >
-                          <TView className="flex-row" style={{ gap: 4 }}>
-                            <TText className="text-xs font-semibold">
-                              {mapBookSlugToName[result.bookSlug]}{" "}
-                              {result.chapter}:{result.verse}
-                            </TText>
-                            <TText className="text-xs font-semibold">
-                              {versions[
-                                bible.currentVersion
-                              ].abbreviation.toUpperCase()}
-                            </TText>
-                          </TView>
-
-                          {/* Original version's text */}
-                          <TView className="flex flex-row flex-wrap">
-                            <TView
-                              className="rounded-md items-center justify-center px-1 mr-1"
-                              style={{
-                                backgroundColor: themeColors.secondaryText,
-                              }}
-                            >
-                              <TText
-                                className="text-xs"
-                                style={{
-                                  color: themeColors.contrastText,
-                                }}
-                              >
+                              bible.setInterlinearVerseNumber(result.verse);
+                              setCurrentStrongsWord(undefined);
+                              bottomSheetRef.current?.snapToIndex(0);
+                            }}
+                          >
+                            <TView className="flex-row" style={{ gap: 4 }}>
+                              <TText className="text-xs font-semibold">
+                                {mapBookSlugToName[result.bookSlug]}{" "}
+                                {result.chapter}:{result.verse}
+                              </TText>
+                              <TText className="text-xs font-semibold">
                                 {versions[
                                   bible.currentVersion
                                 ].abbreviation.toUpperCase()}
                               </TText>
                             </TView>
-                            {(
-                              bible.getBook(result.bookSlug)?.chapters[
-                                result.chapter - 1
-                              ]?.verses[result.verse - 1]?.text || ""
-                            )
-                              .split(" ")
-                              .map((t, i) => (
-                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                <Text key={i} className="mr-1 text-sm">
-                                  {t}
-                                </Text>
-                              ))}
-                          </TView>
 
-                          {/* Interlinear's English text */}
-                          <TView className="flex flex-row flex-wrap">
-                            <TView
-                              className="rounded-md items-center justify-center px-1 mr-1"
-                              style={{
-                                backgroundColor: themeColors.secondaryText,
-                              }}
-                            >
-                              <TText
-                                className="text-xs"
+                            {/* Original version's text */}
+                            <TView className="flex flex-row flex-wrap">
+                              <TView
+                                className="rounded-md items-center justify-center px-1 mr-1"
                                 style={{
-                                  color: themeColors.contrastText,
+                                  backgroundColor: themeColors.secondaryText,
                                 }}
                               >
-                                Interlinear (KJV)
-                              </TText>
+                                <TText
+                                  className="text-xs"
+                                  style={{
+                                    color: themeColors.contrastText,
+                                  }}
+                                >
+                                  {versions[
+                                    bible.currentVersion
+                                  ].abbreviation.toUpperCase()}
+                                </TText>
+                              </TView>
+                              {(
+                                bible.getBook(result.bookSlug)?.chapters[
+                                  result.chapter - 1
+                                ]?.verses[result.verse - 1]?.text || ""
+                              )
+                                .split(" ")
+                                .map((t, i) => (
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                  <Text key={i} className="mr-1 text-sm">
+                                    {t}
+                                  </Text>
+                                ))}
                             </TView>
-                            {result.contents.map((content, wordIdx) => (
-                              <TText
-                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                key={wordIdx}
-                                className={classNames("mr-1 text-sm", {
-                                  "text-green-700 font-semibold":
-                                    content.strongsNumber ===
-                                    currentStrongsWord.strongs,
-                                })}
+
+                            {/* Interlinear's English text */}
+                            <TView className="flex flex-row flex-wrap">
+                              <TView
+                                className="rounded-md items-center justify-center px-1 mr-1"
+                                style={{
+                                  backgroundColor: themeColors.secondaryText,
+                                }}
                               >
-                                {content.text}
-                              </TText>
-                            ))}
-                          </TView>
-                          {/* Original language text */}
-                          {/* <View className="flex flex-row flex-wrap">
+                                <TText
+                                  className="text-xs"
+                                  style={{
+                                    color: themeColors.contrastText,
+                                  }}
+                                >
+                                  Interlinear (KJV)
+                                </TText>
+                              </TView>
+                              {result.contents.map((content, wordIdx) => (
+                                <TText
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                  key={wordIdx}
+                                  className={classNames("mr-1 text-sm", {
+                                    "text-green-700 font-semibold":
+                                      content.strongsNumber ===
+                                      currentStrongsWord.strongs,
+                                  })}
+                                >
+                                  {content.text}
+                                </TText>
+                              ))}
+                            </TView>
+                            {/* Original language text */}
+                            {/* <View className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
                               <TText
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
@@ -421,12 +422,12 @@ export default function ReadScreen() {
                               </TText>
                             ))}
                           </View> */}
-                        </TouchableOpacity>
-                      ))}
-                  </TView>
+                          </TouchableOpacity>
+                        ))}
+                    </TView>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
           </View>
         </BottomSheetScrollView>
       </BottomSheet>
