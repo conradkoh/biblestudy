@@ -258,7 +258,7 @@ export default function ReadScreen() {
                 })}
             </View>
 
-            {currentStrongsWord && (
+            {currentStrongsWord && !!bible.currentInterlinearVerseIdx && (
               <View className="mt-6">
                 <View className="flex flex-col" style={{ gap: 8 }}>
                   <TText className="text-xs font-semibold text-green-700">
@@ -286,10 +286,20 @@ export default function ReadScreen() {
                     Also used in...
                   </TText>
                   <View className="flex flex-col" style={{ gap: 12 }}>
-                    {bible.findVersesByStrongsNumber(currentStrongsWord.strongs)
+                    {bible
+                      .findVersesByStrongsNumber(
+                        currentStrongsWord.strongs,
+                        bible.chapterIdx + 1,
+                        bible.currentInterlinearVerseIdx + 1
+                      )
                       .slice(0, 5) // Show only first 5 results
                       .map((result, idx) => (
-                        <View key={idx} className="flex flex-col" style={{ gap: 4 }}>
+                        <View
+                          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                          key={idx}
+                          className="flex flex-col"
+                          style={{ gap: 4 }}
+                        >
                           <TText className="text-xs font-semibold">
                             {result.bookName} {result.chapter}:{result.verse}
                           </TText>
@@ -297,10 +307,12 @@ export default function ReadScreen() {
                           <View className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
                               <TText
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={wordIdx}
                                 className={classNames("mr-1", {
                                   "text-green-700 font-semibold":
-                                    content.strongsNumber === currentStrongsWord.strongs,
+                                    content.strongsNumber ===
+                                    currentStrongsWord.strongs,
                                 })}
                               >
                                 {content.text}
@@ -308,19 +320,21 @@ export default function ReadScreen() {
                             ))}
                           </View>
                           {/* Original language text */}
-                          <View className="flex flex-row flex-wrap">
+                          {/* <View className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
                               <TText
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={wordIdx}
                                 className={classNames("mr-1 text-sm", {
                                   "text-green-700 font-semibold":
-                                    content.strongsNumber === currentStrongsWord.strongs,
+                                    content.strongsNumber ===
+                                    currentStrongsWord.strongs,
                                 })}
                               >
                                 {content.originalWord}
                               </TText>
                             ))}
-                          </View>
+                          </View> */}
                         </View>
                       ))}
                   </View>

@@ -38,7 +38,11 @@ type BibleCursorStore = {
   setInterlinearVerseNumber: (verseNum: number | null) => void;
   getCurrentInterlinearForVerse: () => InterlinearVerse | null;
   lookupStrongsNumber: (strongsNumber: string) => LexiconWord | undefined;
-  findVersesByStrongsNumber: (strongsNumber: string) => Array<{
+  findVersesByStrongsNumber: (
+    strongsNumber: string,
+    currentChapter: number,
+    currentVerse: number
+  ) => Array<{
     bookName: string;
     chapter: number;
     verse: number;
@@ -124,7 +128,11 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
       pronounciation: strongsDefinition.pron,
     };
   },
-  findVersesByStrongsNumber: (strongsNumber: string) => {
+  findVersesByStrongsNumber: (
+    strongsNumber: string,
+    currentChapter: number,
+    currentVerse: number
+  ) => {
     const { interlinear } = get();
     const results: Array<{
       bookName: string;
@@ -134,11 +142,20 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
     }> = [];
 
     // Search through all books, chapters, and verses
-    interlinear.forEach((book) => {
-      book.chapters.forEach((chapter) => {
-        chapter.verses.forEach((verse) => {
+    for (const book of interlinear) {
+      for (const chapter of book.chapters) {
+        for (const verse of chapter.verses) {
           // Check if this verse contains the Strong's number
-          if (verse.contents.some((content) => content.strongsNumber === strongsNumber)) {
+          if (
+            verse.contents.some(
+              (content) =>
+                content.strongsNumber === strongsNumber &&
+                !(
+                  verse.chapter === currentChapter &&
+                  currentVerse === verse.verse
+                )
+            )
+          ) {
             results.push({
               bookName: mapBookSlugToName[book.slug],
               chapter: verse.chapter,
@@ -146,9 +163,9 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
               contents: verse.contents,
             });
           }
-        });
-      });
-    });
+        }
+      }
+    }
 
     return results;
   },
