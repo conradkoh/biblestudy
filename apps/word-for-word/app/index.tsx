@@ -19,13 +19,7 @@ import BottomSheet, {
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
 import Animated, {
   Extrapolate,
   interpolate,
@@ -299,7 +293,7 @@ export default function ReadScreen() {
                     <TText className="mt-6" type="subtitle">
                       Also used in...
                     </TText>
-                    <TView className="flex flex-col" style={{ gap: 12 }}>
+                    <TView className="flex flex-col mb-2" style={{ gap: 12 }}>
                       {bible
                         .findVersesByStrongsNumber(
                           currentStrongsWord.strongs,
@@ -369,9 +363,9 @@ export default function ReadScreen() {
                                 .split(" ")
                                 .map((t, i) => (
                                   // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                  <Text key={i} className="mr-1 text-sm">
+                                  <TText key={i} className="mr-1 text-sm">
                                     {t}
-                                  </Text>
+                                  </TText>
                                 ))}
                             </TView>
 

@@ -1,7 +1,7 @@
 {
   "name": "word-for-word",
   "main": "expo-router/entry",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "scripts": {
     "ios": "npx expo run:ios",
     "android": "expo run:android",
