@@ -2,7 +2,7 @@ import { create } from "zustand";
 import niv from "@/assets/bible-en/niv.json";
 import kjv from "@/assets/bible-en/kjv.json";
 
-const versions = { niv, kjv };
+export const versions = { niv, kjv };
 
 import interlinear, {
   InterlinearBible,

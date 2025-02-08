@@ -1,4 +1,5 @@
 export interface GetBibleTranslation {
+  id: "niv" | "kjv";
   translation: string;
   abbreviation: string;
   description: string;

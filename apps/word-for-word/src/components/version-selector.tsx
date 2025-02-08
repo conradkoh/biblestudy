@@ -1,24 +1,10 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { View, TouchableOpacity } from "react-native";
 import { BottomSheetModal, BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { useBibleCursor } from "@/src/stores/bible-store";
-import niv from "@/assets/bible-en/niv.json";
-import kjv from "@/assets/bible-en/kjv.json";
+import { useBibleCursor, versions } from "@/src/stores/bible-store";
 import { TText } from "@/src/components/core/TText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-
-const versions = { niv, kjv };
-
-type Version = {
-  key: keyof typeof versions;
-  translation: string;
-  abbreviation: string;
-};
-
-const versionsList: Version[] = [
-  { key: "niv", translation: "New International Version", abbreviation: "NIV" },
-  { key: "kjv", translation: "King James Version", abbreviation: "KJV" },
-];
+import { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
 
 export const VersionSelector = () => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -31,15 +17,15 @@ export const VersionSelector = () => {
   }, []);
 
   const handleVersionSelect = useCallback(
-    (version: Version) => {
-      setCurrentVersion(version.key);
+    (version: GetBibleTranslation) => {
+      setCurrentVersion(version.id);
       bottomSheetModalRef.current?.dismiss();
     },
     [setCurrentVersion]
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: Version }) => (
+    ({ item }: { item: GetBibleTranslation }) => (
       <TouchableOpacity
         onPress={() => handleVersionSelect(item)}
         style={{
@@ -64,7 +50,7 @@ export const VersionSelector = () => {
           className="text-sm mb-1 ml-1"
           style={{ color: themeColors.secondaryText }}
         >
-          {versionsList.find((v) => v.key === currentVersion)?.abbreviation}
+          {versions[currentVersion].abbreviation.toUpperCase()}
         </TText>
       </TouchableOpacity>
 
@@ -79,8 +65,11 @@ export const VersionSelector = () => {
             Select Bible Version
           </TText>
           <BottomSheetFlatList
-            data={versionsList}
-            keyExtractor={(item) => item.key}
+            data={Object.values(versions).map((v) => ({
+              ...v,
+              key: v.id,
+            }))}
+            keyExtractor={(item) => item.id}
             renderItem={renderItem}
           />
         </View>

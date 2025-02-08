@@ -5,7 +5,11 @@ import SearchBox from "@/src/components/search-box";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { LexiconWord, useBibleCursor } from "@/src/stores/bible-store";
+import {
+  LexiconWord,
+  useBibleCursor,
+  versions,
+} from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
@@ -15,7 +19,13 @@ import BottomSheet, {
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { SafeAreaView, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   Extrapolate,
   interpolate,
@@ -317,17 +327,73 @@ export default function ReadScreen() {
                             bottomSheetRef.current?.snapToIndex(0);
                           }}
                         >
-                          <TText className="text-xs font-semibold">
-                            {mapBookSlugToName[result.bookSlug]}{" "}
-                            {result.chapter}:{result.verse}
-                          </TText>
-                          {/* English text */}
+                          <TView className="flex-row" style={{ gap: 4 }}>
+                            <TText className="text-xs font-semibold">
+                              {mapBookSlugToName[result.bookSlug]}{" "}
+                              {result.chapter}:{result.verse}
+                            </TText>
+                            <TText className="text-xs font-semibold">
+                              {versions[
+                                bible.currentVersion
+                              ].abbreviation.toUpperCase()}
+                            </TText>
+                          </TView>
+
+                          {/* Original version's text */}
                           <TView className="flex flex-row flex-wrap">
+                            <TView
+                              className="rounded-md items-center justify-center px-1 mr-1"
+                              style={{
+                                backgroundColor: themeColors.secondaryText,
+                              }}
+                            >
+                              <TText
+                                className="text-xs"
+                                style={{
+                                  color: themeColors.contrastText,
+                                }}
+                              >
+                                {versions[
+                                  bible.currentVersion
+                                ].abbreviation.toUpperCase()}
+                              </TText>
+                            </TView>
+                            {(
+                              bible.getBook(result.bookSlug)?.chapters[
+                                result.chapter - 1
+                              ]?.verses[result.verse - 1]?.text || ""
+                            )
+                              .split(" ")
+                              .map((t, i) => (
+                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                                <Text key={i} className="mr-1 text-sm">
+                                  {t}
+                                </Text>
+                              ))}
+                          </TView>
+
+                          {/* Interlinear's English text */}
+                          <TView className="flex flex-row flex-wrap">
+                            <TView
+                              className="rounded-md items-center justify-center px-1 mr-1"
+                              style={{
+                                backgroundColor: themeColors.secondaryText,
+                              }}
+                            >
+                              <TText
+                                className="text-xs"
+                                style={{
+                                  color: themeColors.contrastText,
+                                }}
+                              >
+                                Interlinear (KJV)
+                              </TText>
+                            </TView>
                             {result.contents.map((content, wordIdx) => (
                               <TText
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={wordIdx}
-                                className={classNames("mr-1", {
+                                className={classNames("mr-1 text-sm", {
                                   "text-green-700 font-semibold":
                                     content.strongsNumber ===
                                     currentStrongsWord.strongs,
