@@ -33,10 +33,12 @@ import Animated, {
 } from "react-native-reanimated";
 import { VersionSelector } from "@/src/components/version-selector";
 import { mapBookSlugToName } from "@/src/utils/bible-data-utils";
+import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
 
 export default function ReadScreen() {
   const bible = useBibleCursor();
   const settings = useSettingsStore();
+  useBibleBookmark(bible);
   const themeColors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
   const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});

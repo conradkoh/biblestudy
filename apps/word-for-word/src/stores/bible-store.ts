@@ -20,7 +20,7 @@ import { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
 import { CommonEvents } from "@/src/hooks/useEvents";
 import { mod } from "@/src/utils/math";
 
-type BibleCursorStore = {
+export type BibleCursorStore = {
   currentVersion: keyof typeof versions;
   bookIdx: number;
   chapterIdx: number;
