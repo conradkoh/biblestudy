@@ -77,12 +77,16 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
     // Select first option, if any
     if (filteredOptions.length > 0) {
       setBookNameSearch(filteredOptions[0]);
-      chapterTextInputRef.current?.focus();
+      setTimeout(() => {
+        chapterTextInputRef.current?.focus();
+      }, 100);
     }
   }
 
   function onSubmitChapter() {
-    verseTextInputRef.current?.focus();
+    setTimeout(() => {
+      verseTextInputRef.current?.focus();
+    }, 100);
   }
 
   function onSubmit() {
@@ -217,8 +221,10 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
                     className="px-4 py-3 flex flex-row items-center"
                     onPress={() => {
                       setBookNameSearch(book);
-                      chapterTextInputRef.current?.focus();
                       setVerseSearch("1");
+                      setTimeout(() => {
+                        chapterTextInputRef.current?.focus();
+                      }, 100);
                     }}
                   >
                     <TText>{book}</TText>
