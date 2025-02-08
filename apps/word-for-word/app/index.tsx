@@ -22,6 +22,7 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { VersionSelector } from "@/src/components/version-selector";
+import { mapBookSlugToName } from "@/src/utils/bible-data-utils";
 
 export default function ReadScreen() {
   const bible = useBibleCursor();
@@ -285,7 +286,7 @@ export default function ReadScreen() {
                   <TText className="mt-6" type="subtitle">
                     Also used in...
                   </TText>
-                  <View className="flex flex-col" style={{ gap: 12 }}>
+                  <TView className="flex flex-col" style={{ gap: 12 }}>
                     {bible
                       .findVersesByStrongsNumber(
                         currentStrongsWord.strongs,
@@ -294,17 +295,34 @@ export default function ReadScreen() {
                       )
                       .slice(0, 5) // Show only first 5 results
                       .map((result, idx) => (
-                        <View
+                        <TouchableOpacity
                           // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                           key={idx}
                           className="flex flex-col"
                           style={{ gap: 4 }}
+                          onPress={() => {
+                            bible.setBookSlug(result.bookSlug);
+                            bible.setChapterIdx(result.chapter - 1);
+                            // next tick
+                            !Number.isNaN(result.verse) &&
+                              setTimeout(() => {
+                                CommonEvents.emit(
+                                  "ON_VERSE_CHANGE",
+                                  result.verse
+                                );
+                              }, 100);
+
+                            bible.setInterlinearVerseNumber(result.verse);
+                            setCurrentStrongsWord(undefined);
+                            bottomSheetRef.current?.snapToIndex(0);
+                          }}
                         >
                           <TText className="text-xs font-semibold">
-                            {result.bookName} {result.chapter}:{result.verse}
+                            {mapBookSlugToName[result.bookSlug]}{" "}
+                            {result.chapter}:{result.verse}
                           </TText>
                           {/* English text */}
-                          <View className="flex flex-row flex-wrap">
+                          <TView className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
                               <TText
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
@@ -318,7 +336,7 @@ export default function ReadScreen() {
                                 {content.text}
                               </TText>
                             ))}
-                          </View>
+                          </TView>
                           {/* Original language text */}
                           {/* <View className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
@@ -335,9 +353,9 @@ export default function ReadScreen() {
                               </TText>
                             ))}
                           </View> */}
-                        </View>
+                        </TouchableOpacity>
                       ))}
-                  </View>
+                  </TView>
                 </View>
               </View>
             )}

@@ -43,7 +43,7 @@ type BibleCursorStore = {
     currentChapter: number,
     currentVerse: number
   ) => Array<{
-    bookName: string;
+    bookSlug: string;
     chapter: number;
     verse: number;
     contents: InterlinearVerse["contents"];
@@ -135,7 +135,7 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
   ) => {
     const { interlinear } = get();
     const results: Array<{
-      bookName: string;
+      bookSlug: string;
       chapter: number;
       verse: number;
       contents: InterlinearVerse["contents"];
@@ -157,7 +157,7 @@ export const useBibleCursor = create<BibleCursorStore>((set, get) => ({
             )
           ) {
             results.push({
-              bookName: mapBookSlugToName[book.slug],
+              bookSlug: book.slug,
               chapter: verse.chapter,
               verse: verse.verse,
               contents: verse.contents,
