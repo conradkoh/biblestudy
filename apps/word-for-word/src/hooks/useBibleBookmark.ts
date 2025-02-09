@@ -1,52 +1,41 @@
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BibleCursorStore } from "@/src/stores/bible-store";
+import { BibleStore } from "@/src/stores/bible-store";
+import { BibleCursor } from "@/src/utils/bible-data-utils";
+import { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 
 const STORAGE_KEY = "bible-bookmark";
 
-interface BookmarkState {
-  currentVersion: BibleCursorStore["currentVersion"];
-  bookIdx: number;
-  chapterIdx: number;
-}
-
-export const useBibleBookmark = (bibleStore: BibleCursorStore) => {
+export const useBibleBookmark = (
+  bibleStore: BibleStore,
+  cursorHandler: BibleCursorHandler
+) => {
   useEffect(() => {
     // Load saved state on mount
     const loadSavedState = async () => {
       try {
         const savedState = await AsyncStorage.getItem(STORAGE_KEY);
         if (savedState) {
-          const state = JSON.parse(savedState) as BookmarkState;
-          bibleStore.setCurrentVersion(state.currentVersion);
-          bibleStore.setBookIdx(state.bookIdx);
-          bibleStore.setChapterIdx(state.chapterIdx);
+          const cursor = JSON.parse(savedState) as BibleCursor;
+          cursorHandler.setCursor(cursor);
         }
       } catch (error) {
         console.error("Failed to load Bible bookmark:", error);
       }
     };
     loadSavedState();
-  }, [
-    bibleStore.setBookIdx,
-    bibleStore.setChapterIdx,
-    bibleStore.setCurrentVersion,
-  ]);
+  }, [cursorHandler.setCursor]);
 
   useEffect(() => {
     // Save state whenever it changes
     const saveState = async () => {
       try {
-        const state: BookmarkState = {
-          currentVersion: bibleStore.currentVersion,
-          bookIdx: bibleStore.bookIdx,
-          chapterIdx: bibleStore.chapterIdx,
-        };
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const cursor: BibleCursor = cursorHandler.cursor;
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cursor));
       } catch (error) {
         console.error("Failed to save Bible bookmark:", error);
       }
     };
     saveState();
-  }, [bibleStore.currentVersion, bibleStore.bookIdx, bibleStore.chapterIdx]);
+  }, [cursorHandler.cursor]);
 };

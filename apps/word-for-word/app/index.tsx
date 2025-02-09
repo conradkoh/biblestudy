@@ -5,11 +5,7 @@ import SearchBox from "@/src/components/search-box";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import {
-  LexiconWord,
-  useBibleCursor,
-  versions,
-} from "@/src/stores/bible-store";
+import { LexiconWord, useBibleStore, versions } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
@@ -26,16 +22,22 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { VersionSelector } from "@/src/components/version-selector";
-import { mapBookSlugToName } from "@/src/utils/bible-data-utils";
+import { mapBookIdsToName } from "@/src/utils/bible-data-utils";
 import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
+import { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import BibleChapterView from "@/src/components/bible-chapter-view";
 
 export default function ReadScreen() {
-  const bible = useBibleCursor();
+  const bible = useBibleStore();
   const settings = useSettingsStore();
-  useBibleBookmark(bible);
+  const cursorHandler = useBibleCursorHandler();
+  useBibleBookmark(bible, cursorHandler);
   const themeColors = useThemeColors();
   const scrollViewRef = useRef<ScrollView>(null);
   const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});
+
+  const interlinearCursor = useBibleCursorHandler();
+  const [showInterlinear, setShowInterlinear] = useState(false);
 
   useEvent(CommonEvents, "ON_CHAPTER_CHANGE", () => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: false });
@@ -55,22 +57,21 @@ export default function ReadScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // callbacks
-  const handleSheetChanges = useCallback(
-    (index: number) => {
-      if (index === -1) {
-        bible.setInterlinearVerseNumber(null);
-      }
-    },
-    [bible]
-  );
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === -1) setShowInterlinear(false);
+  }, []);
 
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
     LexiconWord | undefined
   >();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
-  function onPressVerse(verseNum: number) {
-    bible.setInterlinearVerseNumber(verseNum);
+  function onPressVerse(verse: number) {
+    setShowInterlinear(true);
+    interlinearCursor.updateCursor({
+      ...cursorHandler.cursor,
+      verse,
+    });
     setCurrentStrongsWord(undefined);
     bottomSheetRef.current?.snapToIndex(0);
   }
@@ -96,62 +97,7 @@ export default function ReadScreen() {
             alignItems: "center",
           }}
         >
-          <ScrollView ref={scrollViewRef}>
-            <TView className="px-6">
-              <TView className="flex-row items-end mb-2 mt-12">
-                <TText type="title">
-                  {bible.getCurrentBookName()} {bible.chapterIdx + 1}
-                </TText>
-                <VersionSelector />
-              </TView>
-              <TText>
-                {bible.getCurrentChapterFormatted().map((verse, i) => {
-                  const isCurrentVerse =
-                    bible.currentInterlinearVerseIdx &&
-                    bible.currentInterlinearVerseIdx === i;
-                  return (
-                    <React.Fragment key={verse.name}>
-                      <TText onPress={() => onPressVerse(i + 1)}>
-                        <TText
-                          className="ml-1 font-bold"
-                          style={{
-                            // since this component comes first, line height determined here
-                            lineHeight: settings.lineHeight,
-                            color: isCurrentVerse
-                              ? themeColors.highlightText
-                              : undefined,
-                          }}
-                        >
-                          {" "}
-                          {i + 1}{" "}
-                        </TText>
-                        {/* Used as marker for position. Must be after first TText so it doesn't interfere with lineheight */}
-                        <View
-                          key={verse.name + "marker"}
-                          onLayout={(e) => {
-                            verseYCoordsRef.current[i] = e.nativeEvent.layout.y;
-                          }}
-                        />
-                        <TText
-                          type="paragraph"
-                          style={{
-                            fontSize: settings.textSize,
-                            fontWeight: settings.fontWeight,
-                            fontFamily: settings.paragraphFontFamily,
-                            color: isCurrentVerse
-                              ? themeColors.highlightText
-                              : undefined,
-                          }}
-                        >
-                          {verse.text}
-                        </TText>
-                      </TText>
-                    </React.Fragment>
-                  );
-                })}
-              </TText>
-            </TView>
-          </ScrollView>
+          <BibleChapterView cursorHandler={cursorHandler} />
           <View
             className="flex flex-row items-center justify-between px-2 h-10"
             style={{
@@ -160,7 +106,7 @@ export default function ReadScreen() {
           >
             <TouchableOpacity
               hitSlop={HITSLOP_DEFAULT}
-              onPress={() => bible.goPrev()}
+              onPress={() => cursorHandler.goPrev()}
             >
               <Ionicons
                 size={20}
@@ -178,12 +124,13 @@ export default function ReadScreen() {
                 style={{ color: themeColors.text }}
               />
               <TText className="font-bold text-[18px] ml-1">
-                {bible.getCurrentBookName()} Chapter {bible.chapterIdx + 1}
+                {mapBookIdsToName[cursorHandler.cursor.bookId]} Chapter{" "}
+                {cursorHandler.cursor.chapter}
               </TText>
             </TouchableOpacity>
             <TouchableOpacity
               hitSlop={HITSLOP_DEFAULT}
-              onPress={() => bible.goNext()}
+              onPress={() => cursorHandler.goNext()}
             >
               <Ionicons
                 size={20}
@@ -197,6 +144,7 @@ export default function ReadScreen() {
       <SearchBox
         isVisible={isSearchVisible}
         setIsVisible={setIsSearchVisible}
+        cursorHandler={cursorHandler}
       />
       <BottomSheet
         ref={bottomSheetRef}
@@ -221,12 +169,12 @@ export default function ReadScreen() {
                 style={{ color: themeColors.text }}
               />
               <TText className="text-[17px] font-bold">
-                {bible.getCurrentInterlinearVerseName()}
+                {bible.getInterlinearVerseName(interlinearCursor.cursor)}
               </TText>
             </View>
             <View className="flex flex-row flex-wrap mt-2" style={{ gap: 8 }}>
               {bible
-                .getCurrentInterlinearForVerse()
+                .getInterlinearVerse(interlinearCursor.cursor)
                 ?.contents.map((content, i) => {
                   const isCurrentStrongsWord =
                     content.strongsNumber === currentStrongsWord?.strongs;
@@ -265,40 +213,40 @@ export default function ReadScreen() {
                 })}
             </View>
 
-            {currentStrongsWord &&
-              bible.currentInterlinearVerseIdx !== null && (
-                <View className="mt-6">
-                  <View className="flex flex-col" style={{ gap: 8 }}>
-                    <TText className="text-xs font-semibold text-green-700">
-                      Strongs: {currentStrongsWord.strongs}
+            {currentStrongsWord && showInterlinear && (
+              <View className="mt-6">
+                <View className="flex flex-col" style={{ gap: 8 }}>
+                  <TText className="text-xs font-semibold text-green-700">
+                    Strongs: {currentStrongsWord.strongs}
+                  </TText>
+                  {/* Hebrew / Greek + Translit */}
+                  <TText type="subtitle" className="text-green-700">
+                    {currentStrongsWord.originalWord} -{" "}
+                    {currentStrongsWord.transliteration}
+                  </TText>
+                  {/* Pronunciation */}
+                  {currentStrongsWord.pronounciation && (
+                    <TText className="italic text-xs">
+                      {currentStrongsWord.pronounciation}
                     </TText>
-                    {/* Hebrew / Greek + Translit */}
-                    <TText type="subtitle" className="text-green-700">
-                      {currentStrongsWord.originalWord} -{" "}
-                      {currentStrongsWord.transliteration}
-                    </TText>
-                    {/* Pronunciation */}
-                    {currentStrongsWord.pronounciation && (
-                      <TText className="italic text-xs">
-                        {currentStrongsWord.pronounciation}
-                      </TText>
-                    )}
-                    {/* English Word */}
-                    <TText>{currentStrongsWord.word}</TText>
-                    <TText className="mt-3" type="subtitle">
-                      Short Definition:
-                    </TText>
-                    <TText>{currentStrongsWord.data.def?.short}</TText>
-                    {/* Used in... section */}
-                    <TText className="mt-6" type="subtitle">
-                      Also used in...
-                    </TText>
-                    <TView className="flex flex-col mb-2" style={{ gap: 12 }}>
-                      {bible
+                  )}
+                  {/* English Word */}
+                  <TText>{currentStrongsWord.word}</TText>
+                  <TText className="mt-3" type="subtitle">
+                    Short Definition:
+                  </TText>
+                  <TText>{currentStrongsWord.data.def?.short}</TText>
+                  {/* Used in... section */}
+                  <TText className="mt-6" type="subtitle">
+                    Also used in...
+                  </TText>
+                  <TView className="flex flex-col mb-2" style={{ gap: 12 }}>
+                    {!!interlinearCursor.cursor.verse &&
+                      bible
                         .findVersesByStrongsNumber(
                           currentStrongsWord.strongs,
-                          bible.chapterIdx + 1,
-                          bible.currentInterlinearVerseIdx + 1
+                          interlinearCursor.cursor.chapter,
+                          interlinearCursor.cursor.verse
                         )
                         .slice(0, 5) // Show only first 5 results
                         .map((result, idx) => (
@@ -308,8 +256,12 @@ export default function ReadScreen() {
                             className="flex flex-col"
                             style={{ gap: 4 }}
                             onPress={() => {
-                              bible.setBookSlug(result.bookSlug);
-                              bible.setChapterIdx(result.chapter - 1);
+                              // TODO: open new modal
+                              cursorHandler.updateCursor({
+                                bookId: result.bookId,
+                                chapter: result.chapter,
+                              });
+
                               // next tick
                               !Number.isNaN(result.verse) &&
                                 setTimeout(() => {
@@ -319,19 +271,23 @@ export default function ReadScreen() {
                                   );
                                 }, 100);
 
-                              bible.setInterlinearVerseNumber(result.verse);
+                              interlinearCursor.updateCursor({
+                                bookId: result.bookId,
+                                chapter: result.chapter,
+                                verse: result.verse,
+                              });
                               setCurrentStrongsWord(undefined);
                               bottomSheetRef.current?.snapToIndex(0);
                             }}
                           >
                             <TView className="flex-row" style={{ gap: 4 }}>
                               <TText className="text-xs font-semibold">
-                                {mapBookSlugToName[result.bookSlug]}{" "}
+                                {mapBookIdsToName[result.bookId]}{" "}
                                 {result.chapter}:{result.verse}
                               </TText>
                               <TText className="text-xs font-semibold">
                                 {versions[
-                                  bible.currentVersion
+                                  cursorHandler.cursor.version
                                 ].abbreviation.toUpperCase()}
                               </TText>
                             </TView>
@@ -351,14 +307,17 @@ export default function ReadScreen() {
                                   }}
                                 >
                                   {versions[
-                                    bible.currentVersion
+                                    cursorHandler.cursor.version
                                   ].abbreviation.toUpperCase()}
                                 </TText>
                               </TView>
                               {(
-                                bible.getBook(result.bookSlug)?.chapters[
-                                  result.chapter - 1
-                                ]?.verses[result.verse - 1]?.text || ""
+                                bible.getBook(
+                                  result.bookId,
+                                  cursorHandler.cursor.version
+                                )?.chapters[result.chapter - 1]?.verses[
+                                  result.verse - 1
+                                ]?.text || ""
                               )
                                 .split(" ")
                                 .map((t, i) => (
@@ -418,10 +377,10 @@ export default function ReadScreen() {
                           </View> */}
                           </TouchableOpacity>
                         ))}
-                    </TView>
-                  </View>
+                  </TView>
                 </View>
-              )}
+              </View>
+            )}
           </View>
         </BottomSheetScrollView>
       </BottomSheet>

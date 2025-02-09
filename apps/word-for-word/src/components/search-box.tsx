@@ -1,20 +1,27 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useBibleCursor } from "@/src/stores/bible-store";
+import { useBibleStore } from "@/src/stores/bible-store";
 import React, { FC, useEffect, useRef, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { Modal, SafeAreaView, TextInput } from "react-native";
 import Fuse from "fuse.js";
-import { bookNames, bookNameToSlug } from "@/src/utils/bible-data-utils";
+import {
+  bookNames,
+  bookIdFromName,
+  mapBookIdsToChapterCounts,
+  mapBookIdsToName,
+} from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import { HITSLOP_DEFAULT, HITSLOP_LARGE } from "@/src/consts/hitslop";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
 import { CommonEvents } from "@/src/hooks/useEvents";
+import type { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
 
 interface SearchBoxProps {
   isVisible: boolean;
   setIsVisible: (isVisible: boolean) => void;
+  cursorHandler: ReturnType<typeof useBibleCursorHandler>;
 }
 
 const fuse = new Fuse(bookNames, {
@@ -22,8 +29,12 @@ const fuse = new Fuse(bookNames, {
   threshold: 0.7,
 });
 
-const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
-  const bible = useBibleCursor();
+const SearchBox: FC<SearchBoxProps> = ({
+  isVisible,
+  setIsVisible,
+  cursorHandler,
+}) => {
+  const bible = useBibleStore();
   const themeColors = useThemeColors();
 
   const [bookNameSearch, setBookNameSearch] = useState("");
@@ -40,29 +51,27 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
       setBookNameSearch("");
       return;
     }
-    setBookNameSearch(bible.getCurrentBookName());
-    setChapterSearch(`${bible.chapterIdx + 1}`);
-  }, [isVisible, bible]);
+    setBookNameSearch(mapBookIdsToName[cursorHandler.cursor.bookId]);
+    setChapterSearch(`${cursorHandler.cursor.chapter}`);
+  }, [isVisible, cursorHandler.cursor.bookId, cursorHandler.cursor.chapter]);
 
   const result = fuse.search(bookNameSearch);
   const filteredOptions = bookNameSearch.length
     ? result.map((v) => v.item)
     : bookNames;
 
-  const bookSlug = bookNameToSlug(bookNameSearch ?? "");
-  const isValidBookName = Boolean(bookSlug);
-  const maxChapterNumber = isValidBookName
-    ? (bible.getBook(bookSlug)?.chapters.length ?? -1) + 1
-    : 0;
-
+  const bookId = bookIdFromName(bookNameSearch ?? "");
+  const maxChapterNumber = bookId ? mapBookIdsToChapterCounts[bookId] + 1 : 0;
+  const isValidBookName = !!bookId;
   const chapterSearchNum = Number.parseInt(chapterSearch);
   const isValidChapterSearch =
     chapterSearchNum > 0 && chapterSearchNum <= maxChapterNumber;
 
   const maxVerseNumber =
     isValidBookName && isValidChapterSearch
-      ? // biome-ignore lint/style/noNonNullAssertion: isValidBookName checks for valid book
-        bible.getBook(bookSlug)!.chapters[chapterSearchNum - 1].verses.length
+      ? bible.getBook(bookId, cursorHandler.cursor.version)?.chapters[
+          chapterSearchNum - 1
+        ].verses.length ?? 0
       : 0;
   const verseSearchNum = Number.parseInt(verseSearch);
   const isValidVerseSearch =
@@ -91,8 +100,10 @@ const SearchBox: FC<SearchBoxProps> = ({ isVisible, setIsVisible }) => {
 
   function onSubmit() {
     if (!canSubmit) return;
-    bible.setBookSlug(bookSlug);
-    bible.setChapterIdx(chapterSearchNum - 1);
+    cursorHandler.updateCursor({
+      bookId,
+      chapter: chapterSearchNum,
+    });
     setIsVisible(false);
     // next tick
     !Number.isNaN(verseSearchNum) &&

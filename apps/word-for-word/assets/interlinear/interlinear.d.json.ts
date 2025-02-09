@@ -1,3 +1,5 @@
+import { BookId } from "@/src/utils/bible-data-utils";
+
 export type InterlinearBible = {
   translation: string;
   abbreviation: string;
@@ -6,7 +8,7 @@ export type InterlinearBible = {
   books: {
     bookIdx: number;
     name: string;
-    slug: string;
+    bookId: BookId;
     chapters: {
       chapter: number;
       verses: {

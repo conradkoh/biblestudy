@@ -1,15 +1,21 @@
-import React, { useCallback, useMemo, useRef } from "react";
-import { View, TouchableOpacity } from "react-native";
-import { BottomSheetModal, BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import { useBibleCursor, versions } from "@/src/stores/bible-store";
-import { TText } from "@/src/components/core/TText";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
+import { TText } from "@/src/components/core/TText";
+import { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { versions } from "@/src/stores/bible-store";
+import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
+import React, { FC, useCallback, useMemo, useRef } from "react";
+import { TouchableOpacity, View } from "react-native";
 
-export const VersionSelector = () => {
+type VersionSelectorProps = {
+  cursorHandler: BibleCursorHandler;
+};
+export const VersionSelector: FC<VersionSelectorProps> = ({
+  cursorHandler,
+}) => {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["70%"], []);
-  const { currentVersion, setCurrentVersion } = useBibleCursor();
+  const { version } = cursorHandler.cursor;
   const themeColors = useThemeColors();
 
   const handlePresentModalPress = useCallback(() => {
@@ -18,10 +24,10 @@ export const VersionSelector = () => {
 
   const handleVersionSelect = useCallback(
     (version: GetBibleTranslation) => {
-      setCurrentVersion(version.id);
+      cursorHandler.updateCursor({ version: version.id });
       bottomSheetModalRef.current?.dismiss();
     },
-    [setCurrentVersion]
+    [cursorHandler.updateCursor]
   );
 
   const renderItem = useCallback(
@@ -50,7 +56,7 @@ export const VersionSelector = () => {
           className="text-sm mb-1 ml-1"
           style={{ color: themeColors.secondaryText }}
         >
-          {versions[currentVersion].abbreviation.toUpperCase()}
+          {versions[version].abbreviation.toUpperCase()}
         </TText>
       </TouchableOpacity>
 
