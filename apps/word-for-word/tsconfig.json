@@ -5,6 +5,7 @@
     "strict": true,
     "strictNullChecks": true,
     "allowArbitraryExtensions": true,
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "@/*": ["./*"],
       "@backend/*": ["../../services/backend/*"],

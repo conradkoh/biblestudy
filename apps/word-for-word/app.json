@@ -21,7 +21,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.elliotmoose.wordforword"
+      "package": "com.moosedev.wordforword"
     },
     "web": {
       "bundler": "metro",

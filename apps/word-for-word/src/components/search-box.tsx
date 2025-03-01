@@ -61,7 +61,7 @@ const SearchBox: FC<SearchBoxProps> = ({
     : bookNames;
 
   const bookId = bookIdFromName(bookNameSearch ?? "");
-  const maxChapterNumber = bookId ? mapBookIdsToChapterCounts[bookId] + 1 : 0;
+  const maxChapterNumber = bookId ? mapBookIdsToChapterCounts[bookId] : 0;
   const isValidBookName = !!bookId;
   const chapterSearchNum = Number.parseInt(chapterSearch);
   const isValidChapterSearch =
@@ -71,7 +71,7 @@ const SearchBox: FC<SearchBoxProps> = ({
     isValidBookName && isValidChapterSearch
       ? bible.getBook(bookId, cursorHandler.cursor.version)?.chapters[
           chapterSearchNum - 1
-        ].verses.length ?? 0
+        ]?.verses.length ?? 0
       : 0;
   const verseSearchNum = Number.parseInt(verseSearch);
   const isValidVerseSearch =
@@ -85,7 +85,7 @@ const SearchBox: FC<SearchBoxProps> = ({
   function onSubmitBook() {
     // Select first option, if any
     if (filteredOptions.length > 0) {
-      setBookNameSearch(filteredOptions[0]);
+      setBookNameSearch(filteredOptions[0] ?? '');
       setTimeout(() => {
         chapterTextInputRef.current?.focus();
       }, 100);
@@ -172,6 +172,7 @@ const SearchBox: FC<SearchBoxProps> = ({
                   : themeColors.negative,
                 backgroundColor: themeColors.backgroundSecondary,
               }}
+              keyboardType="numeric"
               onSubmitEditing={onSubmitChapter}
               onFocus={() => setCurrentFocus("chapter")}
               onBlur={() => setCurrentFocus(null)}
@@ -192,6 +193,7 @@ const SearchBox: FC<SearchBoxProps> = ({
                   : themeColors.negative,
                 backgroundColor: themeColors.backgroundSecondary,
               }}
+              keyboardType="numeric"
               onSubmitEditing={onSubmit}
               onFocus={() => setCurrentFocus("verse")}
               onBlur={() => setCurrentFocus(null)}
