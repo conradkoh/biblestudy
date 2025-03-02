@@ -1,5 +1,6 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
+import VerseDetailBottomSheet from "@/src/components/verse-detail-bottom-sheet";
 import { VersionSelector } from "@/src/components/version-selector";
 import {
   BibleCursorHandler,
@@ -9,33 +10,45 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@/src/utils/bible-data-utils";
-import React, { FC, useRef, useState } from "react";
+import React, { useImperativeHandle, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 
-interface BibleChapterViewProps {
+type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
-}
+  onPressVerse: (verse: number) => void;
+  highlightedVerse?: number;
+};
 
-const BibleChapterView: FC<BibleChapterViewProps> = ({ cursorHandler }) => {
+export type BibleChapterViewRef = {
+  scrollToVerse: (verse: number) => void;
+};
+
+const BibleChapterView = React.forwardRef<
+  BibleChapterViewRef,
+  BibleChapterView
+>(({ cursorHandler, onPressVerse, highlightedVerse }, forwardRef) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const bible = useBibleStore();
   const settings = useSettingsStore();
   const themeColors = useThemeColors();
   const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});
 
-  const [showInterlinear, setShowInterlinear] = useState(false);
-  const interlinearCursor = useBibleCursorHandler();
+  useImperativeHandle(
+    forwardRef,
+    () => ({
+      scrollToVerse: (verse: number) => {
+        const verseIdx = verse - 1;
+        const y = verseYCoordsRef.current[verseIdx];
+        if (!y) {
+          console.warn(`Verse ${verse} element ref not found`);
+          return;
+        }
 
-  function onPressVerse(verse: number) {
-    setShowInterlinear(true);
-    interlinearCursor.updateCursor({
-      ...cursorHandler.cursor,
-      verse,
-    });
-    // setCurrentStrongsWord(undefined);
-    // bottomSheetRef.current?.snapToIndex(0);
-  }
-
+        scrollViewRef.current?.scrollTo({ y: y, animated: false });
+      },
+    }),
+    []
+  );
   return (
     <ScrollView ref={scrollViewRef}>
       <TView className="px-6">
@@ -48,8 +61,7 @@ const BibleChapterView: FC<BibleChapterViewProps> = ({ cursorHandler }) => {
         </TView>
         <TText>
           {bible.getChapterFormatted(cursorHandler.cursor).map((verse, i) => {
-            const isCurrentVerse =
-              showInterlinear && interlinearCursor.cursor.verse === i;
+            const isCurrentVerse = highlightedVerse === i + 1;
             return (
               <React.Fragment key={verse.name}>
                 <TText onPress={() => onPressVerse(i + 1)}>
@@ -94,6 +106,5 @@ const BibleChapterView: FC<BibleChapterViewProps> = ({ cursorHandler }) => {
       </TView>
     </ScrollView>
   );
-};
-
+});
 export default BibleChapterView;

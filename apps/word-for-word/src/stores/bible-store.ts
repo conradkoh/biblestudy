@@ -57,8 +57,9 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     const { bookId, chapter, version } = cursor;
     const chapterIdx = chapter - 1;
     const bookIdx = bookIds.indexOf(bookId);
-    return get().getTranslation(version).books[bookIdx].chapters[chapterIdx]
-      .verses;
+    const verses = get().getTranslation(version).books[bookIdx]?.chapters[chapterIdx]?.verses;
+    if (!verses) throw new Error(`Chapter ${chapter} not found in ${bookId}`);
+    return verses;
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {
     const bookIdx = bookIds.indexOf(bookId);
@@ -77,7 +78,9 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     const bookIdx = bookIds.indexOf(bookId);
     const chapterIdx = chapter - 1;
     const verseIdx = verse - 1;
-    return interlinear.books[bookIdx].chapters[chapterIdx].verses[verseIdx];
+    const verseData = interlinear.books[bookIdx]?.chapters[chapterIdx]?.verses[verseIdx];
+    if (!verseData) throw new Error(`Verse ${verse} not found in chapter ${chapter} of book ${bookId}`);
+    return verseData;
   },
   lookupStrongsNumber: (strongsNumber: string) => {
     const lexicon = strongsNumber[0] === "h" ? hebrewLexicon : greekLexicon;
@@ -87,8 +90,8 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     return {
       ...lexiconReference,
       originalWord: strongsDefinition?.lemma,
-      transliteration: strongsDefinition?.translit ?? strongsDefinition.xlit,
-      pronounciation: strongsDefinition.pron,
+      transliteration: strongsDefinition?.translit ?? strongsDefinition?.xlit,
+      pronounciation: strongsDefinition?.pron,
     };
   },
   findVersesByStrongsNumber: (

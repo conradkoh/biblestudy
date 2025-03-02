@@ -2,8 +2,6 @@ import EventEmitter from "eventemitter3";
 import { useEffect } from "react";
 
 export type CommonEventTypes = {
-  ON_CHAPTER_CHANGE: () => void;
-  ON_VERSE_CHANGE: (verseNum: number) => void;
 };
 
 export const CommonEvents = new EventEmitter<CommonEventTypes>();

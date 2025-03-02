@@ -8,7 +8,7 @@ import {
 import { mod } from "@/src/utils/math";
 import { useState } from "react";
 
-export function useBibleCursorHandler() {
+export function useBibleCursorHandler(onCursorChange?: (delta: Partial<BibleCursor>) => void) {
   const [cursor, setCursor] = useState<BibleCursor>({
     version: "niv",
     bookId: "genesis",
@@ -29,14 +29,14 @@ export function useBibleCursorHandler() {
     const nextChapter = cursor.chapter + 1;
     if (nextChapter > mapBookIdsToChapterCounts[cursor.bookId]) {
       const newBookIdx = mod(idxCursor.bookIdx + 1, BOOK_COUNT);
-      setCursor({
-        ...cursor,
-        bookId: bookIds[newBookIdx],
-        chapter: 0,
+      updateCursor({
+        bookId: bookIds[newBookIdx]!,
+        chapter: 1,
       });
       return;
     }
-    setCursor({ ...cursor, chapter: cursor.chapter + 1 });
+    const delta = { chapter: cursor.chapter + 1 };
+    updateCursor(delta);
   }
 
   function goPrev() {
@@ -44,20 +44,24 @@ export function useBibleCursorHandler() {
 
     if (cursor.chapter === 1) {
       const newBookIdx = mod(idxCursor.bookIdx - 1, BOOK_COUNT);
-      const nextChapterIdx = mapBookIdsToChapterCounts[cursor.bookId] - 1;
+      const newBookdId = bookIds[newBookIdx]!
+      const nextChapterIdx = mapBookIdsToChapterCounts[newBookdId] - 1;
       const nextChapter = nextChapterIdx + 1;
       setCursor({
         ...cursor,
-        bookId: bookIds[newBookIdx],
+        bookId: bookIds[newBookIdx]!,
         chapter: nextChapter,
       });
       return;
     }
-    setCursor({ ...cursor, chapter: cursor.chapter - 1 });
+    const delta = { chapter: cursor.chapter - 1 };
+    updateCursor(delta);
   }
 
   function updateCursor(delta: Partial<BibleCursor>) {
-    setCursor({ ...cursor, ...delta });
+    const updatedCursor = { ...cursor, ...delta };
+    setCursor(updatedCursor);
+    onCursorChange?.(delta);
   }
 }
 
