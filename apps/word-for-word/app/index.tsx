@@ -58,7 +58,7 @@ export default function ReadScreen() {
     });
   }
   return (
-    <BottomSheetModalProvider>
+    <>
       <SafeAreaView
         style={{
           flex: 1,
@@ -135,6 +135,6 @@ export default function ReadScreen() {
         setIsOpen={setShowInterlinear}
         cursorHandler={interlinearCursorHandler}
       />
-    </BottomSheetModalProvider>
+    </>
   );
 }
