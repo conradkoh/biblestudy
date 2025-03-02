@@ -7,9 +7,16 @@ import { ConvexProvider } from "convex/react";
 import { convex } from "@/src/services/convex";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
+import { useFonts } from "expo-font";
 
 export default function TabLayout() {
+
+  const [fontsLoaded] = useFonts({
+    'Sahitya-Regular': require('../assets/fonts/Sahitya-Regular.ttf'),
+  })
   const themeColors = useThemeColors();
+
+  if (!fontsLoaded) return null;
 
   return (
     <KeyboardProvider>

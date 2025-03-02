@@ -15,7 +15,7 @@ import { BibleCursor, mapBookIdsToName } from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import React, { useCallback, useRef, useState } from "react";
-import { SafeAreaView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, TouchableOpacity, View, Text } from "react-native";
 
 export default function ReadScreen() {
   const bible = useBibleStore();
