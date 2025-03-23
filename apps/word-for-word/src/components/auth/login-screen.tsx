@@ -1,11 +1,13 @@
 import { useAuthActions } from '@convex-dev/auth/react';
+import { useMutation } from "convex/react";
 import { openAuthSessionAsync } from 'expo-web-browser';
-import { Button, SafeAreaView, View } from 'react-native';
-import * as Linking from 'expo-linking';
+import { Button, Platform, SafeAreaView } from 'react-native';
+import { api } from "@backend/convex/_generated/api";
 
 import React, { FC } from 'react';
 import { makeRedirectUri } from 'expo-auth-session';
 import { TView } from '@/src/components/core/TView';
+import { getExpoPushToken } from '@/src/services/push-notifications';
 
 type LoginScreenProps = unknown;
 
@@ -13,6 +15,7 @@ const redirectTo = makeRedirectUri();
 
 const LoginScreen: FC<LoginScreenProps> = () => {
   const { signIn } = useAuthActions();
+  const insertUserNotificationToken = useMutation(api.pushNotifications.insertUserNotificationToken);
 
   const handleSignIn = async () => {
     const signInResponse = await signIn('google', { redirectTo });
@@ -25,10 +28,16 @@ const LoginScreen: FC<LoginScreenProps> = () => {
       if (!code) throw new Error('No code found');
       await signIn('google', { code });
 
+      const expoNotificationsToken = await getExpoPushToken();
+      if (!expoNotificationsToken) {
+        console.warn('No expo notification token');
+        return;
+      }
+      insertUserNotificationToken({ token: expoNotificationsToken });
     }
   };
   return <SafeAreaView>
-    <TView className=' h-screen justify-center items-center'>
+    <TView className='h-screen justify-center items-center'>
       <Button onPress={handleSignIn} title="Sign in with Google" />
     </TView>
   </SafeAreaView>;

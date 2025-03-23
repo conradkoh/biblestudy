@@ -10,8 +10,9 @@
   "dependencies": {
     "@auth/core": "0.38.0",
     "@convex-dev/auth": "0.0.80",
+    "@convex-dev/expo-push-notifications": "0.1.4",
     "@types/luxon": "^3.4.2",
-    "convex": "^1.15.0",
+    "convex": "1.21.0",
     "convex-helpers": "^0.1.54",
     "openai": "^4.57.0",
     "typescript": "^5.5.4"

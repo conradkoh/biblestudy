@@ -12,6 +12,7 @@ import * as SecureStore from "expo-secure-store";
 import LoginScreen from "@/src/components/auth/login-screen";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Text } from "react-native";
+import { useNotificationObserver } from "@/src/services/push-notifications";
 
 
 const secureStorage = {
@@ -23,6 +24,8 @@ const secureStorage = {
 export default function TabLayout() {
   const themeColors = useThemeColors();
   const fontsLoaded = useFontLoader();
+
+  useNotificationObserver();
 
   if (!fontsLoaded) return null;
 
