@@ -1,12 +1,13 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { PARAGRAPH_FONT_OPTIONS, useSettingsStore } from "@/src/stores/settings-store";
-import { SafeAreaView, TouchableOpacity } from "react-native";
+import { SafeAreaView, TouchableOpacity, View } from "react-native";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { FontSelectionSheet } from "@/src/components/settings/FontSelectionSheet";
 import { useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuthActions } from '@convex-dev/auth/react';
 
 const SAMPLE_VERSE = "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16";
 
@@ -14,10 +15,11 @@ export default function SettingsScreen() {
   const themeColors = useThemeColors();
   const { paragraphFontFamily } = useSettingsStore();
   const fontSheetRef = useRef<BottomSheetModal>(null);
+  const { signOut } = useAuthActions();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
-      <TView style={{ padding: 16 }}>
+      <TView style={{ padding: 16 }} className="h-full">
         <TText type="title" style={{ marginBottom: 16 }}>Settings</TText>
 
         <TText type="subtitle" style={{ marginBottom: 8 }}>Paragraph Font</TText>
@@ -47,6 +49,12 @@ export default function SettingsScreen() {
         </TouchableOpacity>
 
         <FontSelectionSheet ref={fontSheetRef} />
+
+        <View className="flex-1" />
+
+        <TouchableOpacity className="mx-auto" onPress={signOut}>
+          <TText className="font-bold text-red-500">Logout</TText>
+        </TouchableOpacity>
       </TView>
     </SafeAreaView>
   );

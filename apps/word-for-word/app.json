@@ -1,11 +1,10 @@
 {
   "expo": {
-    "name": "word-for-word",
-    "slug": "word-for-word",
-    "version": "1.0.2",
+    "name": "bible-study",
+    "slug": "bible-study-mobile",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "biblestudy",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
@@ -14,14 +13,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.moosedev.word-for-word"
+      "bundleIdentifier": "com.moosedev.biblestudy"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.moosedev.wordforword"
+      "package": "com.moosedev.biblestudy"
     },
     "web": {
       "bundler": "metro",
@@ -38,7 +37,8 @@
             "./assets/fonts/SpaceMono-Regular.ttf"
           ]
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -48,7 +48,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "11a923c2-2e0b-49f3-b1ba-9fb3fc11eaf1"
+        "projectId": "fce75566-4388-44c8-bb7b-1c26698dd18f"
       }
     },
     "runtimeVersion": {
@@ -56,6 +56,7 @@
     },
     "updates": {
       "url": "https://u.expo.dev/11a923c2-2e0b-49f3-b1ba-9fb3fc11eaf1"
-    }
+    },
+    "owner": "elliotmoose"
   }
 }

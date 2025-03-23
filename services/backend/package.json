@@ -8,6 +8,8 @@
     "deploy": "convex deploy"
   },
   "dependencies": {
+    "@auth/core": "0.38.0",
+    "@convex-dev/auth": "0.0.80",
     "@types/luxon": "^3.4.2",
     "convex": "^1.15.0",
     "convex-helpers": "^0.1.54",
