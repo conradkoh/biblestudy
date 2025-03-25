@@ -1,7 +1,5 @@
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
-import { TabBarIcon } from "@/src/components/navigation/TabBarIcon";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { convex } from "@/src/services/convex";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -10,9 +8,10 @@ import { useFontLoader } from "@/src/hooks/useFontLoader";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as SecureStore from "expo-secure-store";
 import LoginScreen from "@/src/components/auth/login-screen";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading, useQuery } from "convex/react";
 import { Text } from "react-native";
 import { useNotificationObserver } from "@/src/services/push-notifications";
+import { api } from "@backend/convex/_generated/api";
 
 
 const secureStorage = {
@@ -22,7 +21,6 @@ const secureStorage = {
 };
 
 export default function TabLayout() {
-  const themeColors = useThemeColors();
   const fontsLoaded = useFontLoader();
 
   useNotificationObserver();
@@ -43,41 +41,10 @@ export default function TabLayout() {
               <LoginScreen />
             </Unauthenticated>
             <Authenticated>
-              <Tabs
-                screenOptions={{
-                  tabBarStyle: {
-                    backgroundColor: themeColors.background,
-                  },
-                  tabBarActiveTintColor: themeColors.text,
-                  headerShown: false,
-                }}
-                initialRouteName="read-screen"
-              >
-                <Tabs.Screen
-                  name="index"
-                  options={{
-                    title: "Read",
-                    tabBarIcon: ({ color, focused }) => (
-                      <TabBarIcon
-                        name={focused ? "book-sharp" : "book-outline"}
-                        color={color}
-                      />
-                    ),
-                  }}
-                />
-                <Tabs.Screen
-                  name="settings-screen"
-                  options={{
-                    title: "Settings",
-                    tabBarIcon: ({ color, focused }) => (
-                      <TabBarIcon
-                        name={focused ? "settings-sharp" : "settings-outline"}
-                        color={color}
-                      />
-                    ),
-                  }}
-                />
-              </Tabs>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="user-profile-screen" options={{ headerShown: false }} />
+              </Stack>
             </Authenticated>
           </ConvexAuthProvider>
         </KeyboardProvider>

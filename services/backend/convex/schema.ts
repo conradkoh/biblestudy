@@ -2,7 +2,10 @@ import { bibleChapterConvexSchema } from '@/../convex/models/bible/bible_chapter
 import { bibleVerseConvexSchema } from '@/../convex/models/bible/bible_verses';
 import { defineSchema, defineTable } from 'convex/server';
 import { authTables } from "@convex-dev/auth/server";
-import { userNotificationTokenConvexSchema } from 'models/user/user_notification_tokens';
+import { userGroupConvexSchema, userGroupRoleConvexSchema } from 'models/user/user_groups';
+import { userInviteConvexSchema } from 'models/user/user_invites';
+import { userFriendshipConvexSchema } from 'models/user/user_friendship';
+import { v } from 'convex/values';
 
 export default defineSchema({
   ...authTables,
@@ -14,6 +17,22 @@ export default defineSchema({
     'by_version_by_book_by_chapter_by_verse',
     ['version', 'bookIdx', 'chapter', 'verse'],
   ),
-  user_notification_tokens: defineTable(userNotificationTokenConvexSchema)
-    .index('by_user_id', ['userId']),
+  userFriendships: defineTable(userFriendshipConvexSchema),
+  userInvites: defineTable(userInviteConvexSchema),
+  userGroups: defineTable(userGroupConvexSchema),
+  userGroupRoles: defineTable(userGroupRoleConvexSchema),
+  users: defineTable(v.object({
+    // standard convex-auth fields
+    name: v.optional(v.string()),
+    image: v.optional(v.string()),
+    email: v.optional(v.string()),
+    emailVerificationTime: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    phoneVerificationTime: v.optional(v.number()),
+    isAnonymous: v.optional(v.boolean()),
+    // other "users" fields...
+    username: v.optional(v.string()),
+  })).index("email", ["email"]).searchIndex("search_username", {
+    searchField: 'username'
+  }),
 });

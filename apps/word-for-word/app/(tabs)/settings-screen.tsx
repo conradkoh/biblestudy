@@ -8,7 +8,8 @@ import { useRef } from "react";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthActions } from '@convex-dev/auth/react';
-
+import { api } from "@backend/convex/_generated/api";
+import { useQuery } from "convex/react";
 const SAMPLE_VERSE = "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16";
 
 export default function SettingsScreen() {
@@ -16,6 +17,8 @@ export default function SettingsScreen() {
   const { paragraphFontFamily } = useSettingsStore();
   const fontSheetRef = useRef<BottomSheetModal>(null);
   const { signOut } = useAuthActions();
+
+  const currentUser = useQuery(api.users.currentUser);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
@@ -52,9 +55,16 @@ export default function SettingsScreen() {
 
         <View className="flex-1" />
 
-        <TouchableOpacity className="mx-auto" onPress={signOut}>
-          <TText className="font-bold text-red-500">Logout</TText>
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between">
+          <View>
+            <TText className="text-sm text-gray-500">Logged in as: </TText>
+            <TText className="text-sm text-gray-500">{currentUser?.email}</TText>
+            <TText className="text-sm text-gray-500">@{currentUser?.username}</TText>
+          </View>
+          <TouchableOpacity className="mx-auto" onPress={signOut}>
+            <TText className="font-bold text-red-500">Logout</TText>
+          </TouchableOpacity>
+        </View>
       </TView>
     </SafeAreaView>
   );

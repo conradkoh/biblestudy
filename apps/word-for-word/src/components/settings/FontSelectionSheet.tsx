@@ -2,9 +2,9 @@ import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { PARAGRAPH_FONT_OPTIONS, useSettingsStore } from "@/src/stores/settings-store";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
-import { BottomSheetBackdrop, BottomSheetModal } from "@gorhom/bottom-sheet";
+import { SafeAreaView, ScrollView, TouchableOpacity } from "react-native"; import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { forwardRef, useCallback, useMemo } from "react";
+import useBottomSheetBackdrop from '@/src/hooks/useBottomSheetBackdrop';
 
 const SAMPLE_VERSE = "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16";
 
@@ -13,25 +13,14 @@ export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const { paragraphFontFamily, setParagraphFontFamily } = useSettingsStore();
 
   const snapPoints = useMemo(() => ["80%"], []);
+  const renderBackdrop = useBottomSheetBackdrop();
 
   const handleFontSelect = useCallback((font: keyof typeof PARAGRAPH_FONT_OPTIONS) => {
     setParagraphFontFamily(font);
     if (ref && 'current' in ref && ref.current) {
       ref.current.close();
     }
-  }, [setParagraphFontFamily]);
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        appearsOnIndex={0}
-        disappearsOnIndex={-1}
-        opacity={0.5}
-      />
-    ),
-    []
-  );
+  }, [setParagraphFontFamily, ref]);
 
   return (
     <BottomSheetModal
