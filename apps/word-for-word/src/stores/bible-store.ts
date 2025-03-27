@@ -5,16 +5,16 @@ import { create } from "zustand";
 export const versions = { niv, kjv };
 export type BibleVersionId = keyof typeof versions;
 
-import { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
+import type { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
 import interlinear, {
-  InterlinearVerse,
+  type InterlinearVerse,
 } from "@/assets/interlinear/interlinear.json";
 import greekLexicon from "@/assets/lexicon/greek.json";
 import hebrewLexicon from "@/assets/lexicon/hebrew.json";
 import strongs from "@/src/libraries/strongs";
 import {
-  BibleCursor,
-  BookId,
+  type BibleCursor,
+  type BookId,
   bookIds,
   mapBookIdsToName,
 } from "@/src/utils/bible-data-utils";
@@ -22,19 +22,20 @@ import {
 export type BibleStore = {
   getTranslation: (versionId: BibleVersionId) => GetBibleTranslation;
   getChapterFormatted: (
-    chapter: Pick<BibleCursor, "bookId" | "chapter" | "version">
+    chapter: Pick<BibleCursor, "bookId" | "chapter" | "version">,
   ) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
+  getVerse: (cursor: Required<BibleCursor>) => GetBibleTranslation["books"][number]["chapters"][number]["verses"][number];
   getBook: (
     bookId: BookId,
-    version: BibleVersionId
+    version: BibleVersionId,
   ) => GetBibleTranslation["books"][number] | undefined;
-  getInterlinearVerseName: (cursor: BibleCursor) => string;
+  getVerseNameFormatted: (cursor: BibleCursor) => string;
   getInterlinearVerse: (cursor: BibleCursor) => InterlinearVerse | null;
   lookupStrongsNumber: (strongsNumber: string) => LexiconWord | undefined;
   findVersesByStrongsNumber: (
     strongsNumber: string,
     currentChapter: number,
-    currentVerse: number
+    currentVerse: number,
   ) => Array<{
     bookId: BookId;
     chapter: number;
@@ -52,14 +53,30 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
    * Returns an array of verses
    */
   getChapterFormatted: (
-    cursor: Pick<BibleCursor, "bookId" | "chapter" | "version">
+    cursor: Pick<BibleCursor, "bookId" | "chapter" | "version">,
   ) => {
     const { bookId, chapter, version } = cursor;
     const chapterIdx = chapter - 1;
     const bookIdx = bookIds.indexOf(bookId);
-    const verses = get().getTranslation(version).books[bookIdx]?.chapters[chapterIdx]?.verses;
+    const verses =
+      get().getTranslation(version).books[bookIdx]?.chapters[chapterIdx]
+        ?.verses;
     if (!verses) throw new Error(`Chapter ${chapter} not found in ${bookId}`);
     return verses;
+  },
+  getVerse: (cursor: Required<BibleCursor>) => {
+    const { bookId, chapter, verse, version } = cursor;
+    const chapterIdx = chapter - 1;
+    const verseIdx = verse - 1;
+    const bookIdx = bookIds.indexOf(bookId);
+    const verseData =
+      get().getTranslation(version).books[bookIdx]?.chapters[chapterIdx]
+        ?.verses[verseIdx];
+    if (!verseData)
+      throw new Error(
+        `Verse ${verse} not found in chapter ${chapter} of book ${bookId}`,
+      );
+    return verseData;
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {
     const bookIdx = bookIds.indexOf(bookId);
@@ -67,7 +84,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     const book = get().getTranslation(version).books[bookIdx];
     return book;
   },
-  getInterlinearVerseName(cursor: BibleCursor) {
+  getVerseNameFormatted(cursor: BibleCursor) {
     const bookName = mapBookIdsToName[cursor.bookId];
     return `${bookName} ${cursor.chapter}:${cursor.verse}`;
   },
@@ -78,8 +95,12 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     const bookIdx = bookIds.indexOf(bookId);
     const chapterIdx = chapter - 1;
     const verseIdx = verse - 1;
-    const verseData = interlinear.books[bookIdx]?.chapters[chapterIdx]?.verses[verseIdx];
-    if (!verseData) throw new Error(`Verse ${verse} not found in chapter ${chapter} of book ${bookId}`);
+    const verseData =
+      interlinear.books[bookIdx]?.chapters[chapterIdx]?.verses[verseIdx];
+    if (!verseData)
+      throw new Error(
+        `Verse ${verse} not found in chapter ${chapter} of book ${bookId}`,
+      );
     return verseData;
   },
   lookupStrongsNumber: (strongsNumber: string) => {
@@ -97,7 +118,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
   findVersesByStrongsNumber: (
     strongsNumber: string,
     currentChapter: number,
-    currentVerse: number
+    currentVerse: number,
   ) => {
     const results: ReturnType<BibleStore["findVersesByStrongsNumber"]> = [];
 
@@ -113,7 +134,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
                 !(
                   verse.chapter === currentChapter &&
                   currentVerse === verse.verse
-                )
+                ),
             )
           ) {
             results.push({

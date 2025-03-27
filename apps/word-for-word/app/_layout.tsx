@@ -16,6 +16,7 @@ import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { TText } from "@/src/components/core/TText";
 import { useExpoUpdates } from "@/src/hooks/useExpoUpdates";
+import { ToastProvider } from "@/src/components/core/ToastProvider";
 
 const secureStorage = {
   getItem: SecureStore.getItemAsync,
@@ -37,24 +38,26 @@ export default function TabLayout() {
       <BottomSheetModalProvider>
         <KeyboardProvider>
           <ConvexAuthProvider client={convex} storage={secureStorage}>
-            <AuthLoading>
-              <TSafeAreaView className="h-full">
-                <TView className="h-full justify-center items-center">
-                  <ActivityIndicator size="large" color={themeColors.primary} />
-                  <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Logging In...</TText>
-                </TView>
-              </TSafeAreaView>
-            </AuthLoading>
-            <Unauthenticated>
-              <LoginScreen />
-            </Unauthenticated>
-            <Authenticated>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
-                <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-              </Stack>
-            </Authenticated>
+            <ToastProvider>
+              <AuthLoading>
+                <TSafeAreaView className="h-full">
+                  <TView className="h-full justify-center items-center">
+                    <ActivityIndicator size="large" color={themeColors.primary} />
+                    <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Logging In...</TText>
+                  </TView>
+                </TSafeAreaView>
+              </AuthLoading>
+              <Unauthenticated>
+                <LoginScreen />
+              </Unauthenticated>
+              <Authenticated>
+                <Stack>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+                  <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                  <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                </Stack>
+              </Authenticated>
+            </ToastProvider>
           </ConvexAuthProvider>
         </KeyboardProvider>
       </BottomSheetModalProvider>

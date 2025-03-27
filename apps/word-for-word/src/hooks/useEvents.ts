@@ -2,6 +2,10 @@ import EventEmitter from "eventemitter3";
 import { useEffect } from "react";
 
 export type CommonEventTypes = {
+  SHOW_TOAST: {
+    message: string;
+    duration?: number;
+  };
 };
 
 export const CommonEvents = new EventEmitter<CommonEventTypes>();
@@ -13,7 +17,7 @@ export function useEvent<
   emitter: EventEmitter<EventTypes>,
   eventKey: EventKey,
   callback: EventEmitter.EventListener<EventTypes, EventKey>,
-  effectDependencies: any[] = []
+  effectDependencies: unknown[] = []
 ) {
   useEffect(() => {
     emitter.on(eventKey, callback);

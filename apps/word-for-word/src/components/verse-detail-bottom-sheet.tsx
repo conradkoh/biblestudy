@@ -1,5 +1,6 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
+import VerseActions from "@/src/components/verse-actions";
 import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
 import {
   type BibleCursorHandler,
@@ -108,10 +109,15 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
               style={{ color: themeColors.text }}
             />
             <TText className="text-[17px] font-bold">
-              {bible.getInterlinearVerseName(cursorHandler.cursor)}
+              {bible.getVerseNameFormatted(cursorHandler.cursor)}
             </TText>
           </View>
-          <View className="flex flex-row flex-wrap mt-2" style={{ gap: 8 }}>
+          {cursorHandler.cursor.verse && <VerseActions
+            verse={bible.getVerse({ ...cursorHandler.cursor, verse: cursorHandler.cursor.verse })}
+            verseName={bible.getVerseNameFormatted(cursorHandler.cursor)}
+            version={cursorHandler.cursor.version}
+          />}
+          <View className="flex flex-row flex-wrap" style={{ gap: 8 }}>
             {bible
               .getInterlinearVerse(cursorHandler.cursor)
               ?.contents.map((content, i) => {
