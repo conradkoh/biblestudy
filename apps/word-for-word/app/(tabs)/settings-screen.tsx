@@ -53,7 +53,7 @@ export default function SettingsScreen() {
               marginBottom: 8,
             }}
           >
-            <TText>{PARAGRAPH_FONT_OPTIONS[paragraphFontFamily]}</TText>
+            <TText style={{ fontFamily: paragraphFontFamily, }}>{PARAGRAPH_FONT_OPTIONS[paragraphFontFamily]}</TText>
             <Ionicons
               name="chevron-forward"
               size={20}

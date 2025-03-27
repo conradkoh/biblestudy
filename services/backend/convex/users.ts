@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 
 export const getCurrentUser = query({
@@ -115,5 +115,66 @@ export const getUserGroups = query({
     return groups.filter((group): group is Doc<"userGroups"> & { role: "MEMBER" | "OWNER" | "ADMIN" } =>
       group !== null
     );
+  },
+});
+
+export const updateUsername = mutation({
+  args: {
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return null;
+    }
+
+    // Check if username is already taken
+    const existingUsers = await ctx.db
+      .query("users")
+      .withSearchIndex("search_username", (q) =>
+        q.search("username", args.username)
+      )
+      .collect();
+
+
+    // Search does fuzzy matching, and we don't have case insensitive equality checks, so
+    // we do a fuzzy search then refine
+    if (existingUsers.find(user => user.username?.toLowerCase() === args.username.toLowerCase())) {
+      throw new Error("Username is already taken");
+    }
+
+    // Update the user's username
+    await ctx.db.patch(userId, {
+      username: args.username,
+    });
+
+    return true;
+  },
+});
+
+export const isUsernameAvailable = query({
+  args: {
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return false;
+    }
+
+
+    const existingUsers = await ctx.db
+      .query("users")
+      .withSearchIndex("search_username", (q) =>
+        q.search("username", args.username)
+      )
+      .collect();
+
+
+    // Search does fuzzy matching, and we don't have case insensitive equality checks, so
+    // we do a fuzzy search then refine
+    const isTaken = existingUsers.find(user => user.username?.toLowerCase() === args.username.toLowerCase());
+
+    return !isTaken;
   },
 });

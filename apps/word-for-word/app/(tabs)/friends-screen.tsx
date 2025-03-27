@@ -25,8 +25,8 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   const router = useRouter();
   const searchUserBottomSheetRef = useRef<BottomSheetModal>(null);
 
-  const friends = useQuery(api.users.getUserFriends) ?? [];
-  const userGroups = useQuery(api.users.getUserGroups) ?? [];
+  const friends = useQuery(api.users.getUserFriends);
+  const userGroups = useQuery(api.users.getUserGroups);
 
   const openAddFriendSheet = useCallback(() => {
     searchUserBottomSheetRef.current?.present();
@@ -92,7 +92,7 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
             <View style={{ backgroundColor: themeColors.surfaceMuted }} className="flex-row items-center justify-between px-4 py-2">
               <TText className="font-bold">Friends</TText>
               <View className="flex-row items-center gap-2">
-                <TText className="text-sm">{friends.length} friends</TText>
+                {friends && <TText className="text-sm">{friends.length} friends</TText>}
                 <TouchableOpacity onPress={openAddFriendSheet}>
                   <Ionicons name="person-add" size={24} color={themeColors.text} />
                 </TouchableOpacity>
@@ -106,14 +106,17 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
               contentContainerStyle={{ flexGrow: 1 }}
               ListEmptyComponent={
                 <TView className="p-4 items-center justify-center h-full">
-                  <TText>You don't have any friends yet.</TText>
-                  <TouchableOpacity
-                    onPress={openAddFriendSheet}
-                    style={{ backgroundColor: themeColors.surfacePressed }}
-                    className="mt-2 p-2 rounded-md"
-                  >
-                    <TText>Add Friends</TText>
-                  </TouchableOpacity>
+                  {friends === undefined && <TText>Loading...</TText>}
+                  {friends !== undefined && <>
+                    <TText>You don't have any friends yet.</TText>
+                    <TouchableOpacity
+                      onPress={openAddFriendSheet}
+                      style={{ backgroundColor: themeColors.surfacePressed }}
+                      className="mt-2 p-2 rounded-md"
+                    >
+                      <TText>Add Friends</TText>
+                    </TouchableOpacity>
+                  </>}
                 </TView>
               }
             />
@@ -124,7 +127,7 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
             <View style={{ backgroundColor: themeColors.surfaceMuted }} className="flex-row items-center justify-between px-4 py-2">
               <TText className="font-bold">Groups</TText>
               <View className="flex-row items-center gap-2">
-                <TText className="text-sm">{userGroups.length} groups</TText>
+                {userGroups && <TText className="text-sm">{userGroups.length} groups</TText>}
                 <TouchableOpacity>
                   <Ionicons name="add-circle" size={24} color={themeColors.text} />
                 </TouchableOpacity>
@@ -138,7 +141,8 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
               contentContainerStyle={{ flexGrow: 1 }}
               ListEmptyComponent={
                 <TView className="p-4 items-center justify-center h-full">
-                  <TText>You're not part of any groups yet.</TText>
+                  {userGroups === undefined && <TText>Loading...</TText>}
+                  {userGroups !== undefined && <TText>You're not part of any groups yet.</TText>}
                 </TView>
               }
             />

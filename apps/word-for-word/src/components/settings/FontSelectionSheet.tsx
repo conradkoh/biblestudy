@@ -52,7 +52,7 @@ export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
                   borderColor: paragraphFontFamily === key ? themeColors.text : themeColors.border,
                 }}
               >
-                <TText style={{ marginBottom: 8 }}>{displayName}</TText>
+                <TText style={{ marginBottom: 8, fontFamily: key, }}>{displayName}</TText>
                 <TText
                   style={{
                     fontFamily: key,

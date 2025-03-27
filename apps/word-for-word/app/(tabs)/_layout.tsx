@@ -1,9 +1,32 @@
 import { TabBarIcon } from "@/src/components/navigation/TabBarIcon";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { Tabs } from "expo-router";
+import { api } from "@backend/convex/_generated/api";
+import { useEffect } from "react";
+import { Tabs, useRootNavigationState } from "expo-router";
+import { useQuery } from "convex/react";
+import { router } from "expo-router";
 
 export default function TabsLayout() {
   const themeColors = useThemeColors();
+
+  const currentUser = useQuery(api.users.getCurrentUser);
+
+  useEffect(() => {
+    // Force user to update their username
+    if (currentUser && !currentUser.username) {
+      console.log("Pushing to set-username-screen");
+      router.push({
+        pathname: "/set-username-screen",
+      });
+    }
+  }, [currentUser, currentUser?.username]);
+
+
+
+  const rootNavigationState = useRootNavigationState();
+
+  if (!rootNavigationState?.key) return null;
+
   return <Tabs
     screenOptions={{
       tabBarStyle: {

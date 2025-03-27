@@ -1,5 +1,5 @@
-import { Stack } from "expo-router";
-import React from "react";
+import { router, Stack, useRootNavigationState } from "expo-router";
+import React, { useEffect } from "react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { convex } from "@/src/services/convex";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -8,7 +8,7 @@ import { useFontLoader } from "@/src/hooks/useFontLoader";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import * as SecureStore from "expo-secure-store";
 import LoginScreen from "@/src/components/auth/login-screen";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading, useQuery } from "convex/react";
 import { ActivityIndicator } from "react-native";
 import { useNotificationObserver } from "@/src/services/push-notifications";
 import { TView } from "@/src/components/core/TView";
@@ -50,8 +50,9 @@ export default function TabLayout() {
             </Unauthenticated>
             <Authenticated>
               <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="user-profile-screen" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+                <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
               </Stack>
             </Authenticated>
           </ConvexAuthProvider>
