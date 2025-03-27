@@ -1,6 +1,7 @@
 import BibleChapterView, {
-  BibleChapterViewRef,
+  type BibleChapterViewRef,
 } from "@/src/components/bible-chapter-view";
+import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import SearchBox from "@/src/components/search-box";
@@ -11,11 +12,13 @@ import { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
-import { BibleCursor, mapBookIdsToName } from "@/src/utils/bible-data-utils";
+import {
+  type BibleCursor,
+  mapBookIdsToName,
+} from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import React, { useCallback, useRef, useState } from "react";
-import { SafeAreaView, TouchableOpacity, View, Text } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 
 export default function ReadScreen() {
   const bible = useBibleStore();
@@ -59,10 +62,9 @@ export default function ReadScreen() {
   }
   return (
     <>
-      <SafeAreaView
+      <TSafeAreaView
         style={{
           flex: 1,
-          backgroundColor: themeColors.background,
         }}
       >
         <TView
@@ -85,7 +87,7 @@ export default function ReadScreen() {
           <View
             className="flex flex-row items-center justify-between px-2 h-10"
             style={{
-              backgroundColor: themeColors.backgroundSecondary,
+              backgroundColor: themeColors.surfaceSecondary,
             }}
           >
             <TouchableOpacity
@@ -124,7 +126,7 @@ export default function ReadScreen() {
             </TouchableOpacity>
           </View>
         </TView>
-      </SafeAreaView>
+      </TSafeAreaView>
       <SearchBox
         isVisible={isSearchVisible}
         setIsVisible={setIsSearchVisible}

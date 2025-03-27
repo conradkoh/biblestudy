@@ -15,7 +15,7 @@ export function TView({
 }: TViewProps) {
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "background"
+    "surface"
   );
 
   return <View style={[{ backgroundColor }, style]} {...otherProps} />;

@@ -1,10 +1,10 @@
-import { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
+import type { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
 import { TText } from "@/src/components/core/TText";
-import { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { versions } from "@/src/stores/bible-store";
 import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
-import React, { FC, useCallback, useMemo, useRef } from "react";
+import React, { type FC, useCallback, useMemo, useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 
 type VersionSelectorProps = {
@@ -27,7 +27,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
       cursorHandler.updateCursor({ version: version.id });
       bottomSheetModalRef.current?.dismiss();
     },
-    [cursorHandler.updateCursor]
+    [cursorHandler.updateCursor],
   );
 
   const renderItem = useCallback(
@@ -45,7 +45,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
         </TText>
       </TouchableOpacity>
     ),
-    [handleVersionSelect]
+    [handleVersionSelect],
   );
 
   return (
@@ -54,7 +54,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
         <TText
           type="subtitle"
           className="text-sm mb-1 ml-1"
-          style={{ color: themeColors.secondaryText }}
+          style={{ color: themeColors.textSecondary }}
         >
           {versions[version].abbreviation.toUpperCase()}
         </TText>

@@ -2,10 +2,7 @@ import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import VerseDetailBottomSheet from "@/src/components/verse-detail-bottom-sheet";
 import { VersionSelector } from "@/src/components/version-selector";
-import {
-  BibleCursorHandler,
-  useBibleCursorHandler,
-} from "@/src/hooks/useBibleCursor";
+import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
@@ -47,7 +44,7 @@ const BibleChapterView = React.forwardRef<
         scrollViewRef.current?.scrollTo({ y: y, animated: false });
       },
     }),
-    []
+    [],
   );
   return (
     <ScrollView ref={scrollViewRef}>
@@ -71,7 +68,7 @@ const BibleChapterView = React.forwardRef<
                       // since this component comes first, line height determined here
                       lineHeight: settings.lineHeight,
                       color: isCurrentVerse
-                        ? themeColors.highlightText
+                        ? themeColors.textHighlight
                         : undefined,
                     }}
                   >
@@ -80,7 +77,7 @@ const BibleChapterView = React.forwardRef<
                   </TText>
                   {/* Used as marker for position. Must be after first TText so it doesn't interfere with lineheight */}
                   <View
-                    key={verse.name + "marker"}
+                    key={`${verse.name}-marker`}
                     onLayout={(e) => {
                       verseYCoordsRef.current[i] = e.nativeEvent.layout.y;
                     }}
@@ -92,7 +89,7 @@ const BibleChapterView = React.forwardRef<
                       fontWeight: settings.fontWeight,
                       fontFamily: settings.paragraphFontFamily,
                       color: isCurrentVerse
-                        ? themeColors.highlightText
+                        ? themeColors.textHighlight
                         : undefined,
                     }}
                   >

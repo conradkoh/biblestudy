@@ -2,20 +2,24 @@ import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
 import {
-  BibleCursorHandler,
+  type BibleCursorHandler,
   useBibleCursorHandler,
 } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { LexiconWord, useBibleStore, versions } from "@/src/stores/bible-store";
+import {
+  type LexiconWord,
+  useBibleStore,
+  versions,
+} from "@/src/stores/bible-store";
 import { mapBookIdsToName } from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
-  BottomSheetBackdropProps,
+  type BottomSheetBackdropProps,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import React, {
-  FC,
+  type FC,
   useCallback,
   useEffect,
   useMemo,
@@ -53,7 +57,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
     (index: number) => {
       if (index === -1) setIsOpen(false);
     },
-    [setIsOpen]
+    [setIsOpen],
   );
 
   useEffect(() => {
@@ -91,7 +95,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
         backgroundColor: themeColors.text,
       }}
       backgroundStyle={{
-        backgroundColor: themeColors.backgroundSecondary,
+        backgroundColor: themeColors.surface,
       }}
       backdropComponent={CustomBackdrop}
     >
@@ -119,7 +123,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                     key={content.text + i}
                     className="flex flex-col items-center"
                   >
-                    <TText>{content.text || `-`}</TText>
+                    <TText>{content.text || '-'}</TText>
                     <TouchableOpacity
                       onPress={() => {
                         onPressStrongsNumber(content.strongsNumber);
@@ -127,18 +131,18 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                       className="flex flex-col items-center"
                     >
                       <TText
-                        type="link"
-                        className={classNames("text-xs", {
-                          "text-green-700": isCurrentStrongsWord,
-                        })}
+                        className={classNames("text-xs")}
+                        style={{
+                          color: isCurrentStrongsWord ? themeColors.success : themeColors.textHighlight,
+                        }}
                       >
                         {content.originalWord}
                       </TText>
                       <TText
-                        type="link"
-                        className={classNames("text-xs", {
-                          "text-green-700": isCurrentStrongsWord,
-                        })}
+                        className={classNames("text-xs")}
+                        style={{
+                          color: isCurrentStrongsWord ? themeColors.success : themeColors.textHighlight,
+                        }}
                       >
                         {content.strongsNumber}
                       </TText>
@@ -151,11 +155,11 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
           {cursorHandler && currentStrongsWord && (
             <View className="mt-6">
               <View className="flex flex-col" style={{ gap: 8 }}>
-                <TText className="text-xs font-semibold text-green-700">
+                <TText className="text-xs font-semibold " style={{ color: themeColors.success }}>
                   Strongs: {currentStrongsWord.strongs}
                 </TText>
                 {/* Hebrew / Greek + Translit */}
-                <TText type="subtitle" className="text-green-700">
+                <TText type="subtitle" style={{ color: themeColors.success }}>
                   {currentStrongsWord.originalWord} -{" "}
                   {currentStrongsWord.transliteration}
                 </TText>
@@ -175,13 +179,13 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                 <TText className="mt-6" type="subtitle">
                   Also used in...
                 </TText>
-                <TView className="flex flex-col mb-2" style={{ gap: 12 }}>
+                <View className="flex flex-col mb-2" style={{ gap: 12 }}>
                   {!!cursorHandler.cursor.verse &&
                     bible
                       .findVersesByStrongsNumber(
                         currentStrongsWord.strongs,
                         cursorHandler.cursor.chapter,
-                        cursorHandler.cursor.verse
+                        cursorHandler.cursor.verse,
                       )
                       .slice(0, 5) // Show only first 5 results
                       .map((result, idx) => (
@@ -206,7 +210,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                             bottomSheetRef.current?.snapToIndex(0);
                           }}
                         >
-                          <TView className="flex-row" style={{ gap: 4 }}>
+                          <View className="flex-row" style={{ gap: 4 }}>
                             <TText className="text-xs font-semibold">
                               {mapBookIdsToName[result.bookId]} {result.chapter}
                               :{result.verse}
@@ -216,31 +220,31 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                                 cursorHandler.cursor.version
                               ].abbreviation.toUpperCase()}
                             </TText>
-                          </TView>
+                          </View>
 
                           {/* Original version's text */}
-                          <TView className="flex flex-row flex-wrap">
-                            <TView
+                          <View className="flex flex-row flex-wrap">
+                            <View
                               className="rounded-md items-center justify-center px-1 mr-1"
                               style={{
-                                backgroundColor: themeColors.secondaryText,
+                                backgroundColor: themeColors.textSecondary,
                               }}
                             >
                               <TText
                                 className="text-xs"
                                 style={{
-                                  color: themeColors.contrastText,
+                                  color: themeColors.textContrast,
                                 }}
                               >
                                 {versions[
                                   cursorHandler.cursor.version
                                 ].abbreviation.toUpperCase()}
                               </TText>
-                            </TView>
+                            </View>
                             {(
                               bible.getBook(
                                 result.bookId,
-                                cursorHandler.cursor.version
+                                cursorHandler.cursor.version,
                               )?.chapters[result.chapter - 1]?.verses[
                                 result.verse - 1
                               ]?.text || ""
@@ -252,39 +256,44 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                                   {t}
                                 </TText>
                               ))}
-                          </TView>
+                          </View>
 
                           {/* Interlinear's English text */}
-                          <TView className="flex flex-row flex-wrap">
-                            <TView
+                          <View className="flex flex-row flex-wrap">
+                            <View
                               className="rounded-md items-center justify-center px-1 mr-1"
                               style={{
-                                backgroundColor: themeColors.secondaryText,
+                                backgroundColor: themeColors.textSecondary,
                               }}
                             >
                               <TText
                                 className="text-xs"
                                 style={{
-                                  color: themeColors.contrastText,
+                                  color: themeColors.textContrast,
                                 }}
                               >
                                 Interlinear (KJV)
                               </TText>
-                            </TView>
+                            </View>
                             {result.contents.map((content, wordIdx) => (
                               <TText
                                 // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                                 key={wordIdx}
                                 className={classNames("mr-1 text-sm", {
-                                  "text-green-700 font-semibold":
+                                  "font-semibold":
                                     content.strongsNumber ===
                                     currentStrongsWord.strongs,
                                 })}
+                                style={{
+                                  color: content.strongsNumber === currentStrongsWord.strongs
+                                    ? themeColors.success
+                                    : themeColors.text,
+                                }}
                               >
                                 {content.text}
                               </TText>
                             ))}
-                          </TView>
+                          </View>
                           {/* Original language text */}
                           {/* <View className="flex flex-row flex-wrap">
                             {result.contents.map((content, wordIdx) => (
@@ -303,7 +312,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                           </View> */}
                         </TouchableOpacity>
                       ))}
-                </TView>
+                </View>
               </View>
             </View>
           )}
@@ -316,13 +325,15 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
 export default VerseDetailBottomSheet;
 
 const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
+  const themeColors = useThemeColors();
+
   // animated variables
   const containerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
       animatedIndex.value,
       [0, 0.4],
       [0, 0.4],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     ),
   }));
 
@@ -331,11 +342,11 @@ const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
     () => [
       style,
       {
-        backgroundColor: "black",
+        backgroundColor: themeColors.overlay,
       },
       containerAnimatedStyle,
     ],
-    [style, containerAnimatedStyle]
+    [style, containerAnimatedStyle, themeColors.overlay],
   );
 
   return <Animated.View style={containerStyle} pointerEvents="none" />;
