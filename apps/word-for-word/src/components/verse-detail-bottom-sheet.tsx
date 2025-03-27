@@ -1,11 +1,6 @@
 import { TText } from "@/src/components/core/TText";
-import { TView } from "@/src/components/core/TView";
 import VerseActions from "@/src/components/verse-actions";
-import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
-import {
-  type BibleCursorHandler,
-  useBibleCursorHandler,
-} from "@/src/hooks/useBibleCursor";
+import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import {
   type LexiconWord,
@@ -48,10 +43,6 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
   const bottomSheetRef = useRef<BottomSheet>(null);
   const themeColors = useThemeColors();
   const bible = useBibleStore();
-
-  const emptyCursorHandler = useBibleCursorHandler();
-
-  useBibleBookmark(bible, cursorHandler ?? emptyCursorHandler);
 
   // callbacks
   const handleSheetChanges = useCallback(
@@ -112,11 +103,16 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
               {bible.getVerseNameFormatted(cursorHandler.cursor)}
             </TText>
           </View>
-          {cursorHandler.cursor.verse && <VerseActions
-            verse={bible.getVerse({ ...cursorHandler.cursor, verse: cursorHandler.cursor.verse })}
-            verseName={bible.getVerseNameFormatted(cursorHandler.cursor)}
-            version={cursorHandler.cursor.version}
-          />}
+          {cursorHandler.cursor.verse && (
+            <VerseActions
+              verse={bible.getVerse({
+                ...cursorHandler.cursor,
+                verse: cursorHandler.cursor.verse,
+              })}
+              verseName={bible.getVerseNameFormatted(cursorHandler.cursor)}
+              version={cursorHandler.cursor.version}
+            />
+          )}
           <View className="flex flex-row flex-wrap" style={{ gap: 8 }}>
             {bible
               .getInterlinearVerse(cursorHandler.cursor)
@@ -129,7 +125,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                     key={content.text + i}
                     className="flex flex-col items-center"
                   >
-                    <TText>{content.text || '-'}</TText>
+                    <TText>{content.text || "-"}</TText>
                     <TouchableOpacity
                       onPress={() => {
                         onPressStrongsNumber(content.strongsNumber);
@@ -139,7 +135,9 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                       <TText
                         className={classNames("text-xs")}
                         style={{
-                          color: isCurrentStrongsWord ? themeColors.success : themeColors.textHighlight,
+                          color: isCurrentStrongsWord
+                            ? themeColors.success
+                            : themeColors.textHighlight,
                         }}
                       >
                         {content.originalWord}
@@ -147,7 +145,9 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                       <TText
                         className={classNames("text-xs")}
                         style={{
-                          color: isCurrentStrongsWord ? themeColors.success : themeColors.textHighlight,
+                          color: isCurrentStrongsWord
+                            ? themeColors.success
+                            : themeColors.textHighlight,
                         }}
                       >
                         {content.strongsNumber}
@@ -161,7 +161,10 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
           {cursorHandler && currentStrongsWord && (
             <View className="mt-6">
               <View className="flex flex-col" style={{ gap: 8 }}>
-                <TText className="text-xs font-semibold " style={{ color: themeColors.success }}>
+                <TText
+                  className="text-xs font-semibold "
+                  style={{ color: themeColors.success }}
+                >
                   Strongs: {currentStrongsWord.strongs}
                 </TText>
                 {/* Hebrew / Greek + Translit */}
@@ -291,9 +294,11 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                                     currentStrongsWord.strongs,
                                 })}
                                 style={{
-                                  color: content.strongsNumber === currentStrongsWord.strongs
-                                    ? themeColors.success
-                                    : themeColors.text,
+                                  color:
+                                    content.strongsNumber ===
+                                      currentStrongsWord.strongs
+                                      ? themeColors.success
+                                      : themeColors.text,
                                 }}
                               >
                                 {content.text}

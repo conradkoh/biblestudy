@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BibleStore } from "@/src/stores/bible-store";
-import { BibleCursor } from "@/src/utils/bible-data-utils";
-import { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import type { BibleStore } from "@/src/stores/bible-store";
+import type { BibleCursor } from "@/src/utils/bible-data-utils";
+import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 
 const STORAGE_KEY = "bible-bookmark";
 
 export const useBibleBookmark = (
   bibleStore: BibleStore,
-  cursorHandler: BibleCursorHandler
+  cursorHandler: BibleCursorHandler,
 ) => {
   useEffect(() => {
     // Load saved state on mount
