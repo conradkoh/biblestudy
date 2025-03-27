@@ -38,12 +38,12 @@ export default function TabsLayout() {
     initialRouteName="read-screen"
   >
     <Tabs.Screen
-      name="index"
+      name="memorize-screen"
       options={{
-        title: "Read",
+        title: "Memorize",
         tabBarIcon: ({ color, focused }) => (
           <TabBarIcon
-            name={focused ? "book-sharp" : "book-outline"}
+            name={focused ? "heart" : "heart-outline"}
             color={color}
           />
         ),
@@ -56,6 +56,18 @@ export default function TabsLayout() {
         tabBarIcon: ({ color, focused }) => (
           <TabBarIcon
             name={focused ? "people-circle" : "people-circle-outline"}
+            color={color}
+          />
+        ),
+      }}
+    />
+    <Tabs.Screen
+      name="index"
+      options={{
+        title: "Read",
+        tabBarIcon: ({ color, focused }) => (
+          <TabBarIcon
+            name={focused ? "book-sharp" : "book-outline"}
             color={color}
           />
         ),

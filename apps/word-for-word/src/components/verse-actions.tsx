@@ -44,7 +44,7 @@ const VerseActions: FC<VerseActionsProps> = ({ verse, verseName, version }) => {
       </Button>
       <Button
         leadingIcon={(props) => (
-          <Ionicons style={[props.style]} name="book" size={24} />
+          <Ionicons style={[props.style]} name="heart" size={24} />
         )}
         className="flex-col rounded-md p-2 flex-1 ml-2"
         style={{ backgroundColor: themeColors.surfaceSecondary }}
