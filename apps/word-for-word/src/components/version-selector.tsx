@@ -1,9 +1,13 @@
 import type { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
+import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { versions } from "@/src/stores/bible-store";
-import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetFlatList,
+  type BottomSheetModal,
+} from "@gorhom/bottom-sheet";
 import React, { type FC, useCallback, useMemo, useRef } from "react";
 import { TouchableOpacity, View } from "react-native";
 
@@ -60,7 +64,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
         </TText>
       </TouchableOpacity>
 
-      <BottomSheetModal
+      <TBottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
         snapPoints={snapPoints}
@@ -79,7 +83,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
             renderItem={renderItem}
           />
         </View>
-      </BottomSheetModal>
+      </TBottomSheetModal>
     </>
   );
 };
