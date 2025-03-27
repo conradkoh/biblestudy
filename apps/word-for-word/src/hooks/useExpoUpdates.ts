@@ -43,7 +43,6 @@ export function useExpoUpdates() {
       }
     }
 
-
     if (!Updates.isEnabled) return;
     checkForUpdates();
   }, [appState]);

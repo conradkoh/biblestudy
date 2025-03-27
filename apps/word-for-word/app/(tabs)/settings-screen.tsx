@@ -14,6 +14,7 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@backend/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
+import { getVersionString } from "@/src/use-cases/mobile-versioning";
 const SAMPLE_VERSE =
   "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16";
 
@@ -27,7 +28,7 @@ export default function SettingsScreen() {
 
   return (
     <TSafeAreaView style={{ flex: 1 }}>
-      <TView style={{ padding: 16 }} className="h-full">
+      <TView className="h-full px-4 pt-4">
         <TText type="title" style={{ marginBottom: 16 }}>
           Settings
         </TText>
@@ -89,6 +90,9 @@ export default function SettingsScreen() {
             <TText className="font-bold" style={{ color: themeColors.error }} >Logout</TText>
           </TouchableOpacity>
         </View>
+        <TText className="text-[8px] ml-auto text-glyph-scd">
+          {getVersionString()}
+        </TText>
       </TView>
     </TSafeAreaView>
   );
