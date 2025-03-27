@@ -42,7 +42,7 @@ const UserProfileScreen: FC = () => {
 
   // Backend queries and mutations
   const sendFriendInvite = useMutation(api.invites.sendFriendInvite);
-  const updateFriendInvite = useMutation(api.invites.updateFriendInvite);
+  const updateUserInvite = useMutation(api.invites.updateUserInvite);
   const friendshipStatus = useQuery(api.invites.getFriendshipStatus, {
     otherUserId: userId,
   });
@@ -61,7 +61,7 @@ const UserProfileScreen: FC = () => {
     setIsLoading(true);
 
     try {
-      await updateFriendInvite({
+      await updateUserInvite({
         inviteId,
         status: "ACCEPTED",
       });
@@ -75,7 +75,7 @@ const UserProfileScreen: FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [updateFriendInvite, user, friendshipStatus]);
+  }, [updateUserInvite, user, friendshipStatus]);
 
   const handleRejectInvite = useCallback(async () => {
     if (!friendshipStatus?.inviteId) return;
@@ -84,7 +84,7 @@ const UserProfileScreen: FC = () => {
     setIsLoading(true);
 
     try {
-      await updateFriendInvite({
+      await updateUserInvite({
         inviteId,
         status: "REJECTED",
       });
@@ -96,7 +96,7 @@ const UserProfileScreen: FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [updateFriendInvite, friendshipStatus]);
+  }, [updateUserInvite, friendshipStatus]);
 
   const sendInvite = useCallback(
     async (friendType: "FRIEND" | "CLOSE_FRIEND") => {
@@ -148,7 +148,8 @@ const UserProfileScreen: FC = () => {
         return (
           <View className="flex-row">
             <TouchableOpacity
-              className="px-4 py-2 rounded-full bg-gray-300 mr-2"
+              className="px-4 py-2 rounded-full mr-2"
+              style={{ backgroundColor: themeColors.error }}
               onPress={handleRejectInvite}
               disabled={isLoading}
             >
@@ -168,13 +169,13 @@ const UserProfileScreen: FC = () => {
         );
       case "FRIEND":
         return (
-          <TouchableOpacity className="px-4 py-2 rounded-full bg-gray-300">
+          <TouchableOpacity className="px-4 py-2 rounded-full" style={{ backgroundColor: themeColors.secondary }}>
             <TText className="text-center">Friends</TText>
           </TouchableOpacity>
         );
       case "CLOSE_FRIEND":
         return (
-          <TouchableOpacity className="px-4 py-2 rounded-full bg-gray-300">
+          <TouchableOpacity className="px-4 py-2 rounded-full" style={{ backgroundColor: themeColors.secondary }}>
             <TText className="text-center">Close Friends</TText>
           </TouchableOpacity>
         );
@@ -227,7 +228,7 @@ const UserProfileScreen: FC = () => {
         {/* User Profile Content */}
         <View className="items-center px-4 pt-6">
           {/* Profile Image */}
-          <View className="w-24 h-24 rounded-full bg-gray-300 overflow-hidden justify-center items-center mb-4">
+          <View className="w-24 h-24 rounded-full overflow-hidden justify-center items-center mb-4" style={{ backgroundColor: themeColors.surfaceTertiary }}>
             {user.image ? (
               <Image
                 source={{ uri: user.image }}

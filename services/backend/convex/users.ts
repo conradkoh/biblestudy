@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 import { query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 
 export const getCurrentUser = query({
   args: {},
@@ -37,3 +38,82 @@ export const getUserById = query({
     return await ctx.db.get(args.userId);
   }
 })
+
+export const getUserFriends = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+
+    // Get all friendships where the user is either userA or userB
+    const friendships = await ctx.db
+      .query("userFriendships")
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("userAId"), userId),
+          q.eq(q.field("userBId"), userId)
+        )
+      )
+      .collect();
+
+    // Get the other user's information for each friendship
+    const friends = await Promise.all(
+      friendships.map(async (friendship) => {
+        const otherUserId = friendship.userAId === userId
+          ? friendship.userBId
+          : friendship.userAId;
+
+        const user = await ctx.db.get(otherUserId);
+        if (!user) return null;
+
+        return {
+          ...user,
+          friendshipKind: friendship.kind,
+        };
+      })
+    );
+
+    // Filter out any null values and return
+    return friends.filter((friend): friend is Doc<"users"> & { friendshipKind: "FRIEND" | "CLOSE_FRIEND" } =>
+      friend !== null
+    );
+  },
+});
+
+export const getUserGroups = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+
+    // Get all group roles for the user
+    const userGroupRoles = await ctx.db
+      .query("userGroupRoles")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .collect();
+
+    // Get the group information for each role
+    const groups = await Promise.all(
+      userGroupRoles.map(async (role) => {
+        const group = await ctx.db.get(role.groupId);
+        if (!group) return null;
+
+        return {
+          ...group,
+          role: role.role,
+        };
+      })
+    );
+
+    // Filter out any null values and return
+    return groups.filter((group): group is Doc<"userGroups"> & { role: "MEMBER" | "OWNER" | "ADMIN" } =>
+      group !== null
+    );
+  },
+});

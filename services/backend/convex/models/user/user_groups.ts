@@ -15,7 +15,8 @@ const userGroupZodSchema = z.object({
 
 
 const userGroupRoleZodSchema = z.object({
-  groupId: zid('groups'),
+  groupId: zid('userGroups'),
+  userId: zid('users'),
   role: z.union([z.literal('MEMBER'), z.literal('OWNER'), z.literal('ADMIN')]),
   createdOn: z.number(),
 });

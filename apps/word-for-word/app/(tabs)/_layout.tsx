@@ -39,6 +39,18 @@ export default function TabsLayout() {
       }}
     />
     <Tabs.Screen
+      name="notifications-screen"
+      options={{
+        title: "Notifications",
+        tabBarIcon: ({ color, focused }) => (
+          <TabBarIcon
+            name={focused ? "notifications" : "notifications-outline"}
+            color={color}
+          />
+        ),
+      }}
+    />
+    <Tabs.Screen
       name="settings-screen"
       options={{
         title: "Settings",

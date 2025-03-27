@@ -1,16 +1,39 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 
 export const getUserNotifications = query({
-  args: {
-    token: v.string()
-  },
+  args: {},
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const currentUserId = await getAuthUserId(ctx);
 
-    if (userId === null) {
+    if (currentUserId === null) {
       return null;
     }
-  }
-})
+
+    const invites = await ctx.db
+      .query("userInvites")
+      .filter((q) => q.eq(q.field("receivedByUserId"), currentUserId))
+      .filter((q) => q.eq(q.field("status"), "PENDING"))
+      .collect();
+
+    // Get sender information for each invite
+    const invitesWithSenderInfo = await Promise.all(
+      invites.map(async (invite) => {
+        const sender = await ctx.db.get(invite.sentByUserId);
+        return {
+          ...invite,
+          sender: sender
+            ? {
+              name: sender.name,
+              image: sender.image,
+            }
+            : null,
+        };
+      }),
+    );
+
+    return invitesWithSenderInfo;
+  },
+});

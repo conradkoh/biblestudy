@@ -3,12 +3,14 @@ import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import SearchUserBottomSheet from "@/src/components/search-user-bottom-sheet";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { api } from "@backend/convex/_generated/api";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
+import { useQuery } from "convex/react";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import React, { type FC, useCallback, useRef, useState } from "react";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, TouchableOpacity, View } from "react-native";
 
 type FriendsScreenProps = unknown;
 
@@ -23,12 +25,8 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   const router = useRouter();
   const searchUserBottomSheetRef = useRef<BottomSheetModal>(null);
 
-  // Placeholder data until backend is implemented
-  const [friends, setFriends] = useState<Doc<"users">[]>([
-  ]);
-
-  const [userGroups, setUserGroups] = useState<UserGroup[]>([
-  ]);
+  const friends = useQuery(api.users.getUserFriends) ?? [];
+  const userGroups = useQuery(api.users.getUserGroups) ?? [];
 
   const openAddFriendSheet = useCallback(() => {
     searchUserBottomSheetRef.current?.present();
@@ -58,9 +56,9 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
         className="p-3 flex-row items-center border-b"
       >
         <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
-          <TText className="text-lg font-bold">
-            {item.username?.charAt(0).toUpperCase()}
-          </TText>
+          {item.image ? <Image source={{ uri: item.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
+            {(item.name ?? item.username)?.charAt(0).toUpperCase()}
+          </TText>}
         </View>
         <TText className="font-bold">@{item.username}</TText>
       </TouchableOpacity>

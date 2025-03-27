@@ -202,7 +202,7 @@ export const sendFriendInvite = mutation({
  * @param inviteId - The ID of the invitation to accept
  * @returns boolean indicating success
  */
-export const updateFriendInvite = mutation({
+export const updateUserInvite = mutation({
   args: {
     inviteId: v.id("userInvites"),
     status: v.union(v.literal("ACCEPTED"), v.literal("REJECTED")),
@@ -214,24 +214,9 @@ export const updateFriendInvite = mutation({
     }
 
     const invite = await ctx.db.get(args.inviteId);
-    if (!invite) {
-      throw new Error("Invitation not found");
-    }
-
-    if (invite.receivedByUserId !== currentUserId) {
-      throw new Error("Invitation not found");
-    }
-
-    if (invite.status !== "PENDING") {
-      throw new Error("Invitation is not pending");
-    }
-
-    if (
-      invite.inviteType !== "FRIEND" &&
-      invite.inviteType !== "CLOSE_FRIEND"
-    ) {
-      throw new Error("Invitation is not a friend request");
-    }
+    if (!invite) throw new Error("Invitation not found");
+    if (invite.receivedByUserId !== currentUserId) throw new Error("Invitation not found");
+    if (invite.status !== "PENDING") throw new Error("Invitation is not pending");
 
     // Update the invitation status
     await ctx.db.patch(args.inviteId, {
@@ -239,13 +224,29 @@ export const updateFriendInvite = mutation({
       updatedOn: Date.now(),
     });
 
-    if (args.status === "ACCEPTED") {
-      await ctx.db.insert("userFriendships", {
-        userAId: invite.sentByUserId,
-        userBId: invite.receivedByUserId,
-        kind: invite.inviteType,
-        createdOn: Date.now(),
-      });
+    switch (invite.inviteType) {
+      case "FRIEND":
+      case "CLOSE_FRIEND": {
+        if (args.status === "ACCEPTED") {
+          await ctx.db.insert("userFriendships", {
+            userAId: invite.sentByUserId,
+            userBId: invite.receivedByUserId,
+            kind: invite.inviteType,
+            createdOn: Date.now(),
+          });
+        }
+        break;
+      }
+
+      case "GROUP":
+        // Add user to group
+        await ctx.db.insert("userGroupRoles", {
+          groupId: invite.entityId as Id<"userGroups">,
+          userId: currentUserId,
+          role: "MEMBER",
+          createdOn: Date.now(),
+        });
+        break;
     }
 
     return true;
