@@ -1,13 +1,19 @@
-import { query } from './_generated/server';
-import { v } from 'convex/values';
-import { mutation } from './_generated/server';
-import { Id } from './_generated/dataModel';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { query } from "./_generated/server";
+import { v } from "convex/values";
+import { mutation } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { sendPushNotification } from "pushNotifications";
+import { api } from "_generated/api";
 
+type FriendshipStatus = {
+  status: "FRIEND" | "CLOSE_FRIEND" | "SELF" | "OUTGOING_INVITE" | "INCOMING_INVITE" | "NONE";
+  inviteId?: Id<"userInvites">;
+};
 
 /**
  * Get the friendship status between the current user and another user.
- * 
+ *
  * @param otherUserId - The ID of the other user
  * @returns An object containing the status of the friendship
  *  - "NONE": No relationship exists
@@ -17,90 +23,91 @@ import { getAuthUserId } from '@convex-dev/auth/server';
  */
 export const getFriendshipStatus = query({
   args: {
-    otherUserId: v.id('users'),
+    otherUserId: v.id("users"),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<FriendshipStatus> => {
     const currentUserId = await getAuthUserId(ctx);
     if (currentUserId === null) {
-      throw new Error('Unauthenticated');
+      throw new Error("Unauthenticated");
     }
 
     const { otherUserId } = args;
 
     // Don't allow checking friendship status with yourself
     if (currentUserId === otherUserId) {
-      return { status: 'SELF' };
+      return { status: "SELF" };
     }
 
     // Check if users are already friends
     const existingFriendship = await ctx.db
-      .query('userFriendships')
+      .query("userFriendships")
       .filter((q) =>
-        q.or(q.and(
-          q.eq(q.field('userAId'), currentUserId),
-          q.eq(q.field('userBId'), otherUserId)
-        ), q.and(
-          q.eq(q.field('userBId'), currentUserId),
-          q.eq(q.field('userAId'), otherUserId)
-        ))
+        q.or(
+          q.and(
+            q.eq(q.field("userAId"), currentUserId),
+            q.eq(q.field("userBId"), otherUserId),
+          ),
+          q.and(
+            q.eq(q.field("userBId"), currentUserId),
+            q.eq(q.field("userAId"), otherUserId),
+          ),
+        ),
       )
       .first();
 
     if (existingFriendship) {
       return {
         status: existingFriendship.kind,
-        kind: existingFriendship.kind
       };
     }
 
     // Check for pending friend invitations
     const outgoingInvite = await ctx.db
-      .query('userInvites')
+      .query("userInvites")
       .filter((q) =>
         q.and(
-          q.eq(q.field('sentByUserId'), currentUserId),
-          q.eq(q.field('receivedByUserId'), otherUserId),
-          q.eq(q.field('inviteType'), 'FRIEND'),
-          q.eq(q.field('status'), 'PENDING')
-        )
+          q.eq(q.field("sentByUserId"), currentUserId),
+          q.eq(q.field("receivedByUserId"), otherUserId),
+          q.or(q.eq(q.field("inviteType"), "FRIEND"), q.eq(q.field("inviteType"), "CLOSE_FRIEND")),
+          q.eq(q.field("status"), "PENDING"),
+        ),
       )
       .first();
 
     if (outgoingInvite) {
       return {
-        status: 'OUTGOING_INVITE',
-        inviteId: outgoingInvite._id
+        status: "OUTGOING_INVITE",
+        inviteId: outgoingInvite._id,
       };
     }
 
     const incomingInvite = await ctx.db
-      .query('userInvites')
+      .query("userInvites")
       .filter((q) =>
         q.and(
-          q.eq(q.field('sentByUserId'), otherUserId),
-          q.eq(q.field('receivedByUserId'), currentUserId),
-          q.eq(q.field('inviteType'), 'FRIEND'),
-          q.eq(q.field('status'), 'PENDING')
-        )
+          q.eq(q.field("sentByUserId"), otherUserId),
+          q.eq(q.field("receivedByUserId"), currentUserId),
+          q.eq(q.field("inviteType"), "FRIEND"),
+          q.eq(q.field("status"), "PENDING"),
+        ),
       )
       .first();
 
     if (incomingInvite) {
       return {
-        status: 'INCOMING_INVITE',
-        inviteId: incomingInvite._id
+        status: "INCOMING_INVITE",
+        inviteId: incomingInvite._id,
       };
     }
 
     // No relationship exists
-    return { status: 'NONE' };
+    return { status: "NONE" };
   },
 });
 
-
 /**
  * Send a friend invitation from the current user to another user.
- * 
+ *
  * @param sentByUserId - The ID of the user sending the invitation
  * @param receivedByUserId - The ID of the user receiving the invitation
  * @param friendType - The type of friend relationship (FRIEND or CLOSE_FRIEND)
@@ -108,98 +115,122 @@ export const getFriendshipStatus = query({
  */
 export const sendFriendInvite = mutation({
   args: {
-    receivedByUserId: v.id('users'),
-    friendType: v.union(v.literal('FRIEND'), v.literal('CLOSE_FRIEND')),
+    receivedByUserId: v.id("users"),
+    friendType: v.union(v.literal("FRIEND"), v.literal("CLOSE_FRIEND")),
   },
-  handler: async (ctx, args): Promise<Id<'userInvites'>> => {
-
+  handler: async (ctx, args): Promise<Id<"userInvites">> => {
     const currentUserId = await getAuthUserId(ctx);
     if (!currentUserId) {
-      throw new Error('Unauthenticated');
+      throw new Error("Unauthenticated");
     }
-
 
     const receivedByUser = await ctx.db.get(args.receivedByUserId);
     if (!receivedByUser) {
-      throw new Error('Recipient user not found');
+      throw new Error("Recipient user not found");
     }
 
     // Check if an invite already exists and is pending
     const existingInvites = await ctx.db
-      .query('userInvites')
-      .filter((q) => q.and(
-        q.eq(q.field('sentByUserId'), currentUserId),
-        q.eq(q.field('receivedByUserId'), args.receivedByUserId),
-        q.or(q.eq(q.field('inviteType'), 'FRIEND'), q.eq(q.field('inviteType'), 'CLOSE_FRIEND')),
-        q.eq(q.field('status'), 'PENDING')
-      ))
+      .query("userInvites")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("sentByUserId"), currentUserId),
+          q.eq(q.field("receivedByUserId"), args.receivedByUserId),
+          q.or(
+            q.eq(q.field("inviteType"), "FRIEND"),
+            q.eq(q.field("inviteType"), "CLOSE_FRIEND"),
+          ),
+          q.eq(q.field("status"), "PENDING"),
+        ),
+      )
       .collect();
 
     if (existingInvites.length > 0) {
-      throw new Error('A pending invitation already exists');
+      throw new Error("A pending invitation already exists");
     }
 
     // Check if they are already friends
     const existingFriendships = await ctx.db
-      .query('userFriendships')
-      .filter((q) => q.or(
-        q.and(q.eq(q.field('userAId'), currentUserId), q.eq(q.field('userBId'), args.receivedByUserId)),
-        q.and(q.eq(q.field('userBId'), currentUserId), q.eq(q.field('userAId'), args.receivedByUserId))
-      ))
+      .query("userFriendships")
+      .filter((q) =>
+        q.or(
+          q.and(
+            q.eq(q.field("userAId"), currentUserId),
+            q.eq(q.field("userBId"), args.receivedByUserId),
+          ),
+          q.and(
+            q.eq(q.field("userBId"), currentUserId),
+            q.eq(q.field("userAId"), args.receivedByUserId),
+          ),
+        ),
+      )
       .collect();
 
     if (existingFriendships.length > 0) {
-      throw new Error('Already friends with this user');
+      throw new Error("Already friends with this user");
     }
 
     // Create the invitation
     const now = Date.now();
 
-    return await ctx.db.insert('userInvites', {
+    const result = await ctx.db.insert("userInvites", {
       sentByUserId: currentUserId,
       receivedByUserId: args.receivedByUserId,
       entityId: args.receivedByUserId,
       inviteType: args.friendType,
-      status: 'PENDING',
+      status: "PENDING",
       createdOn: now,
       updatedOn: now,
     });
+
+    await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+      to: args.receivedByUserId,
+      title: "New Friend Request",
+      body: `${currentUserId} wants to be your friend`,
+      data: {
+        url: `user-profile-screen/${currentUserId}`,
+      },
+    });
+
+    return result;
   },
 });
 
 /**
  * Accept a friend invitation.
- * 
+ *
  * @param inviteId - The ID of the invitation to accept
  * @returns boolean indicating success
  */
 export const updateFriendInvite = mutation({
   args: {
-    inviteId: v.id('userInvites'),
-    status: v.union(v.literal('ACCEPTED'), v.literal('REJECTED')),
+    inviteId: v.id("userInvites"),
+    status: v.union(v.literal("ACCEPTED"), v.literal("REJECTED")),
   },
   handler: async (ctx, args): Promise<boolean> => {
-
     const currentUserId = await getAuthUserId(ctx);
     if (!currentUserId) {
-      throw new Error('Unauthenticated');
+      throw new Error("Unauthenticated");
     }
 
     const invite = await ctx.db.get(args.inviteId);
     if (!invite) {
-      throw new Error('Invitation not found');
+      throw new Error("Invitation not found");
     }
 
     if (invite.receivedByUserId !== currentUserId) {
-      throw new Error('Invitation not found');
+      throw new Error("Invitation not found");
     }
 
-    if (invite.status !== 'PENDING') {
-      throw new Error('Invitation is not pending');
+    if (invite.status !== "PENDING") {
+      throw new Error("Invitation is not pending");
     }
 
-    if (invite.inviteType !== 'FRIEND' && invite.inviteType !== 'CLOSE_FRIEND') {
-      throw new Error('Invitation is not a friend request');
+    if (
+      invite.inviteType !== "FRIEND" &&
+      invite.inviteType !== "CLOSE_FRIEND"
+    ) {
+      throw new Error("Invitation is not a friend request");
     }
 
     // Update the invitation status
@@ -208,8 +239,8 @@ export const updateFriendInvite = mutation({
       updatedOn: Date.now(),
     });
 
-    if (args.status === 'ACCEPTED') {
-      await ctx.db.insert('userFriendships', {
+    if (args.status === "ACCEPTED") {
+      await ctx.db.insert("userFriendships", {
         userAId: invite.sentByUserId,
         userBId: invite.receivedByUserId,
         kind: invite.inviteType,

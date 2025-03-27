@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { mutation } from "./_generated/server";
+import { action, mutation } from "./_generated/server";
 import { components } from "./_generated/api";
 import { v } from "convex/values";
 import { PushNotifications } from "@convex-dev/expo-push-notifications";
@@ -41,6 +41,8 @@ export const sendPushNotification = mutation({
         data: args.data,
       },
     });
+
+    console.log("Push notification sent", pushId);
   },
 });
 

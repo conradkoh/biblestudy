@@ -83,6 +83,7 @@ export const SearchUserBottomSheet = React.forwardRef<
         >
           <Ionicons name="search" size={16} color={themeColors.text} />
           <BottomSheetTextInput
+            autoFocus
             className="flex-1 font-medium"
             value={searchText}
             onChangeText={setSearchText}

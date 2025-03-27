@@ -25,14 +25,6 @@ import {
   View
 } from "react-native";
 
-// Maps backend friendship status to UI state
-type UIFriendshipStatus =
-  | "NOT_FRIENDS"
-  | "PENDING"
-  | "PENDING_RECEIVED"
-  | "FRIENDS"
-  | "CLOSE_FRIENDS";
-
 const UserProfileScreen: FC = () => {
   const themeColors = useThemeColors();
   const { userId } = useLocalSearchParams<{ userId: Id<"users"> }>();
@@ -43,12 +35,7 @@ const UserProfileScreen: FC = () => {
     | undefined;
   const currentUser = useQuery(api.users.getCurrentUser);
 
-  const [friendshipStatus, setFriendshipStatus] =
-    useState<UIFriendshipStatus>("NOT_FRIENDS");
   const [isLoading, setIsLoading] = useState(false);
-  const [inviteId, setInviteId] = useState<Id<"userInvites"> | undefined>(
-    undefined,
-  );
 
   const friendOptionSheetRef = useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["30%"], []);
@@ -56,45 +43,10 @@ const UserProfileScreen: FC = () => {
   // Backend queries and mutations
   const sendFriendInvite = useMutation(api.invites.sendFriendInvite);
   const updateFriendInvite = useMutation(api.invites.updateFriendInvite);
-  const getFriendshipStatus = useQuery(api.invites.getFriendshipStatus, {
+  const friendshipStatus = useQuery(api.invites.getFriendshipStatus, {
     otherUserId: userId,
   });
 
-  // Update the UI friendship status based on backend data
-  useEffect(() => {
-    // Default values when no data is available
-    if (!getFriendshipStatus) {
-      setInviteId(undefined);
-      setFriendshipStatus("NOT_FRIENDS");
-      return;
-    }
-
-    // Set the invite ID if available
-    if (getFriendshipStatus.inviteId) {
-      setInviteId(getFriendshipStatus.inviteId);
-    } else {
-      setInviteId(undefined);
-    }
-
-    // Map backend status to UI status
-    const status = getFriendshipStatus.status;
-
-    if (status === "SELF") {
-      // When viewing own profile
-      setFriendshipStatus("NOT_FRIENDS"); // No friend button shown for self
-    } else if (status === "OUTGOING_INVITE") {
-      setFriendshipStatus("PENDING");
-    } else if (status === "INCOMING_INVITE") {
-      setFriendshipStatus("PENDING_RECEIVED");
-    } else if (status === "FRIEND") {
-      setFriendshipStatus("FRIENDS");
-    } else if (status === "CLOSE_FRIEND") {
-      setFriendshipStatus("CLOSE_FRIENDS");
-    } else {
-      // Default to NOT_FRIENDS for 'NONE' or any other status
-      setFriendshipStatus("NOT_FRIENDS");
-    }
-  }, [getFriendshipStatus]);
 
   const handleAddFriend = useCallback(() => {
     // Open the friend option bottom sheet
@@ -102,7 +54,8 @@ const UserProfileScreen: FC = () => {
   }, []);
 
   const handleAcceptInvite = useCallback(async () => {
-    if (!inviteId) return;
+    if (!friendshipStatus?.inviteId) return;
+    const { inviteId } = friendshipStatus;
     if (!user) return;
 
     setIsLoading(true);
@@ -112,8 +65,6 @@ const UserProfileScreen: FC = () => {
         inviteId,
         status: "ACCEPTED",
       });
-
-      setFriendshipStatus("FRIENDS");
       Alert.alert(
         "Success",
         `You are now friends with ${user.username || user.name}`,
@@ -124,10 +75,11 @@ const UserProfileScreen: FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [updateFriendInvite, inviteId, user]);
+  }, [updateFriendInvite, user, friendshipStatus]);
 
   const handleRejectInvite = useCallback(async () => {
-    if (!inviteId) return;
+    if (!friendshipStatus?.inviteId) return;
+    const { inviteId } = friendshipStatus;
 
     setIsLoading(true);
 
@@ -137,7 +89,6 @@ const UserProfileScreen: FC = () => {
         status: "REJECTED",
       });
 
-      setFriendshipStatus("NOT_FRIENDS");
       Alert.alert("Success", "Friend request rejected");
     } catch (error) {
       Alert.alert("Error", "Failed to reject friend request");
@@ -145,7 +96,7 @@ const UserProfileScreen: FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [updateFriendInvite, inviteId]);
+  }, [updateFriendInvite, friendshipStatus]);
 
   const sendInvite = useCallback(
     async (friendType: "FRIEND" | "CLOSE_FRIEND") => {
@@ -159,8 +110,6 @@ const UserProfileScreen: FC = () => {
           friendType,
         });
 
-        setFriendshipStatus("PENDING");
-        setInviteId(result);
         Alert.alert(
           "Success",
           `Friend request sent to ${user.username || user.name}`,
@@ -184,17 +133,18 @@ const UserProfileScreen: FC = () => {
       return null;
     }
 
-    switch (friendshipStatus) {
-      case "PENDING":
+    switch (friendshipStatus?.status) {
+      case "OUTGOING_INVITE":
         return (
           <TouchableOpacity
-            className="px-4 py-2 rounded-full bg-gray-300"
+            className="px-4 py-2 rounded-full"
+            style={{ backgroundColor: themeColors.surfaceSecondary }}
             disabled={true}
           >
             <TText className="text-center">Request Sent</TText>
           </TouchableOpacity>
         );
-      case "PENDING_RECEIVED":
+      case "INCOMING_INVITE":
         return (
           <View className="flex-row">
             <TouchableOpacity
@@ -216,13 +166,13 @@ const UserProfileScreen: FC = () => {
             </TouchableOpacity>
           </View>
         );
-      case "FRIENDS":
+      case "FRIEND":
         return (
           <TouchableOpacity className="px-4 py-2 rounded-full bg-gray-300">
             <TText className="text-center">Friends</TText>
           </TouchableOpacity>
         );
-      case "CLOSE_FRIENDS":
+      case "CLOSE_FRIEND":
         return (
           <TouchableOpacity className="px-4 py-2 rounded-full bg-gray-300">
             <TText className="text-center">Close Friends</TText>
@@ -252,7 +202,7 @@ const UserProfileScreen: FC = () => {
   }
 
   // Show loading indicator while fetching friendship status
-  if (user?._id && getFriendshipStatus === undefined) {
+  if (user?._id && friendshipStatus === undefined) {
     return (
       <TSafeAreaView className="h-full">
         <TView className="h-full justify-center items-center">
