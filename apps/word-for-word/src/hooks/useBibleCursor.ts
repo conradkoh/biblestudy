@@ -1,5 +1,5 @@
 import {
-  BibleCursor,
+  type BibleCursor,
   BOOK_COUNT,
   bookIds,
   cursorToIdxCursor,
@@ -8,7 +8,9 @@ import {
 import { mod } from "@/src/utils/math";
 import { useState } from "react";
 
-export function useBibleCursorHandler(onCursorChange?: (delta: Partial<BibleCursor>) => void) {
+export function useBibleCursorHandler(
+  onCursorChange?: (delta: Partial<BibleCursor>) => void,
+) {
   const [cursor, setCursor] = useState<BibleCursor>({
     version: "niv",
     bookId: "genesis",
@@ -18,19 +20,31 @@ export function useBibleCursorHandler(onCursorChange?: (delta: Partial<BibleCurs
 
   return {
     cursor,
+    hasNextChapterInSameBook,
+    hasPrevChapterInSameBook,
     goNext,
     goPrev,
     setCursor,
     updateCursor,
   };
 
+  function hasNextChapterInSameBook() {
+    const nextChapter = cursor.chapter + 1;
+    return nextChapter <= mapBookIdsToChapterCounts[cursor.bookId]
+  }
+
+  function hasPrevChapterInSameBook() {
+    const prevChapter = cursor.chapter - 1;
+    return prevChapter >= 1;
+  }
+
   function goNext() {
     const idxCursor = cursorToIdxCursor(cursor);
-    const nextChapter = cursor.chapter + 1;
-    if (nextChapter > mapBookIdsToChapterCounts[cursor.bookId]) {
+    if (!hasNextChapterInSameBook()) {
       const newBookIdx = mod(idxCursor.bookIdx + 1, BOOK_COUNT);
+      if (!bookIds[newBookIdx]) throw new Error(`Invalid book index ${newBookIdx}`);
       updateCursor({
-        bookId: bookIds[newBookIdx]!,
+        bookId: bookIds[newBookIdx],
         chapter: 1,
       });
       return;
@@ -42,14 +56,15 @@ export function useBibleCursorHandler(onCursorChange?: (delta: Partial<BibleCurs
   function goPrev() {
     const idxCursor = cursorToIdxCursor(cursor);
 
-    if (cursor.chapter === 1) {
+    if (!hasPrevChapterInSameBook()) {
       const newBookIdx = mod(idxCursor.bookIdx - 1, BOOK_COUNT);
-      const newBookdId = bookIds[newBookIdx]!
+      if (!bookIds[newBookIdx]) throw new Error(`Invalid book index ${newBookIdx}`);
+      const newBookdId = bookIds[newBookIdx];
       const nextChapterIdx = mapBookIdsToChapterCounts[newBookdId] - 1;
       const nextChapter = nextChapterIdx + 1;
       setCursor({
         ...cursor,
-        bookId: bookIds[newBookIdx]!,
+        bookId: bookIds[newBookIdx],
         chapter: nextChapter,
       });
       return;

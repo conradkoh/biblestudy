@@ -17,13 +17,18 @@ import {
   mapBookIdsToName,
 } from "@/src/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useRef, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { TouchableOpacity, View, PanResponder, Animated, Dimensions, GestureResponderEvent, PanResponderGestureState } from "react-native";
+import * as Haptics from 'expo-haptics';
+import SwipeableContainer from "@/src/components/swipeable-container";
+
 
 export default function ReadScreen() {
   const bible = useBibleStore();
   const settings = useSettingsStore();
   const bibleChapterViewRef = useRef<BibleChapterViewRef | null>(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+
   const onCursorChange = useCallback((delta: Partial<BibleCursor>) => {
     const verse = delta.verse;
     if (verse) {
@@ -48,10 +53,21 @@ export default function ReadScreen() {
   useBibleBookmark(bible, cursorHandler);
   const themeColors = useThemeColors();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-
   const [showInterlinear, setShowInterlinear] = useState(false);
-
   const interlinearCursorHandler = useBibleCursorHandler();
+  const scrollTimeout = useRef<NodeJS.Timeout>();
+
+
+  // Handle scroll state
+  const handleScrollBegin = useCallback(() => {
+    setIsScrolling(true);
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 150); // Reset after 150ms of no scrolling
+  }, []);
 
   function onPressVerse(verse: number) {
     setShowInterlinear(true);
@@ -60,6 +76,7 @@ export default function ReadScreen() {
       verse,
     });
   }
+
   return (
     <>
       <TSafeAreaView
@@ -74,16 +91,43 @@ export default function ReadScreen() {
             alignItems: "center",
           }}
         >
-          <BibleChapterView
-            ref={bibleChapterViewRef}
-            cursorHandler={cursorHandler}
-            onPressVerse={onPressVerse}
-            highlightedVerse={
-              showInterlinear
-                ? interlinearCursorHandler.cursor.verse
-                : undefined
-            }
-          />
+          <SwipeableContainer
+            isScrolling={isScrolling}
+            onNext={cursorHandler.goNext}
+            onPrev={cursorHandler.goPrev}
+            nextHint={cursorHandler.hasNextChapterInSameBook() ?
+              <TText
+                style={{
+                  fontSize: 24,
+                  color: themeColors.text,
+                  fontWeight: "bold",
+                }}
+              >
+                {cursorHandler.cursor.chapter + 1}
+              </TText> : <Ionicons name="arrow-forward-sharp" size={24} color={themeColors.text} />}
+            prevHint={cursorHandler.hasPrevChapterInSameBook() ? <TText
+              style={{
+                fontSize: 24,
+                color: themeColors.text,
+                fontWeight: "bold",
+              }}
+            >
+              {cursorHandler.cursor.chapter - 1}
+            </TText> : <Ionicons name="arrow-back-sharp" size={24} color={themeColors.text} />}
+          >
+            <BibleChapterView
+              ref={bibleChapterViewRef}
+              cursorHandler={cursorHandler}
+              onPressVerse={onPressVerse}
+              highlightedVerse={
+                showInterlinear
+                  ? interlinearCursorHandler.cursor.verse
+                  : undefined
+              }
+              onScrollBegin={handleScrollBegin}
+            />
+          </SwipeableContainer>
+
           <View
             className="flex flex-row items-center justify-between px-2 h-10"
             style={{

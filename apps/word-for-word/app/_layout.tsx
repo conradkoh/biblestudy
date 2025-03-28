@@ -1,22 +1,22 @@
-import { router, Stack, useRootNavigationState } from "expo-router";
-import React, { useEffect } from "react";
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import LoginScreen from "@/src/components/auth/login-screen";
+import { ToastProvider } from "@/src/components/core/ToastProvider";
+import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
+import { TText } from "@/src/components/core/TText";
+import { TView } from "@/src/components/core/TView";
+import { useExpoUpdates } from "@/src/hooks/useExpoUpdates";
+import { useFontLoader } from "@/src/hooks/useFontLoader";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { convex } from "@/src/services/convex";
+import { useNotificationObserver } from "@/src/services/push-notifications";
+import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import { Stack } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import React from "react";
+import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { useFontLoader } from "@/src/hooks/useFontLoader";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import * as SecureStore from "expo-secure-store";
-import LoginScreen from "@/src/components/auth/login-screen";
-import { Authenticated, Unauthenticated, AuthLoading, useQuery } from "convex/react";
-import { ActivityIndicator } from "react-native";
-import { useNotificationObserver } from "@/src/services/push-notifications";
-import { TView } from "@/src/components/core/TView";
-import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { TText } from "@/src/components/core/TText";
-import { useExpoUpdates } from "@/src/hooks/useExpoUpdates";
-import { ToastProvider } from "@/src/components/core/ToastProvider";
 
 const secureStorage = {
   getItem: SecureStore.getItemAsync,
@@ -27,7 +27,6 @@ const secureStorage = {
 export default function TabLayout() {
   const fontsLoaded = useFontLoader();
   const themeColors = useThemeColors();
-
   useNotificationObserver();
   useExpoUpdates();
 

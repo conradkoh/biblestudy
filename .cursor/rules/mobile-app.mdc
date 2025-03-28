@@ -6,3 +6,4 @@ alwaysApply: true
 
 - All color references should use reference colors from [ThemeColors.ts](mdc:apps/word-for-word/src/constants/ThemeColors.ts) directly, for the purposes of dark mode compatibility, instead of tailwind colors.
 - However, we should use tailwind for styling for other properties as far as possible. (Some components like gorhom's `BottomSheet` components don't respond to tailwind classes).
+- Always use `yarn add` instead of `npm install` as we are in a monorepo (yarn workspaces)

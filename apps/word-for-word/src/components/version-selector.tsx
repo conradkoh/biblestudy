@@ -3,7 +3,7 @@ import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { versions } from "@/src/stores/bible-store";
+import { useBibleStore } from "@/src/stores/bible-store";
 import {
   BottomSheetFlatList,
   type BottomSheetModal,
@@ -21,6 +21,8 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
   const snapPoints = useMemo(() => ["70%"], []);
   const { version } = cursorHandler.cursor;
   const themeColors = useThemeColors();
+  const bibleStore = useBibleStore();
+  const versions = bibleStore.getTranslation(version);
 
   const handlePresentModalPress = useCallback(() => {
     bottomSheetModalRef.current?.present();
@@ -60,7 +62,7 @@ export const VersionSelector: FC<VersionSelectorProps> = ({
           className="text-sm mb-1 ml-1"
           style={{ color: themeColors.textSecondary }}
         >
-          {versions[version].abbreviation.toUpperCase()}
+          {versions.abbreviation.toUpperCase()}
         </TText>
       </TouchableOpacity>
 

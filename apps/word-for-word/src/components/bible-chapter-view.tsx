@@ -14,6 +14,7 @@ type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
   onPressVerse: (verse: number) => void;
   highlightedVerse?: number;
+  onScrollBegin?: () => void;
 };
 
 export type BibleChapterViewRef = {
@@ -23,7 +24,7 @@ export type BibleChapterViewRef = {
 const BibleChapterView = React.forwardRef<
   BibleChapterViewRef,
   BibleChapterView
->(({ cursorHandler, onPressVerse, highlightedVerse }, forwardRef) => {
+>(({ cursorHandler, onPressVerse, highlightedVerse, onScrollBegin }, forwardRef) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const bible = useBibleStore();
   const settings = useSettingsStore();
@@ -46,8 +47,12 @@ const BibleChapterView = React.forwardRef<
     }),
     [],
   );
+
   return (
-    <ScrollView ref={scrollViewRef}>
+    <ScrollView
+      ref={scrollViewRef}
+      onScrollBeginDrag={onScrollBegin}
+    >
       <TView className="px-6">
         <TView className="flex-row items-end mb-2 mt-12">
           <TText type="title">
