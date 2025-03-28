@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as bible from "../bible.js";
+import type * as cron from "../cron.js";
 import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as invites from "../invites.js";
@@ -21,6 +22,7 @@ import type * as models_user_user_friendship from "../models/user/user_friendshi
 import type * as models_user_user_groups from "../models/user/user_groups.js";
 import type * as models_user_user_invites from "../models/user/user_invites.js";
 import type * as pushNotifications from "../pushNotifications.js";
+import type * as scheduledJobs from "../scheduledJobs.js";
 import type * as system from "../system.js";
 import type * as telegram from "../telegram.js";
 import type * as userNotifications from "../userNotifications.js";
@@ -43,6 +45,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   bible: typeof bible;
+  cron: typeof cron;
   groups: typeof groups;
   http: typeof http;
   invites: typeof invites;
@@ -54,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   "models/user/user_groups": typeof models_user_user_groups;
   "models/user/user_invites": typeof models_user_user_invites;
   pushNotifications: typeof pushNotifications;
+  scheduledJobs: typeof scheduledJobs;
   system: typeof system;
   telegram: typeof telegram;
   userNotifications: typeof userNotifications;
