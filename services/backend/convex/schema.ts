@@ -6,6 +6,7 @@ import { userGroupConvexSchema, userGroupRoleConvexSchema } from 'models/user/us
 import { userInviteConvexSchema } from 'models/user/user_invites';
 import { userFriendshipConvexSchema } from 'models/user/user_friendship';
 import { v } from 'convex/values';
+import { memoryVerseConvexSchema } from 'models/memory_verses';
 
 export default defineSchema({
   ...authTables,
@@ -35,4 +36,5 @@ export default defineSchema({
   })).index("email", ["email"]).searchIndex("search_username", {
     searchField: 'username'
   }),
+  memoryVerses: defineTable(memoryVerseConvexSchema)
 });
