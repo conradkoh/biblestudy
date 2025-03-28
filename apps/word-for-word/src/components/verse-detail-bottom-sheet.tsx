@@ -105,10 +105,10 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
           </View>
           {cursorHandler.cursor.verse && (
             <VerseActions
-              verse={bible.getVerse({
+              cursor={{
                 ...cursorHandler.cursor,
                 verse: cursorHandler.cursor.verse,
-              })}
+              }}
               verseName={bible.getVerseNameFormatted(cursorHandler.cursor)}
               version={cursorHandler.cursor.version}
             />

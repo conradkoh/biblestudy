@@ -4,7 +4,26 @@ import type { Id } from "./_generated/dataModel";
 import { ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
+export const getExistingMemoryVerseId = query({
+  args: {
+    text: v.string()
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
+    }
+
+    const existingMemoryVerse = await ctx.db.query('memoryVerses').filter(q => q.and(
+      q.eq(q.field('userId'), currentUserId),
+      q.eq(q.field('text'), args.text),
+    )).first();
+
+    return existingMemoryVerse?._id;
+  },
+});
 /**
  * Add a new memory verse for the current user
  */
@@ -17,16 +36,24 @@ export const addMemoryVerse = mutation({
     bookId: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
     }
-
-    const userId = identity.subject as Id<"users">;
     const now = Date.now();
 
+    // check if already exists
+    const existingMemoryVerse = await ctx.db.query('memoryVerses').filter(q => q.and(
+      q.eq(q.field('userId'), currentUserId),
+      q.eq(q.field('text'), args.text),
+    )).first();
+
+    if (existingMemoryVerse) {
+      throw new Error("Memory verse already saved");
+    }
+
     return await ctx.db.insert("memoryVerses", {
-      userId,
+      userId: currentUserId,
       text: args.text,
       version: args.version,
       verse: args.verse,
@@ -35,6 +62,19 @@ export const addMemoryVerse = mutation({
       createdAt: now,
       memoryEntries: [],
     });
+  },
+});
+export const removeMemoryVerse = mutation({
+  args: {
+    id: v.id("memoryVerses"),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
+    }
+
+    return await ctx.db.delete(args.id);
   },
 });
 
@@ -46,16 +86,14 @@ export const addMemoryEntry = mutation({
     memoryVerseId: v.id("memoryVerses"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
     }
-
-    const userId = identity.subject as Id<"users">;
 
     // Verify the memory verse belongs to the user
     const memoryVerse = await ctx.db.get(args.memoryVerseId);
-    if (!memoryVerse || memoryVerse.userId !== userId) {
+    if (!memoryVerse || memoryVerse.userId !== currentUserId) {
       throw new ConvexError("Memory verse not found or unauthorized");
     }
 
@@ -76,16 +114,14 @@ export const addMemoryEntry = mutation({
  */
 export const getMemoryVerses = query({
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("Unauthorized");
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
     }
-
-    const userId = identity.subject as Id<"users">;
 
     return await ctx.db
       .query("memoryVerses")
-      .filter((q) => q.eq(q.field("userId"), userId))
+      .filter((q) => q.eq(q.field("userId"), currentUserId))
       .order("desc")
       .collect();
   },
