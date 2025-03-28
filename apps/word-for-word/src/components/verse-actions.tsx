@@ -9,13 +9,13 @@ import React, { type FC } from "react";
 import { View } from "react-native";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
-import type { BibleCursor } from "@/src/utils/bible-data-utils";
+import type { BibleCursor } from "@common/utils/bible-data-utils";
 import { useBibleStore } from "@/src/stores/bible-store";
 
 type VerseActionsProps = {
   cursor: Required<BibleCursor>;
   verseName: string;
-  version: string;
+  version: 'niv' | 'kjv';
 };
 
 const VerseActions: FC<VerseActionsProps> = ({

@@ -27,6 +27,7 @@
 		"@react-navigation/native": "^6.0.2",
 		"backend": "*",
 		"classnames": "2.5.1",
+		"date-fns": "4.1.0",
 		"eventemitter3": "5.0.1",
 		"expo": "~51.0.39",
 		"expo-auth-session": "~5.5.2",

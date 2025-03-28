@@ -38,7 +38,7 @@ export default function TabsLayout() {
     initialRouteName="read-screen"
   >
     <Tabs.Screen
-      name="memorize-screen"
+      name="memory-verses-screen"
       options={{
         title: "Memorize",
         tabBarIcon: ({ color, focused }) => (

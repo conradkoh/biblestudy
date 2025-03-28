@@ -6,7 +6,6 @@ import { userGroupConvexSchema, userGroupRoleConvexSchema } from 'models/user/us
 import { userInviteConvexSchema } from 'models/user/user_invites';
 import { userFriendshipConvexSchema } from 'models/user/user_friendship';
 import { v } from 'convex/values';
-import { memoryVerseConvexSchema } from 'models/memory_verses';
 
 export default defineSchema({
   ...authTables,
@@ -36,5 +35,16 @@ export default defineSchema({
   })).index("email", ["email"]).searchIndex("search_username", {
     searchField: 'username'
   }),
-  memoryVerses: defineTable(memoryVerseConvexSchema)
+  memoryVerses: defineTable(v.object({
+    userId: v.id("users"),
+    text: v.string(),
+    version: v.union(v.literal('niv'), v.literal('kjv')),
+    verse: v.number(),
+    chapter: v.number(),
+    bookId: v.string(),
+    createdAt: v.number(),
+    memoryEntries: v.array(v.object({
+      createdAt: v.number(),
+    })),
+  }))
 });

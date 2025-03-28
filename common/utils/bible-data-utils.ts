@@ -68,6 +68,7 @@ export const mapBookIdsToName = {
 };
 
 export type BookId = keyof typeof mapBookIdsToName;
+
 export const mapBookIdsToChapterCounts: Record<BookId, number> = {
   genesis: 50,
   exodus: 40,
@@ -141,7 +142,7 @@ export const bookNames = Object.values(mapBookIdsToName);
 export const BOOK_COUNT = bookIds.length;
 
 export function isBookId(bookId: string): bookId is BookId {
-  return bookId.includes(bookId);
+  return bookIds.includes(bookId as BookId);
 }
 
 /**
@@ -173,6 +174,11 @@ export function bookIdFromName(bookName: string): BookId | null {
   }
 
   return normalizedBookName;
+}
+
+export function getVerseNameFormatted(cursor: BibleCursor, includeVersion = false) {
+  const bookName = mapBookIdsToName[cursor.bookId];
+  return `${bookName} ${cursor.chapter}:${cursor.verse}${includeVersion ? ` (${cursor.version.toUpperCase()})` : ""}`;
 }
 
 export function cursorToIdxCursor(cursor: BibleCursor): BibleIdxCursor {

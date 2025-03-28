@@ -17,7 +17,7 @@ import {
   type BookId,
   bookIds,
   mapBookIdsToName,
-} from "@/src/utils/bible-data-utils";
+} from "@common/utils/bible-data-utils";
 
 export type BibleStore = {
   getTranslation: (versionId: BibleVersionId) => GetBibleTranslation;
@@ -29,7 +29,6 @@ export type BibleStore = {
     bookId: BookId,
     version: BibleVersionId,
   ) => GetBibleTranslation["books"][number] | undefined;
-  getVerseNameFormatted: (cursor: BibleCursor) => string;
   getInterlinearVerse: (cursor: BibleCursor) => InterlinearVerse | null;
   lookupStrongsNumber: (strongsNumber: string) => LexiconWord | undefined;
   findVersesByStrongsNumber: (
@@ -83,10 +82,6 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     if (bookIdx === -1) return;
     const book = get().getTranslation(version).books[bookIdx];
     return book;
-  },
-  getVerseNameFormatted(cursor: BibleCursor) {
-    const bookName = mapBookIdsToName[cursor.bookId];
-    return `${bookName} ${cursor.chapter}:${cursor.verse}`;
   },
   getInterlinearVerse: (cursor) => {
     const { bookId, chapter, verse } = cursor;

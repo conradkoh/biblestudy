@@ -4,7 +4,7 @@ import {
   bookIds,
   cursorToIdxCursor,
   mapBookIdsToChapterCounts,
-} from "@/src/utils/bible-data-utils";
+} from "@common/utils/bible-data-utils";
 import { mod } from "@/src/utils/math";
 import { useState } from "react";
 

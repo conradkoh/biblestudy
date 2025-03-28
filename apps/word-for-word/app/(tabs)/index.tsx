@@ -15,7 +15,7 @@ import { useSettingsStore } from "@/src/stores/settings-store";
 import {
   type BibleCursor,
   mapBookIdsToName,
-} from "@/src/utils/bible-data-utils";
+} from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View, PanResponder, Animated, Dimensions, GestureResponderEvent, PanResponderGestureState } from "react-native";

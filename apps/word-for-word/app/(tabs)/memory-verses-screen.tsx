@@ -7,47 +7,34 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useQuery } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
 import { useBibleStore } from "@/src/stores/bible-store";
-import { mapBookIdsToName, type BookId } from "@/src/utils/bible-data-utils";
+import { mapBookIdsToName, type BookId } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import type { Doc } from "@backend/convex/_generated/dataModel";
+import { useRouter } from "expo-router";
+import { startOfDay, isSameDay, isYesterday, isToday, differenceInDays } from "date-fns";
+
+type StreakInfo = {
+  lastEntryDate: Date;
+  numStreakDays: number;
+};
 
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
   const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
-  const bible = useBibleStore();
+  const router = useRouter();
 
   const getVerseName = useCallback((bookId: BookId, chapter: number, verse: number) => {
     return `${mapBookIdsToName[bookId]} ${chapter}:${verse}`;
   }, []);
 
-  const getStreakInfo = useCallback((memoryEntries: { createdAt: number }[]) => {
-    if (memoryEntries.length === 0) return null;
-
-    const now = Date.now();
-    const oneDayMs = 24 * 60 * 60 * 1000;
-    const lastEntry = memoryEntries[memoryEntries.length - 1];
-    if (!lastEntry) return null;
-
-    const lastEntryDate = new Date(lastEntry.createdAt);
-    const lastEntryDay = lastEntryDate.getTime() - (lastEntryDate.getTime() % oneDayMs);
-    const today = now - (now % oneDayMs);
-
-    // Check if there are entries for the last 3 consecutive days
-    const hasStreak = memoryEntries.some(entry => {
-      const entryDate = new Date(entry.createdAt);
-      const entryDay = entryDate.getTime() - (entryDate.getTime() % oneDayMs);
-      return entryDay === lastEntryDay - oneDayMs;
-    }) && memoryEntries.some(entry => {
-      const entryDate = new Date(entry.createdAt);
-      const entryDay = entryDate.getTime() - (entryDate.getTime() % oneDayMs);
-      return entryDay === lastEntryDay - (2 * oneDayMs);
+  const handleVersePress = useCallback((verse: Doc<"memoryVerses">) => {
+    router.push({
+      pathname: "/recite-verse-screen",
+      params: {
+        verseId: verse._id,
+      },
     });
-
-    return {
-      lastEntryDate,
-      hasStreak
-    };
-  }, []);
+  }, [router]);
 
   const renderItem = useCallback(({ item }: { item: Doc<"memoryVerses"> }) => {
     const verseName = getVerseName(item.bookId as BookId, item.chapter, item.verse);
@@ -61,16 +48,17 @@ const MemorizeScreen: FC = () => {
           backgroundColor: themeColors.surface,
           borderBottomColor: themeColors.border
         }}
+        onPress={() => handleVersePress(item)}
       >
         <TView className="flex-row justify-between items-start mb-2">
           <TText className="font-bold text-lg" style={{ color: themeColors.text }}>
             {verseName}
           </TText>
-          {streakInfo?.hasStreak && (
+          {streakInfo && streakInfo.numStreakDays > 0 && (
             <TView className="flex-row items-center bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full">
               <Ionicons name="flame" size={16} color={themeColors.warning} />
               <TText className="ml-1 text-sm" style={{ color: themeColors.warning }}>
-                Streak
+                {streakInfo.numStreakDays} day{streakInfo.numStreakDays > 1 ? 's' : ''} streak
               </TText>
             </TView>
           )}
@@ -85,17 +73,17 @@ const MemorizeScreen: FC = () => {
         </TText>
 
         <TView className="flex-row items-center">
-          <Ionicons name="time-outline" size={14} color={themeColors.textTertiary} />
+          <Ionicons name="time-outline" size={14} color={streakInfo?.lastEntryDate ? themeColors.success : themeColors.textTertiary} />
           <TText
             className="ml-1 text-xs"
-            style={{ color: themeColors.textTertiary }}
+            style={{ color: streakInfo?.lastEntryDate ? themeColors.success : themeColors.textTertiary }}
           >
-            Last memorized: {streakInfo?.lastEntryDate.toLocaleDateString()}
+            {!streakInfo ? 'Not memorized' : `Last memorized: ${streakInfo.lastEntryDate.toLocaleDateString()}`}
           </TText>
         </TView>
       </TouchableOpacity>
     );
-  }, [getVerseName, getStreakInfo, themeColors]);
+  }, [getVerseName, themeColors, handleVersePress]);
 
   if (!memoryVerses) {
     return (
@@ -134,3 +122,48 @@ const MemorizeScreen: FC = () => {
 };
 
 export default MemorizeScreen;
+
+
+const getStreakInfo = (memoryEntries: { createdAt: number }[]): StreakInfo | null => {
+  if (memoryEntries.length === 0) return null;
+
+  // Sort entries by date in descending order
+  const sortedEntries = [...memoryEntries].sort((a, b) => b.createdAt - a.createdAt);
+  const lastEntry = sortedEntries[0];
+  if (!lastEntry) return null;
+
+  const lastEntryDate = new Date(lastEntry.createdAt);
+  const lastEntryStartOfDay = startOfDay(lastEntryDate);
+
+  // If the last entry was not today or yesterday, there's no streak
+  if (!isToday(lastEntryDate) && !isYesterday(lastEntryDate)) {
+    return {
+      lastEntryDate,
+      numStreakDays: 0
+    };
+  }
+
+  // Count consecutive days
+  let numStreakDays = 1;
+  let currentDate = lastEntryStartOfDay;
+
+  for (let i = 1; i < sortedEntries.length; i++) {
+    const entry = sortedEntries[i];
+    if (!entry) continue;
+
+    const entryDate = startOfDay(new Date(entry.createdAt));
+    const daysDiff = differenceInDays(currentDate, entryDate);
+
+    // If there's a gap in days, break the streak
+    if (daysDiff > 1) break;
+    currentDate = entryDate;
+
+    if (daysDiff === 0) continue;
+    numStreakDays++;
+  }
+
+  return {
+    lastEntryDate,
+    numStreakDays
+  };
+};

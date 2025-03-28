@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { BibleStore } from "@/src/stores/bible-store";
-import type { BibleCursor } from "@/src/utils/bible-data-utils";
+import type { BibleCursor } from "@common/utils/bible-data-utils";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 
 const STORAGE_KEY = "bible-bookmark";

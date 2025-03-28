@@ -1,4 +1,4 @@
-import { BookId } from "@/src/utils/bible-data-utils";
+import type { BookId } from "@common/utils/bible-data-utils";
 
 export type InterlinearBible = {
   translation: string;

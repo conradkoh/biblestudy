@@ -52,6 +52,7 @@ export default function TabLayout() {
               <Authenticated>
                 <Stack>
                   <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+                  <Stack.Screen name="recite-verse-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
                   <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
                   <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
                 </Stack>

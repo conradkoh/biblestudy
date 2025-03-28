@@ -12,7 +12,7 @@ import {
   mapBookIdsToChapterCounts,
   mapBookIdsToName,
   type BibleCursor,
-} from "@/src/utils/bible-data-utils";
+} from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import Fuse from "fuse.js";
 import React, { useEffect, useRef, useState, type FC } from "react";
@@ -71,7 +71,7 @@ const SearchBox: FC<SearchBoxProps> = ({
     ? result.map((v) => v.item)
     : bookNames;
 
-  const bookId = bookIdFromName(bookNameSearch ?? "");
+  const bookId = bookNameSearch ? bookIdFromName(bookNameSearch) : null;
   const maxChapterNumber = bookId ? mapBookIdsToChapterCounts[bookId] : 0;
   const isValidBookName = !!bookId;
   const chapterSearchNum = Number.parseInt(chapterSearch);

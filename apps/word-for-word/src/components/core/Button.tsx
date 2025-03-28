@@ -14,7 +14,7 @@ export type ButtonProps = Omit<TouchableOpacityProps, "ref" | "children"> & {
   isLoading?: boolean;
   leadingIcon?: (props: { style: StyleProp<TextStyle> }) => React.ReactNode;
   trailingIcon?: (props: { style: StyleProp<TextStyle> }) => React.ReactNode;
-  children: (props: unknown) => React.ReactNode;
+  children: (props: { style: StyleProp<TextStyle> }) => React.ReactNode;
 };
 
 export const Button = React.forwardRef<TouchableOpacity, ButtonProps>(
@@ -64,7 +64,7 @@ export const Button = React.forwardRef<TouchableOpacity, ButtonProps>(
         {!isLoading &&
           leadingIcon &&
           leadingIcon({ style: { color: themeColors.text } })}
-        {!isLoading && children({})}
+        {!isLoading && children({ style: { color: themeColors.text } })}
         {!isLoading &&
           trailingIcon &&
           trailingIcon({ style: { color: themeColors.text } })}

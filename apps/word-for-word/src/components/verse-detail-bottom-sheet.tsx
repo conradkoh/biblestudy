@@ -7,7 +7,7 @@ import {
   useBibleStore,
   versions,
 } from "@/src/stores/bible-store";
-import { mapBookIdsToName } from "@/src/utils/bible-data-utils";
+import { getVerseNameFormatted, mapBookIdsToName } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, {
   type BottomSheetBackdropProps,
@@ -100,7 +100,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
               style={{ color: themeColors.text }}
             />
             <TText className="text-[17px] font-bold">
-              {bible.getVerseNameFormatted(cursorHandler.cursor)}
+              {getVerseNameFormatted(cursorHandler.cursor)}
             </TText>
           </View>
           {cursorHandler.cursor.verse && (
@@ -109,7 +109,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                 ...cursorHandler.cursor,
                 verse: cursorHandler.cursor.verse,
               }}
-              verseName={bible.getVerseNameFormatted(cursorHandler.cursor)}
+              verseName={getVerseNameFormatted(cursorHandler.cursor)}
               version={cursorHandler.cursor.version}
             />
           )}

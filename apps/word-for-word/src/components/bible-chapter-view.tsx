@@ -6,7 +6,7 @@ import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
-import { mapBookIdsToName } from "@/src/utils/bible-data-utils";
+import { mapBookIdsToName } from "@common/utils/bible-data-utils";
 import React, { useImperativeHandle, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 
