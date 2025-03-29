@@ -54,7 +54,6 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
 
   const renderFriendItem = useCallback(
     ({ item: user }: { item: Doc<"users"> }) => {
-      console.log(sentPrayers)
       const receivedPrayer = receivedPrayers?.find(prayer => prayer.senderId === user._id);
       const sentPrayer = sentPrayers?.find(prayer => prayer.receiverId === user._id);
 

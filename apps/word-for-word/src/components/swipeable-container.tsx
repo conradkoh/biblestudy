@@ -25,7 +25,7 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
   prevHint,
 }) => {
   const pan = useRef(new Animated.ValueXY());
-  const [hasTriggeredHaptic, setHasTriggeredHaptic] = useState(false);
+  const hasTriggeredHaptic = useRef(false);
   const [showHints, setShowHints] = useState(true);
 
   const translateX = pan.current.x.interpolate({
@@ -56,11 +56,8 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
         );
       },
       onPanResponderGrant: () => {
-        // pan.setOffset({
-        //   x: currentPanX,
-        //   y: 0,
-        // });
         pan.current.setValue({ x: 0, y: 0 });
+        hasTriggeredHaptic.current = false;
       },
       onPanResponderMove: (_, gestureState) => {
         setShowHints(true);
@@ -68,11 +65,11 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
         pan.current.setValue({ x: dx, y: 0 });
         // Trigger haptic feedback at max swipe distance
         const absDx = Math.abs(dx);
-        if (absDx > MAX_SWIPE_DISTANCE && !hasTriggeredHaptic) {
+        if (absDx > MAX_SWIPE_DISTANCE && !hasTriggeredHaptic.current) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          setHasTriggeredHaptic(true);
+          hasTriggeredHaptic.current = true;
         } else if (absDx <= MAX_SWIPE_DISTANCE) {
-          setHasTriggeredHaptic(false);
+          hasTriggeredHaptic.current = false;
         }
       },
       onPanResponderRelease: (_, gestureState) => {
