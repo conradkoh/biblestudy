@@ -183,12 +183,14 @@ export const sendFriendInvite = mutation({
       updatedOn: now,
     });
 
+    const currentUser = await ctx.db.get(currentUserId);
+
     await ctx.runMutation(api.pushNotifications.sendPushNotification, {
       to: args.receivedByUserId,
       title: "New Friend Request",
-      body: `${currentUserId} wants to be your friend`,
+      body: `${currentUser?.username} wants to be ${args.friendType === "FRIEND" ? "your friend" : "your close friend"}`,
       data: {
-        url: `user-profile-screen/${currentUserId}`,
+        url: 'notifications-screen',
       },
     });
 

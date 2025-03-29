@@ -5,12 +5,13 @@ import SearchUserBottomSheet from "@/src/components/search-user-bottom-sheet";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { api } from "@backend/convex/_generated/api";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import React, { type FC, useCallback, useRef, useState } from "react";
-import { FlatList, Image, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
+import { CommonEvents } from "@/src/hooks/useEvents";
 
 type FriendsScreenProps = unknown;
 
@@ -27,6 +28,9 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
 
   const friends = useQuery(api.users.getUserFriends);
   const userGroups = useQuery(api.users.getUserGroups);
+
+  const removeFriend = useMutation(api.users.removeFriend);
+  const sendMessage = useMutation(api.messages.sendMessage);
 
   const openAddFriendSheet = useCallback(() => {
     searchUserBottomSheetRef.current?.present();
@@ -49,21 +53,64 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   }, []);
 
   const renderFriendItem = useCallback(
-    ({ item }: { item: Doc<"users"> }) => (
+    ({ item: user }: { item: Doc<"users"> }) => (
       <TouchableOpacity
-        onPress={() => navigateToUserProfile(item._id)}
+        onPress={() => {
+          CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+            title: user.username,
+            options: [
+              {
+                id: "view_profile",
+                label: "View Profile",
+                onSelect: () => navigateToUserProfile(user._id),
+              },
+              {
+                id: "poke",
+                label: "Poke to read their bible",
+                onSelect: () => {
+                  sendMessage({
+                    content: '',
+                    kind: 'POKE',
+                    receiverId: user._id,
+                  })
+                },
+              },
+              // {
+              //   id: "prayer",
+              //   label: "Leave a prayer",
+              //   onSelect: () => {
+              //     sendMessage({
+              //       content: '',
+              //       kind: 'PRAYER',
+              //       receiverId: user._id,
+              //     })
+              //   },
+              // },
+              {
+                id: "remove_friend",
+                label: "Remove Friend",
+                onSelect: () => {
+                  Alert.alert("Remove Friend", "Are you sure you want to remove this friend?", [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Remove", style: "destructive", onPress: () => removeFriend({ otherUserId: user._id }) },
+                  ]);
+                },
+              },
+            ],
+          });
+        }}
         style={{ borderBottomColor: themeColors.divider }}
         className="p-3 flex-row items-center border-b"
       >
         <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
-          {item.image ? <Image source={{ uri: item.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
-            {(item.name ?? item.username)?.charAt(0).toUpperCase()}
+          {user.image ? <Image source={{ uri: user.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
+            {(user.name ?? user.username)?.charAt(0).toUpperCase()}
           </TText>}
         </View>
-        <TText className="font-bold">@{item.username}</TText>
+        <TText className="font-bold">@{user.username}</TText>
       </TouchableOpacity>
     ),
-    [navigateToUserProfile, themeColors.divider, themeColors.surfaceTertiary],
+    [navigateToUserProfile, removeFriend, themeColors, sendMessage],
   );
 
   const renderGroupItem = useCallback(

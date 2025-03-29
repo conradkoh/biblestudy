@@ -31,9 +31,7 @@ const UserProfileScreen: FC = () => {
   const { userId } = useLocalSearchParams<{ userId: Id<"users"> }>();
   const router = useRouter();
 
-  const user = useQuery(api.users.getUserById, { userId }) as
-    | Doc<"users">
-    | undefined;
+  const user = useQuery(api.users.getUserById, { userId });
   const currentUser = useQuery(api.users.getCurrentUser);
 
   const [isLoading, setIsLoading] = useState(false);

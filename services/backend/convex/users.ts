@@ -178,3 +178,35 @@ export const isUsernameAvailable = query({
     return !isTaken;
   },
 });
+
+export const removeFriend = mutation({
+  args: {
+    otherUserId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (currentUserId === null) {
+      return null;
+    }
+
+    const relationship = await ctx.db.query("userFriendships").filter((q) =>
+      q.or(
+        q.and(
+          q.eq(q.field("userAId"), currentUserId),
+          q.eq(q.field("userBId"), args.otherUserId)
+        ),
+        q.and(
+          q.eq(q.field("userAId"), args.otherUserId),
+          q.eq(q.field("userBId"), currentUserId)
+        )
+      )
+    ).first();
+
+
+    if (!relationship) {
+      throw new Error("Relationship not found");
+    }
+
+    await ctx.db.delete(relationship._id);
+  },
+});

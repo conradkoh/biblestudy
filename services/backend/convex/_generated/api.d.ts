@@ -15,6 +15,7 @@ import type * as groups from "../groups.js";
 import type * as http from "../http.js";
 import type * as invites from "../invites.js";
 import type * as memoryVerses from "../memoryVerses.js";
+import type * as messages from "../messages.js";
 import type * as models_bible_bible_chapters from "../models/bible/bible_chapters.js";
 import type * as models_bible_bible_verses from "../models/bible/bible_verses.js";
 import type * as models_user_user_friendship from "../models/user/user_friendship.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   invites: typeof invites;
   memoryVerses: typeof memoryVerses;
+  messages: typeof messages;
   "models/bible/bible_chapters": typeof models_bible_bible_chapters;
   "models/bible/bible_verses": typeof models_bible_bible_verses;
   "models/user/user_friendship": typeof models_user_user_friendship;

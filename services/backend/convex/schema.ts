@@ -46,5 +46,13 @@ export default defineSchema({
     memoryEntries: v.array(v.object({
       createdAt: v.number(),
     })),
-  }))
+  })),
+  messages: defineTable(v.object({
+    senderId: v.id("users"),
+    receiverId: v.union(v.id("users"), v.id("userGroups")),
+    content: v.string(),
+    kind: v.union(v.literal("CHAT"), v.literal("POKE"), v.literal("PRAYER")),
+    createdAt: v.number(),
+    readAt: v.optional(v.number()),
+  })),
 });
