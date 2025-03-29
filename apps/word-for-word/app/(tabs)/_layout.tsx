@@ -37,6 +37,13 @@ export default function TabsLayout() {
     }}
     initialRouteName="read-screen"
   >
+
+    <Tabs.Screen
+      name="index"
+      options={{
+        tabBarItemStyle: { display: "none" },
+      }}
+    />
     <Tabs.Screen
       name="memory-verses-screen"
       options={{
