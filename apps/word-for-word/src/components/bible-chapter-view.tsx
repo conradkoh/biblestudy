@@ -1,14 +1,13 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import VerseDetailBottomSheet from "@/src/components/verse-detail-bottom-sheet";
-import { VersionSelector } from "@/src/components/version-selector";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import { CommonEvents } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useBibleStore } from "@/src/stores/bible-store";
+import { useBibleStore, versions } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
-import React, { useImperativeHandle, useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useImperativeHandle, useRef } from "react";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 
 type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
@@ -59,7 +58,27 @@ const BibleChapterView = React.forwardRef<
             {mapBookIdsToName[cursorHandler.cursor.bookId]}{" "}
             {cursorHandler.cursor.chapter}
           </TText>
-          <VersionSelector cursorHandler={cursorHandler} />
+          <TouchableOpacity onPress={() => {
+            CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+              snapPoint: 200,
+              title: "Select Bible Version",
+              options: Object.values(versions).map((v) => ({
+                id: v.id,
+                label: v.abbreviation.toUpperCase(),
+                onSelect: () => {
+                  cursorHandler.updateCursor({ version: v.id });
+                },
+              })),
+            });
+          }}>
+            <TText
+              type="subtitle"
+              className="text-sm mb-1 ml-1"
+              style={{ color: themeColors.textSecondary }}
+            >
+              {versions[cursorHandler.cursor.version].abbreviation.toUpperCase()}
+            </TText>
+          </TouchableOpacity>
         </TView>
         <TText>
           {bible.getChapterFormatted(cursorHandler.cursor).map((verse, i) => {

@@ -1,3 +1,4 @@
+import type { OptionSelectorConfig } from "@/src/components/option-selector-bottom-sheet";
 import EventEmitter from "eventemitter3";
 import { useEffect } from "react";
 
@@ -6,6 +7,7 @@ export type CommonEventTypes = {
     message: string;
     duration?: number;
   };
+  SHOW_OPTION_SELECTOR_BOTTOM_SHEET: OptionSelectorConfig;
 };
 
 export const CommonEvents = new EventEmitter<CommonEventTypes>();
@@ -17,7 +19,7 @@ export function useEvent<
   emitter: EventEmitter<EventTypes>,
   eventKey: EventKey,
   callback: EventEmitter.EventListener<EventTypes, EventKey>,
-  effectDependencies: unknown[] = []
+  effectDependencies: unknown[] = [],
 ) {
   useEffect(() => {
     emitter.on(eventKey, callback);

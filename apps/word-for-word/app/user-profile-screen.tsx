@@ -2,6 +2,7 @@ import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
+import { CommonEvents } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { api } from "@backend/convex/_generated/api";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
@@ -49,8 +50,26 @@ const UserProfileScreen: FC = () => {
 
 
   const handleAddFriend = useCallback(() => {
-    // Open the friend option bottom sheet
-    friendOptionSheetRef.current?.present();
+    CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+      snapPoint: 200,
+      title: "Add as",
+      options: [
+        {
+          id: "friend",
+          label: "Friend",
+          onSelect: () => {
+            sendInvite("FRIEND");
+          },
+        },
+        {
+          id: "close_friend",
+          label: "Close Friend",
+          onSelect: () => {
+            sendInvite("CLOSE_FRIEND");
+          },
+        },
+      ],
+    });
   }, []);
 
   const handleAcceptInvite = useCallback(async () => {
@@ -266,37 +285,6 @@ const UserProfileScreen: FC = () => {
           </View>
         </View>
       </TView>
-
-      {/* Friend Options Bottom Sheet */}
-      <TBottomSheetModal
-        ref={friendOptionSheetRef}
-        index={0}
-        snapPoints={snapPoints}
-      >
-        <TView className="px-4 pb-4">
-          <TText className="text-lg font-bold mb-4">Add as:</TText>
-
-          <TouchableOpacity
-            className="flex-row items-center py-3 border-b border-gray-200"
-            onPress={() => sendInvite("FRIEND")}
-            disabled={isLoading}
-          >
-            <Ionicons name="person" size={24} color={themeColors.text} />
-            <TText className="ml-3 text-lg">Friend</TText>
-            {isLoading && <ActivityIndicator className="ml-auto" />}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="flex-row items-center py-3"
-            onPress={() => sendInvite("CLOSE_FRIEND")}
-            disabled={isLoading}
-          >
-            <Ionicons name="star" size={24} color={themeColors.text} />
-            <TText className="ml-3 text-lg">Close Friend</TText>
-            {isLoading && <ActivityIndicator className="ml-auto" />}
-          </TouchableOpacity>
-        </TView>
-      </TBottomSheetModal>
     </TSafeAreaView>
   );
 };
