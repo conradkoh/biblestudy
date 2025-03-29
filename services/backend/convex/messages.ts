@@ -47,14 +47,39 @@ export const sendMessage = mutation({
     // Make sure id is user id (and not group id)
     const receiverUserId = ctx.db.normalizeId('users', args.receiverId);
     if (sender.username && receiverUserId) {
-      await ctx.runMutation(api.pushNotifications.sendPushNotification, {
-        title: sender.username,
-        to: receiverUserId,
-        body: args.kind === 'POKE' ? 'Poked you to read your bible' : args.content,
-        data: {
-          url: 'messages-screen',
-        },
-      });
+
+      switch (args.kind) {
+        case 'POKE': {
+          await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+            title: sender.username,
+            to: receiverUserId,
+            body: 'Poked you to read your bible',
+            data: {
+              url: 'read-screen',
+            },
+          });
+          break;
+        }
+        case 'PRAYER': {
+          await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+            title: `${sender.username} left you a prayer`,
+            to: receiverUserId,
+            body: args.content,
+            data: {
+              url: 'friends-screen',
+            },
+          });
+          break;
+        }
+
+        default: {
+          await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+            title: sender.username,
+            to: receiverUserId,
+            body: args.content,
+          });
+        }
+      }
     }
 
     // TODO: implement push notifications for group messages

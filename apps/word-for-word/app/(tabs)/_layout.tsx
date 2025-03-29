@@ -62,7 +62,7 @@ export default function TabsLayout() {
       }}
     />
     <Tabs.Screen
-      name="index"
+      name="read-screen"
       options={{
         title: "Read",
         tabBarIcon: ({ color, focused }) => (
