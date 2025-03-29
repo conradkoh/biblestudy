@@ -46,6 +46,35 @@ const UserProfileScreen: FC = () => {
   });
 
 
+  const sendInvite = useCallback(
+    async (friendType: "FRIEND" | "CLOSE_FRIEND") => {
+      if (!user?._id) throw new Error("User not found");
+
+      setIsLoading(true);
+
+      try {
+        const result = await sendFriendInvite({
+          receivedByUserId: userId,
+          friendType,
+        });
+
+        Alert.alert(
+          "Success",
+          `Friend request sent to ${user.username || user.name}`,
+        );
+
+        // Close the bottom sheet
+        friendOptionSheetRef.current?.dismiss();
+      } catch (error) {
+        Alert.alert("Error", "Failed to send friend request");
+        console.error("Error sending friend request:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [sendFriendInvite, userId, user],
+  );
+
   const handleAddFriend = useCallback(() => {
     CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
       snapPoint: 200,
@@ -67,7 +96,7 @@ const UserProfileScreen: FC = () => {
         },
       ],
     });
-  }, []);
+  }, [sendInvite]);
 
   const handleAcceptInvite = useCallback(async () => {
     if (!friendshipStatus?.inviteId) return;
@@ -113,35 +142,6 @@ const UserProfileScreen: FC = () => {
       setIsLoading(false);
     }
   }, [updateUserInvite, friendshipStatus]);
-
-  const sendInvite = useCallback(
-    async (friendType: "FRIEND" | "CLOSE_FRIEND") => {
-      if (!user?._id) return;
-
-      setIsLoading(true);
-
-      try {
-        const result = await sendFriendInvite({
-          receivedByUserId: user._id,
-          friendType,
-        });
-
-        Alert.alert(
-          "Success",
-          `Friend request sent to ${user.username || user.name}`,
-        );
-
-        // Close the bottom sheet
-        friendOptionSheetRef.current?.dismiss();
-      } catch (error) {
-        Alert.alert("Error", "Failed to send friend request");
-        console.error("Error sending friend request:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [sendFriendInvite, user],
-  );
 
   const renderFriendshipButton = () => {
     // Don't show friend button when viewing own profile
@@ -220,6 +220,17 @@ const UserProfileScreen: FC = () => {
 
   // Show loading indicator while fetching friendship status
   if (user?._id && friendshipStatus === undefined) {
+    return (
+      <TSafeAreaView className="h-full">
+        <TView className="h-full justify-center items-center">
+          <ActivityIndicator size="large" color={themeColors.primary} />
+          <TText className="mt-4">Loading profile...</TText>
+        </TView>
+      </TSafeAreaView>
+    );
+  }
+
+  if (user === undefined) {
     return (
       <TSafeAreaView className="h-full">
         <TView className="h-full justify-center items-center">
