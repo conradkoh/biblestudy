@@ -8,7 +8,7 @@ import { useFontLoader } from "@/src/hooks/useFontLoader";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { convex } from "@/src/services/convex";
 import { useNotificationObserver } from "@/src/services/push-notifications";
-import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { ConvexAuthProvider, useAuthToken } from "@convex-dev/auth/react";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Stack } from "expo-router";
@@ -27,7 +27,9 @@ const secureStorage = {
 export default function TabLayout() {
   const fontsLoaded = useFontLoader();
   const themeColors = useThemeColors();
-  useNotificationObserver();
+  const isAuthenticated = !!useAuthToken();
+
+  useNotificationObserver(isAuthenticated);
   useExpoUpdates();
 
   if (!fontsLoaded) return null;

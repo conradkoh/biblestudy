@@ -50,8 +50,9 @@ export async function getExpoPushToken() {
   alert('Must use physical device for Push Notifications');
 }
 
-export function useNotificationObserver() {
+export function useNotificationObserver(isAuthenticated: boolean) {
   useEffect(() => {
+    if (!isAuthenticated) return;
     let isMounted = true;
 
     function redirect(notification: Notifications.Notification) {
@@ -77,5 +78,5 @@ export function useNotificationObserver() {
       isMounted = false;
       subscription.remove();
     };
-  }, []);
+  }, [isAuthenticated]);
 }
