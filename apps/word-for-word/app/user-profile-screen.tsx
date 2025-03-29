@@ -37,7 +37,6 @@ const UserProfileScreen: FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const friendOptionSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => ["30%"], []);
 
   // Backend queries and mutations
   const sendFriendInvite = useMutation(api.invites.sendFriendInvite);

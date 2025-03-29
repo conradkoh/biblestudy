@@ -1,4 +1,5 @@
 import type { OptionSelectorConfig } from "@/src/components/option-selector-bottom-sheet";
+import type { InputBottomSheetConfig } from "@/src/components/input-bottom-sheet";
 import EventEmitter from "eventemitter3";
 import { useEffect } from "react";
 
@@ -8,6 +9,7 @@ export type CommonEventTypes = {
     duration?: number;
   };
   SHOW_OPTION_SELECTOR_BOTTOM_SHEET: OptionSelectorConfig;
+  SHOW_INPUT_BOTTOM_SHEET: InputBottomSheetConfig;
 };
 
 export const CommonEvents = new EventEmitter<CommonEventTypes>();

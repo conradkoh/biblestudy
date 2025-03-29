@@ -87,3 +87,38 @@ export const sendMessage = mutation({
     return message;
   },
 });
+
+export const getReceivedPrayers = query({
+  args: {},
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+
+    if (!currentUserId) throw new Error("Unauthenticated");
+
+    const prayers = await ctx.db.query("messages").filter(q =>
+      q.and(
+        q.eq(q.field("receiverId"), currentUserId),
+        q.eq(q.field("kind"), "PRAYER"),
+        q.lt(Date.now() - 1000 * 60 * 60 * 24 * 7, q.field("createdAt"))
+      )
+    ).collect();
+    return prayers.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+export const getSentPrayers = query({
+  args: {},
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+
+    if (!currentUserId) throw new Error("Unauthenticated");
+
+    const prayers = await ctx.db.query("messages").filter(q =>
+      q.and(
+        q.eq(q.field("senderId"), currentUserId),
+        q.eq(q.field("kind"), "PRAYER"),
+        q.lt(Date.now() - 1000 * 60 * 60 * 24 * 7, q.field("createdAt"))
+      )
+    ).collect();
+    return prayers.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});

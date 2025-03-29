@@ -54,5 +54,8 @@ export default defineSchema({
     kind: v.union(v.literal("CHAT"), v.literal("POKE"), v.literal("PRAYER")),
     createdAt: v.number(),
     readAt: v.optional(v.number()),
-  })),
+  }))
+    .index("receiverId", ["receiverId"])
+    .index("senderId", ["senderId"])
+    .index("receiverId_senderId", ["receiverId", "senderId"]),
 });

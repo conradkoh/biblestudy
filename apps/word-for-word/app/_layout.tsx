@@ -3,6 +3,7 @@ import { ToastProvider } from "@/src/components/core/ToastProvider";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
+import { InputBottomSheet } from "@/src/components/input-bottom-sheet";
 import { OptionSelectorBottomSheet } from "@/src/components/option-selector-bottom-sheet";
 import { useExpoUpdates } from "@/src/hooks/useExpoUpdates";
 import { useFontLoader } from "@/src/hooks/useFontLoader";
@@ -61,6 +62,7 @@ export default function TabLayout() {
                 </Stack>
               </Authenticated>
               <OptionSelectorBottomSheet />
+              <InputBottomSheet />
             </ToastProvider>
           </ConvexAuthProvider>
         </KeyboardProvider>

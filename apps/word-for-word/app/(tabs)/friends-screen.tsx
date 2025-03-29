@@ -29,8 +29,8 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   const friends = useQuery(api.users.getUserFriends);
   const userGroups = useQuery(api.users.getUserGroups);
 
-  const removeFriend = useMutation(api.users.removeFriend);
-  const sendMessage = useMutation(api.messages.sendMessage);
+  const receivedPrayers = useQuery(api.messages.getReceivedPrayers);
+  const sentPrayers = useQuery(api.messages.getSentPrayers);
 
   const openAddFriendSheet = useCallback(() => {
     searchUserBottomSheetRef.current?.present();
@@ -53,64 +53,19 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   }, []);
 
   const renderFriendItem = useCallback(
-    ({ item: user }: { item: Doc<"users"> }) => (
-      <TouchableOpacity
-        onPress={() => {
-          CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
-            title: user.username,
-            options: [
-              {
-                id: "view_profile",
-                label: "View Profile",
-                onSelect: () => navigateToUserProfile(user._id),
-              },
-              {
-                id: "poke",
-                label: "Poke to read their bible",
-                onSelect: () => {
-                  sendMessage({
-                    content: '',
-                    kind: 'POKE',
-                    receiverId: user._id,
-                  })
-                },
-              },
-              // {
-              //   id: "prayer",
-              //   label: "Leave a prayer",
-              //   onSelect: () => {
-              //     sendMessage({
-              //       content: '',
-              //       kind: 'PRAYER',
-              //       receiverId: user._id,
-              //     })
-              //   },
-              // },
-              {
-                id: "remove_friend",
-                label: "Remove Friend",
-                onSelect: () => {
-                  Alert.alert("Remove Friend", "Are you sure you want to remove this friend?", [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Remove", style: "destructive", onPress: () => removeFriend({ otherUserId: user._id }) },
-                  ]);
-                },
-              },
-            ],
-          });
-        }}
-        style={{ borderBottomColor: themeColors.divider }}
-        className="p-3 flex-row items-center border-b"
-      >
-        <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
-          {user.image ? <Image source={{ uri: user.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
-            {(user.name ?? user.username)?.charAt(0).toUpperCase()}
-          </TText>}
-        </View>
-        <TText className="font-bold">@{user.username}</TText>
-      </TouchableOpacity>
-    ),
-    [navigateToUserProfile, removeFriend, themeColors, sendMessage],
+    ({ item: user }: { item: Doc<"users"> }) => {
+      console.log(sentPrayers)
+      const receivedPrayer = receivedPrayers?.find(prayer => prayer.senderId === user._id);
+      const sentPrayer = sentPrayers?.find(prayer => prayer.receiverId === user._id);
+
+      return <FriendUserItem
+        receivedPrayer={receivedPrayer}
+        sentPrayer={sentPrayer}
+        user={user}
+        navigateToUserProfile={navigateToUserProfile}
+      />;
+    },
+    [navigateToUserProfile, receivedPrayers, sentPrayers],
   );
 
   const renderGroupItem = useCallback(
@@ -207,3 +162,111 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
 };
 
 export default FriendsScreen;
+
+
+type FriendUserItemProps = {
+  user: Doc<"users">;
+  receivedPrayer: Doc<"messages"> | undefined;
+  sentPrayer: Doc<"messages"> | undefined;
+  navigateToUserProfile: (userId: Id<"users">) => void;
+}
+const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPrayer, navigateToUserProfile, }) => {
+
+  const [expandReceivedPrayer, setExpandReceivedPrayer] = useState(false);
+  const [expandSentPrayer, setExpandSentPrayer] = useState(false);
+
+  const themeColors = useThemeColors();
+  const removeFriend = useMutation(api.users.removeFriend);
+  const sendMessage = useMutation(api.messages.sendMessage);
+
+  return <View className="flex-col p-3 border-b" style={{ borderBottomColor: themeColors.divider }}>
+    <TouchableOpacity
+      className="flex-row items-center"
+      onPress={() => {
+        CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+          title: user.username,
+          options: [
+            {
+              id: "view_profile",
+              label: "View Profile",
+              onSelect: () => navigateToUserProfile(user._id),
+            },
+            {
+              id: "poke",
+              label: "Poke to read their bible",
+              onSelect: () => {
+                sendMessage({
+                  content: '',
+                  kind: 'POKE',
+                  receiverId: user._id,
+                })
+              },
+            },
+            {
+              id: "prayer",
+              label: "Leave a prayer",
+              onSelect: () => {
+
+                const prayerHints = [
+                  "Write your prayer here...",
+                  'What is the Lord saying?',
+                  "Leave an encouragement...",
+                ]
+
+                CommonEvents.emit("SHOW_INPUT_BOTTOM_SHEET", {
+                  title: `Leave @${user.username} a prayer`,
+                  subtitle: `Your latest prayer for @${user.username} will show in the Friends tab for a week.`,
+                  placeholder: prayerHints[Math.floor(Math.random() * prayerHints.length)],
+                  onSubmit: (text: string) => {
+                    sendMessage({
+                      content: text,
+                      kind: 'PRAYER',
+                      receiverId: user._id,
+                    })
+                  },
+                })
+              },
+            },
+            {
+              id: "remove_friend",
+              label: "Remove Friend",
+              onSelect: () => {
+                Alert.alert("Remove Friend", "Are you sure you want to remove this friend?", [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Remove", style: "destructive", onPress: () => removeFriend({ otherUserId: user._id }) },
+                ]);
+              },
+            },
+          ],
+        });
+      }}
+    >
+      <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
+        {user.image ? <Image source={{ uri: user.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
+          {(user.name ?? user.username)?.charAt(0).toUpperCase()}
+        </TText>}
+      </View>
+      <TText className="font-bold">@{user.username}</TText>
+    </TouchableOpacity>
+    {receivedPrayer && <TouchableOpacity onPress={() => setExpandReceivedPrayer(!expandReceivedPrayer)}>
+      <View className="rounded-md p-2 mt-2" style={{ backgroundColor: themeColors.surfaceSecondary }}>
+        <TText className="text-xs font-bold" style={{ color: themeColors.textTertiary }}>Left a prayer for you:</TText>
+        <TText
+          className="text-sm"
+          style={{ color: themeColors.text }}
+          numberOfLines={expandReceivedPrayer ? undefined : 2}
+        >{receivedPrayer.content}</TText>
+      </View>
+    </TouchableOpacity>}
+    {sentPrayer && <TouchableOpacity onPress={() => setExpandSentPrayer(!expandSentPrayer)}>
+      <View className="rounded-md p-2 mt-2" style={{ backgroundColor: themeColors.surfaceSecondary }}>
+        <TText className="text-xs font-bold" style={{ color: themeColors.textTertiary }}>You left a prayer:</TText>
+        <TText
+          className="text-sm"
+          style={{ color: themeColors.text }}
+          numberOfLines={expandSentPrayer ? undefined : 2}
+        >{sentPrayer.content}</TText>
+      </View>
+    </TouchableOpacity>}
+  </View>;
+}
