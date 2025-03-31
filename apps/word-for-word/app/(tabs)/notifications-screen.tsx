@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TView } from "@/src/components/core/TView";
 import { TText } from "@/src/components/core/TText";
 import { useQuery, useMutation } from "convex/react";
@@ -8,6 +8,8 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import type { Doc } from "@backend/convex/_generated/dataModel";
 import { format } from "date-fns";
+import { useCallback } from "react";
+import { useFocusEffect } from 'expo-router';
 
 type Notification = Doc<"userNotifications">;
 
@@ -19,16 +21,18 @@ export default function NotificationsScreen() {
   const pendingInvites = useQuery(api.invites.getPendingInvites);
 
   // Mark all notifications as read when screen is focused
-  useEffect(() => {
-    if (notifications) {
-      const unreadNotifications = notifications.filter(n => !n.readAt);
-      if (unreadNotifications.length > 0) {
-        markNotificationAsRead({
-          notificationIds: unreadNotifications.map(n => n._id)
-        });
+  useFocusEffect(
+    useCallback(() => {
+      if (notifications) {
+        const unreadNotifications = notifications.filter(n => !n.readAt);
+        if (unreadNotifications.length > 0) {
+          markNotificationAsRead({
+            notificationIds: unreadNotifications.map(n => n._id)
+          });
+        }
       }
-    }
-  }, [notifications, markNotificationAsRead]);
+    }, [notifications, markNotificationAsRead])
+  );
 
   if (!notifications) {
     return (
