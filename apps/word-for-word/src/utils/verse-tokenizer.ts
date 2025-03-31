@@ -1,4 +1,4 @@
-const delimiters = [" ", ".", ",", ":", ";", "\n", '"', "!", "?", "(", ")"];
+import delimiters from '@common/bible-delimiters.json'
 
 function isDelimiter(word: string): boolean {
   return delimiters.includes(word);

@@ -238,11 +238,25 @@ const getStreakInfo = (
   let numStreakDays = 1;
   let currentDate = lastEntryStartOfDay;
 
-  for (let i = 1; i < sortedEntries.length; i++) {
-    const entry = sortedEntries[i];
-    if (!entry) continue;
+  const dates = new Set<number>();
+  for (const entry of sortedEntries) {
+    dates.add(startOfDay(new Date(entry.createdAt)).valueOf());
+  }
 
-    const entryDate = startOfDay(new Date(entry.createdAt));
+  const sortedDates = Array.from(dates).sort((a, b) => a - b);
+
+  if (sortedDates.length <= 1) {
+    return {
+      lastEntryDate,
+      numStreakDays: 0,
+    };
+  }
+
+  for (let i = 0; i < sortedDates.length; i++) {
+    const date = sortedDates[i];
+    if (!date) continue;
+
+    const entryDate = startOfDay(new Date(date));
     const daysDiff = differenceInDays(currentDate, entryDate);
 
     // If there's a gap in days, break the streak

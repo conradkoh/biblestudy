@@ -226,6 +226,10 @@ export const updateUserInvite = mutation({
       updatedOn: Date.now(),
     });
 
+    const currentUser = await ctx.db.get(currentUserId);
+
+    if (!currentUser) throw new Error("Current user does not exist");
+
     switch (invite.inviteType) {
       case "FRIEND":
       case "CLOSE_FRIEND": {
@@ -236,6 +240,14 @@ export const updateUserInvite = mutation({
             kind: invite.inviteType,
             createdOn: Date.now(),
           });
+
+          if (currentUser?.username) {
+            await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+              to: invite.sentByUserId,
+              title: 'Friend request accepted',
+              body: `${currentUser?.username} has accepted your friend request.`,
+            });
+          }
         }
         break;
       }
@@ -248,6 +260,9 @@ export const updateUserInvite = mutation({
           role: "MEMBER",
           createdOn: Date.now(),
         });
+
+        // TODO: send message to group about new joiner
+
         break;
     }
 
