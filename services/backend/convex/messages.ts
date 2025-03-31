@@ -58,6 +58,12 @@ export const sendMessage = mutation({
               url: 'read-screen',
             },
           });
+
+          await ctx.runMutation(api.userNotifications.addUserNotification, {
+            kind: "BASIC",
+            userId: receiverUserId,
+            title: `${sender.username} poked you to read your bible`,
+          });
           break;
         }
         case 'PRAYER': {
@@ -68,6 +74,13 @@ export const sendMessage = mutation({
             data: {
               url: 'friends-screen',
             },
+          });
+
+          await ctx.runMutation(api.userNotifications.addUserNotification, {
+            kind: "BASIC",
+            userId: receiverUserId,
+            title: `${sender.username} left you a prayer`,
+            body: args.content,
           });
           break;
         }

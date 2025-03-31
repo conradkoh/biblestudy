@@ -7,12 +7,12 @@ export type TTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?:
-    | "default"
-    | "title"
-    | "defaultSemiBold"
-    | "subtitle"
-    | "link"
-    | "paragraph";
+  | "default"
+  | "title"
+  | "defaultSemiBold"
+  | "subtitle"
+  | "link"
+  | "paragraph";
 };
 
 export function TText({

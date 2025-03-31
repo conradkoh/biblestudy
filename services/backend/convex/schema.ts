@@ -58,4 +58,14 @@ export default defineSchema({
     .index("receiverId", ["receiverId"])
     .index("senderId", ["senderId"])
     .index("receiverId_senderId", ["receiverId", "senderId"]),
+  userNotifications: defineTable(v.object({
+    kind: v.union(v.literal("USER_INVITE"), v.literal("BASIC")),
+    userId: v.id("users"),
+    title: v.string(),
+    body: v.optional(v.string()),
+    actionUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    // USER_INVITE fields
+    inviteId: v.optional(v.id("userInvites")),
+  })).index("userId", ["userId"]),
 });

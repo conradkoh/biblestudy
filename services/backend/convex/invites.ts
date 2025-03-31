@@ -134,8 +134,16 @@ export const sendFriendInvite = mutation({
       .query("userInvites")
       .filter((q) =>
         q.and(
-          q.eq(q.field("sentByUserId"), currentUserId),
-          q.eq(q.field("receivedByUserId"), args.receivedByUserId),
+          q.or(
+            q.and(
+              q.eq(q.field("sentByUserId"), currentUserId),
+              q.eq(q.field("receivedByUserId"), args.receivedByUserId),
+            ),
+            q.and(
+              q.eq(q.field("sentByUserId"), args.receivedByUserId),
+              q.eq(q.field("receivedByUserId"), currentUserId),
+            ),
+          ),
           q.or(
             q.eq(q.field("inviteType"), "FRIEND"),
             q.eq(q.field("inviteType"), "CLOSE_FRIEND"),
@@ -159,8 +167,8 @@ export const sendFriendInvite = mutation({
             q.eq(q.field("userBId"), args.receivedByUserId),
           ),
           q.and(
-            q.eq(q.field("userBId"), currentUserId),
             q.eq(q.field("userAId"), args.receivedByUserId),
+            q.eq(q.field("userBId"), currentUserId),
           ),
         ),
       )
@@ -173,7 +181,7 @@ export const sendFriendInvite = mutation({
     // Create the invitation
     const now = Date.now();
 
-    const result = await ctx.db.insert("userInvites", {
+    const newInviteId = await ctx.db.insert("userInvites", {
       sentByUserId: currentUserId,
       receivedByUserId: args.receivedByUserId,
       entityId: args.receivedByUserId,
@@ -194,7 +202,16 @@ export const sendFriendInvite = mutation({
       },
     });
 
-    return result;
+    console.log('send invite', newInviteId);
+    await ctx.runMutation(api.userNotifications.addUserNotification, {
+      kind: "USER_INVITE",
+      userId: args.receivedByUserId,
+      title: "New Friend Request",
+      body: `${currentUser?.username} wants to be ${args.friendType === "FRIEND" ? "your friend" : "your close friend"}`,
+      inviteId: newInviteId,
+    });
+
+    return newInviteId;
   },
 });
 
@@ -247,6 +264,13 @@ export const updateUserInvite = mutation({
               title: 'Friend request accepted',
               body: `${currentUser?.username} has accepted your friend request.`,
             });
+
+            await ctx.runMutation(api.userNotifications.addUserNotification, {
+              kind: "BASIC",
+              userId: invite.sentByUserId,
+              title: 'Friend request accepted',
+              body: `${currentUser?.username} has accepted your friend request.`,
+            });
           }
         }
         break;
@@ -267,5 +291,19 @@ export const updateUserInvite = mutation({
     }
 
     return true;
+  },
+});
+
+export const getPendingInvites = query({
+  args: {},
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
+    }
+
+    const invites = await ctx.db.query("userInvites").filter((q) => q.eq(q.field("receivedByUserId"), currentUserId)).filter((q) => q.eq(q.field("status"), "PENDING")).collect();
+
+    return invites;
   },
 });
