@@ -85,3 +85,38 @@ export const addUserNotification = mutation({
     });
   },
 });
+
+export const markNotificationAsRead = mutation({
+  args: {
+    notificationIds: v.array(v.id("userNotifications")),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+
+    if (currentUserId === null) {
+      return null;
+    }
+
+    // Get all notifications to verify ownership
+    const notifications = await Promise.all(
+      args.notificationIds.map(id => ctx.db.get(id))
+    );
+
+    // Filter out any notifications that don't belong to the current user
+    const userNotifications = notifications.filter(
+      (notification): notification is NonNullable<typeof notification> =>
+        notification !== null && notification.userId === currentUserId
+    );
+
+    // Update all valid notifications in parallel
+    await Promise.all(
+      userNotifications.map(notification =>
+        ctx.db.patch(notification._id, {
+          readAt: Date.now(),
+        })
+      )
+    );
+
+    return userNotifications.length;
+  },
+});

@@ -10,6 +10,8 @@ export default function TabsLayout() {
   const themeColors = useThemeColors();
 
   const currentUser = useQuery(api.users.getCurrentUser);
+  const notifications = useQuery(api.userNotifications.getUserNotificationsV2);
+  const unreadCount = notifications?.filter(n => !n.readAt).length ?? 0;
 
   useEffect(() => {
     // Force user to update their username
@@ -90,6 +92,10 @@ export default function TabsLayout() {
             color={color}
           />
         ),
+        tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+        tabBarBadgeStyle: {
+          backgroundColor: themeColors.error,
+        },
       }}
     />
     <Tabs.Screen

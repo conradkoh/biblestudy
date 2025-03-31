@@ -60,7 +60,7 @@ export const ThemeColors = {
     // Status colors
     success: "#22c55e",
     warning: "#f59e0b",
-    error: "#ef4444",
+    error: "#dc2626",
     info: "#3b82f6",
 
     // Utility colors
@@ -93,7 +93,7 @@ export const ThemeColors = {
     // Status colors
     success: "#4ade80",
     warning: "#fbbf24",
-    error: "#f87171",
+    error: "#ef4444",
     info: "#60a5fa",
 
     // Utility colors

@@ -9,19 +9,26 @@ import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import type { Doc } from "@backend/convex/_generated/dataModel";
 import { format } from "date-fns";
 
-type Notification = Doc<"userInvites"> & {
-  sender: {
-    name: string | null | undefined;
-    image: string | null | undefined;
-  } | null;
-};
+type Notification = Doc<"userNotifications">;
 
 export default function NotificationsScreen() {
   const themeColors = useThemeColors();
   const notifications = useQuery(api.userNotifications.getUserNotificationsV2);
   const updateUserInvite = useMutation(api.invites.updateUserInvite);
+  const markNotificationAsRead = useMutation(api.userNotifications.markNotificationAsRead);
   const pendingInvites = useQuery(api.invites.getPendingInvites);
 
+  // Mark all notifications as read when screen is focused
+  useEffect(() => {
+    if (notifications) {
+      const unreadNotifications = notifications.filter(n => !n.readAt);
+      if (unreadNotifications.length > 0) {
+        markNotificationAsRead({
+          notificationIds: unreadNotifications.map(n => n._id)
+        });
+      }
+    }
+  }, [notifications, markNotificationAsRead]);
 
   if (!notifications) {
     return (
@@ -76,13 +83,13 @@ interface InviteNotificationItemProps extends NotificationItemProps {
 function NotificationItem({ notification }: NotificationItemProps) {
   const themeColors = useThemeColors();
 
-  const title = notification.title;
-  const description = notification.body;
-
   return (
     <TView
       className="p-3 border-b"
-      style={{ backgroundColor: themeColors.surface, borderColor: themeColors.border }}
+      style={{
+        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceHighlight,
+        borderColor: themeColors.border
+      }}
     >
       <View className="flex-row">
         <View className="flex-1">
@@ -101,7 +108,10 @@ function InviteNotificationItem({ notification, pendingInvite, updateUserInvite 
   return (
     <TView
       className="p-3 border-b"
-      style={{ backgroundColor: themeColors.surface, borderColor: themeColors.border }}
+      style={{
+        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceHighlight,
+        borderColor: themeColors.border
+      }}
     >
       <View className="flex-row">
         <View className="flex-1">

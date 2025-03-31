@@ -65,6 +65,7 @@ export default defineSchema({
     body: v.optional(v.string()),
     actionUrl: v.optional(v.string()),
     createdAt: v.number(),
+    readAt: v.optional(v.number()),
     // USER_INVITE fields
     inviteId: v.optional(v.id("userInvites")),
   })).index("userId", ["userId"]),
