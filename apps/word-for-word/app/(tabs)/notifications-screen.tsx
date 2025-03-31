@@ -91,7 +91,7 @@ function NotificationItem({ notification }: NotificationItemProps) {
     <TView
       className="p-3 border-b"
       style={{
-        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceHighlight,
+        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceSecondary,
         borderColor: themeColors.border
       }}
     >
@@ -113,7 +113,7 @@ function InviteNotificationItem({ notification, pendingInvite, updateUserInvite 
     <TView
       className="p-3 border-b"
       style={{
-        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceHighlight,
+        backgroundColor: notification.readAt ? themeColors.surface : themeColors.surfaceSecondary,
         borderColor: themeColors.border
       }}
     >

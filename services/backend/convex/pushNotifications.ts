@@ -33,16 +33,20 @@ export const sendPushNotification = mutation({
     })),
   },
   handler: async (ctx, args) => {
-    const pushId = await pushNotifications.sendPushNotification(ctx, {
-      userId: args.to,
-      notification: {
-        title: args.title,
-        body: args.body,
-        data: args.data,
-      },
-    });
+    try {
+      const pushId = await pushNotifications.sendPushNotification(ctx, {
+        userId: args.to,
+        notification: {
+          title: args.title,
+          body: args.body,
+          data: args.data,
+        },
+      });
 
-    console.log("Push notification sent", pushId);
+      console.log("Push notification sent", pushId);
+    } catch (error) {
+      console.error("Error sending push notification", error);
+    }
   },
 });
 

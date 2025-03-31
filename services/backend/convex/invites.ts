@@ -202,7 +202,6 @@ export const sendFriendInvite = mutation({
       },
     });
 
-    console.log('send invite', newInviteId);
     await ctx.runMutation(api.userNotifications.addUserNotification, {
       kind: "USER_INVITE",
       userId: args.receivedByUserId,
