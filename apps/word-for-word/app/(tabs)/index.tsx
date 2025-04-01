@@ -7,6 +7,7 @@ import { TView } from "@/src/components/core/TView";
 import SearchBox from "@/src/components/search-box";
 import SwipeableContainer from "@/src/components/swipeable-container";
 import VerseDetailBottomSheet from "@/src/components/verse-detail-bottom-sheet";
+import VerseRangeBottomSheet from "@/src/components/verse-range-bottom-sheet";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
 import { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
@@ -15,6 +16,7 @@ import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import {
   type BibleCursor,
+  getVersesFromRange,
   mapBookIdsToName,
 } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -52,8 +54,10 @@ export default function ReadScreen() {
   useBibleBookmark(bible, cursorHandler);
   const themeColors = useThemeColors();
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const [showInterlinear, setShowInterlinear] = useState(false);
-  const interlinearCursorHandler = useBibleCursorHandler();
+  const [showFocusVerseSingle, setShowFocusVerseSingle] = useState(false);
+  const [showFocusVerseRange, setShowFocusVerseRange] = useState(false);
+  const [isSelectingRange, setIsSelectingRange] = useState(false)
+  const focusCursorHandler = useBibleCursorHandler();
   const scrollTimeout = useRef<NodeJS.Timeout>();
 
 
@@ -69,12 +73,58 @@ export default function ReadScreen() {
   }, []);
 
   function onPressVerse(verse: number) {
-    setShowInterlinear(true);
-    interlinearCursorHandler.updateCursor({
+
+    // Reset ranges
+    setShowFocusVerseRange(false);
+    cursorHandler.setCursorRangeEnd(null);
+
+    setShowFocusVerseSingle(true);
+    focusCursorHandler.updateCursor({
       ...cursorHandler.cursor,
-      verse,
+      verse
     });
   }
+
+
+  const handleLongPressVerse = (longPressVerse: number) => {
+    setShowFocusVerseSingle(false);
+
+    if (focusCursorHandler.cursor.verse === undefined) return;
+
+    if (longPressVerse === focusCursorHandler.cursor.verse) {
+      focusCursorHandler.setCursorRangeEnd(null);
+      setShowFocusVerseRange(false);
+      return;
+    }
+
+    console.log(focusCursorHandler.cursor, longPressVerse)
+    if (longPressVerse > focusCursorHandler.cursor.verse) {
+
+      focusCursorHandler.setCursorRangeEnd({
+        chapter: focusCursorHandler.cursor.chapter,
+        bookId: focusCursorHandler.cursor.bookId,
+        verse: longPressVerse,
+      });
+      setShowFocusVerseRange(true);
+      return;
+    }
+
+    // Long press is before selection,
+    const { bookId, chapter, verse } = focusCursorHandler.cursor;
+
+    focusCursorHandler.setCursor({
+      ...focusCursorHandler.cursor,
+      verse: longPressVerse,
+    });
+
+    focusCursorHandler.setCursorRangeEnd({
+      bookId,
+      chapter,
+      verse,
+    });
+
+    setShowFocusVerseRange(true);
+  };
 
   return (
     <>
@@ -118,10 +168,12 @@ export default function ReadScreen() {
               ref={bibleChapterViewRef}
               cursorHandler={cursorHandler}
               onPressVerse={onPressVerse}
-              highlightedVerse={
-                showInterlinear
-                  ? interlinearCursorHandler.cursor.verse
-                  : undefined
+              onLongPressVerse={handleLongPressVerse}
+              highlightedVerses={
+                (showFocusVerseRange && focusCursorHandler.cursorRangeEnd?.verse !== undefined) ? getVersesFromRange(focusCursorHandler.cursor, focusCursorHandler.cursorRangeEnd) :
+                  (showFocusVerseSingle && focusCursorHandler.cursor.verse !== undefined)
+                    ? [focusCursorHandler.cursor.verse]
+                    : undefined
               }
               onScrollBegin={handleScrollBegin}
             />
@@ -176,10 +228,21 @@ export default function ReadScreen() {
         cursorHandler={cursorHandler}
       />
       <VerseDetailBottomSheet
-        isOpen={showInterlinear}
-        setIsOpen={setShowInterlinear}
-        cursorHandler={interlinearCursorHandler}
+        isOpen={showFocusVerseSingle}
+        setIsOpen={setShowFocusVerseSingle}
+        cursorHandler={focusCursorHandler}
+        setIsSelectingRange={() => {
+          setIsSelectingRange(true);
+          setShowFocusVerseRange(false);
+          setShowFocusVerseSingle(false);
+        }}
       />
+      <VerseRangeBottomSheet
+        isOpen={showFocusVerseRange}
+        setIsOpen={setShowFocusVerseRange}
+        cursorHandler={focusCursorHandler}
+      />
+
     </>
   );
 }

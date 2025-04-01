@@ -176,8 +176,21 @@ export function bookIdFromName(bookName: string): BookId | null {
   return normalizedBookName;
 }
 
-export function getVerseNameFormatted(cursor: BibleCursor, includeVersion = false) {
+export function getVerseNameFormatted(cursor: BibleCursor, cursorRangeEnd?: BibleCursorRangeEnd | null, includeVersion = false) {
   const bookName = mapBookIdsToName[cursor.bookId];
+  if (cursorRangeEnd && cursor.bookId === cursorRangeEnd.bookId && cursor.chapter === cursorRangeEnd.chapter) {
+    return `${bookName} ${cursor.chapter}:${cursor.verse}-${cursorRangeEnd.verse}${includeVersion ? ` (${cursor.version.toUpperCase()})` : ""}`;
+  }
+
+  if (cursorRangeEnd && cursor.bookId === cursorRangeEnd.bookId && cursor.chapter !== cursorRangeEnd.chapter) {
+    return `${bookName} ${cursor.chapter}:${cursor.verse}-${cursorRangeEnd.chapter}:${cursorRangeEnd.verse}${includeVersion ? ` (${cursor.version.toUpperCase()})` : ""}`;
+  }
+
+  if (cursorRangeEnd && cursor.bookId !== cursorRangeEnd.bookId) {
+    const endBookName = mapBookIdsToName[cursorRangeEnd.bookId];
+    return `${bookName} ${cursor.chapter}:${cursor.verse}-${endBookName} ${cursorRangeEnd.chapter}:${cursorRangeEnd.verse}${includeVersion ? ` (${cursor.version.toUpperCase()})` : ""}`;
+  }
+
   return `${bookName} ${cursor.chapter}:${cursor.verse}${includeVersion ? ` (${cursor.version.toUpperCase()})` : ""}`;
 }
 
@@ -199,6 +212,12 @@ export type BibleCursor = {
   verse?: number; // non-zero indexing
 };
 
+export type BibleCursorRangeEnd = {
+  bookId: BookId;
+  chapter: number; // non-zero indexing
+  verse?: number; // non-zero indexing, inclusive
+};
+
 export type BibleIdxCursor = {
   version: "niv" | "kjv";
   bookId: BookId;
@@ -206,3 +225,31 @@ export type BibleIdxCursor = {
   chapterIdx: number; // zero based indexing
   verseIdx?: number; // zero based indexing
 };
+
+
+export function getVersesFromRange(cursor: BibleCursor, cursorRangeEnd: BibleCursorRangeEnd) {
+
+  if (cursor.bookId !== cursorRangeEnd.bookId || cursor.chapter !== cursorRangeEnd.chapter) {
+    console.error("Cursor and cursorRangeEnd must be in the same book and chapter");
+    return [];
+  }
+
+  if (!cursor.verse || !cursorRangeEnd.verse) {
+    console.error("Cursor and cursorRangeEnd must have a verse");
+    return [];
+  }
+
+  if (cursor.verse > cursorRangeEnd.verse) {
+    console.error("Cursor verse must be less than cursorRangeEnd verse");
+    return [];
+  }
+
+  const verses = [];
+  for (let verse = cursor.verse; verse <= cursorRangeEnd.verse; verse++) {
+    verses.push(verse);
+  }
+
+  console.log("verses", verses);
+
+  return verses;
+}

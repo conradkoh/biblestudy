@@ -29,6 +29,41 @@ export const getExistingMemoryVerseId = query({
     return existingMemoryVerse?._id;
   },
 });
+
+export const getExistingMemoryVerseId2 = query({
+  args: {
+    version: v.union(v.literal('niv'), v.literal('kjv')),
+    bookId: v.string(),
+    chapter: v.number(),
+    verse: v.number(),
+    endVerse: v.optional(v.number()),
+    endChapter: v.optional(v.number()),
+    endBookId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx);
+    if (!currentUserId) {
+      throw new Error("Unauthenticated");
+    }
+
+    const existingMemoryVerse = await ctx.db
+      .query("memoryVerses")
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("userId"), currentUserId),
+          q.eq(q.field("version"), args.version),
+          q.eq(q.field("bookId"), args.bookId),
+          q.eq(q.field("chapter"), args.chapter),
+          q.eq(q.field("verse"), args.verse),
+          ...(args.endVerse && args.endChapter && args.endBookId ? [q.eq(q.field("endVerse"), args.endVerse), q.eq(q.field("endChapter"), args.endChapter), q.eq(q.field("endBookId"), args.endBookId)] : []),
+        ),
+      )
+      .first();
+
+    return existingMemoryVerse?._id;
+  },
+});
+
 /**
  * Add a new memory verse for the current user
  */
@@ -39,6 +74,9 @@ export const addMemoryVerse = mutation({
     verse: v.number(),
     chapter: v.number(),
     bookId: v.string(),
+    endVerse: v.optional(v.number()),
+    endChapter: v.optional(v.number()),
+    endBookId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const currentUserId = await getAuthUserId(ctx);
@@ -69,6 +107,9 @@ export const addMemoryVerse = mutation({
       verse: args.verse,
       chapter: args.chapter,
       bookId: args.bookId,
+      endVerse: args.endVerse,
+      endChapter: args.endChapter,
+      endBookId: args.endBookId,
       createdAt: now,
       memoryEntries: [],
     });

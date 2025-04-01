@@ -1,7 +1,18 @@
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import * as Haptics from "expo-haptics";
-import { type FC, type default as React, useRef, useState } from 'react';
-import { Animated, PanResponder, View } from "react-native";
+import {
+  type FC,
+  type default as React,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
+import {
+  Animated,
+  PanResponder,
+  View,
+  type GestureResponderEvent,
+} from "react-native";
 
 interface SwipeableContainerProps {
   children: React.ReactNode;
@@ -10,6 +21,8 @@ interface SwipeableContainerProps {
   onPrev: () => void;
   nextHint: React.ReactNode;
   prevHint: React.ReactNode;
+  onSwipeLeft?: () => void;
+  onSwipeRight?: () => void;
 }
 
 const HORIZONTAL_PAN_THRESHOLD = 12; // Minimum horizontal swipe before allowing panning
@@ -23,10 +36,18 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
   onPrev,
   nextHint,
   prevHint,
+  onSwipeLeft,
+  onSwipeRight,
 }) => {
   const pan = useRef(new Animated.ValueXY());
   const hasTriggeredHaptic = useRef(false);
   const [showHints, setShowHints] = useState(true);
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(
+    null,
+  );
 
   const translateX = pan.current.x.interpolate({
     inputRange: [-MAX_SWIPE_DISTANCE, 0, MAX_SWIPE_DISTANCE],
@@ -46,13 +67,17 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
       onStartShouldSetPanResponder: (_, gestureState) => {
         // Only handle horizontal swipes when not scrolling
         return (
-          !isScrolling && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > HORIZONTAL_PAN_THRESHOLD
+          !isScrolling &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+          Math.abs(gestureState.dx) > HORIZONTAL_PAN_THRESHOLD
         );
       },
       onMoveShouldSetPanResponder: (_, gestureState) => {
         // Only handle horizontal swipes when not scrolling
         return (
-          !isScrolling && Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > HORIZONTAL_PAN_THRESHOLD
+          !isScrolling &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
+          Math.abs(gestureState.dx) > HORIZONTAL_PAN_THRESHOLD
         );
       },
       onPanResponderGrant: () => {
@@ -75,13 +100,14 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
       onPanResponderRelease: (_, gestureState) => {
         const { dx } = gestureState;
         setShowHints(false);
-        if (Math.abs(dx) > SWIPE_THRESHOLD) dx > 0 ? _onPrev.current() : _onNext.current();
+        if (Math.abs(dx) > SWIPE_THRESHOLD)
+          dx > 0 ? _onPrev.current() : _onNext.current();
 
         Animated.spring(pan.current, {
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
           overshootClamping: true,
-          speed: 30
+          speed: 30,
         }).start();
       },
       onPanResponderTerminate: () => {
@@ -90,7 +116,7 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
           overshootClamping: true,
-          damping: 30
+          damping: 30,
         }).start();
       },
       onPanResponderReject: () => {
@@ -99,11 +125,45 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
           toValue: { x: 0, y: 0 },
           useNativeDriver: false,
           overshootClamping: true,
-          damping: 30
+          damping: 30,
         }).start();
       },
     }),
   ).current;
+
+  const handleTouchStart = (e: GestureResponderEvent) => {
+    setTouchStart({
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+    });
+  };
+
+  const handleTouchEnd = (e: GestureResponderEvent) => {
+    setTouchEnd({
+      x: e.nativeEvent.pageX,
+      y: e.nativeEvent.pageY,
+    });
+  };
+
+  useEffect(() => {
+    if (touchStart && touchEnd) {
+      const dx = touchEnd.x - touchStart.x;
+      const dy = touchEnd.y - touchStart.y;
+
+      // Only trigger swipe if horizontal movement is greater than vertical
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 50 && onSwipeRight) {
+          onSwipeRight();
+        } else if (dx < -50 && onSwipeLeft) {
+          onSwipeLeft();
+        }
+      }
+
+      // Reset touch points
+      setTouchStart(null);
+      setTouchEnd(null);
+    }
+  }, [touchStart, touchEnd, onSwipeLeft, onSwipeRight]);
 
   return (
     <View className="flex-1">
@@ -125,7 +185,7 @@ const SwipeableContainer: FC<SwipeableContainerProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          pointerEvents: "none"
+          pointerEvents: "none",
         }}
       >
         <Animated.View

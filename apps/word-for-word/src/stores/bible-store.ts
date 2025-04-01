@@ -14,6 +14,7 @@ import hebrewLexicon from "@/assets/lexicon/hebrew.json";
 import strongs from "@/src/libraries/strongs";
 import {
   type BibleCursor,
+  type BibleCursorRangeEnd,
   type BookId,
   bookIds,
   mapBookIdsToName,
@@ -24,7 +25,8 @@ export type BibleStore = {
   getChapterFormatted: (
     chapter: Pick<BibleCursor, "bookId" | "chapter" | "version">,
   ) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
-  getVerse: (cursor: Required<BibleCursor>) => GetBibleTranslation["books"][number]["chapters"][number]["verses"][number];
+  getVersesText: (cursor: Required<BibleCursor>, endCursor?: BibleCursorRangeEnd) => string;
+  getVersesInRange: (start: Required<BibleCursor>, end?: BibleCursorRangeEnd) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
   getBook: (
     bookId: BookId,
     version: BibleVersionId,
@@ -63,19 +65,9 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     if (!verses) throw new Error(`Chapter ${chapter} not found in ${bookId}`);
     return verses;
   },
-  getVerse: (cursor: Required<BibleCursor>) => {
-    const { bookId, chapter, verse, version } = cursor;
-    const chapterIdx = chapter - 1;
-    const verseIdx = verse - 1;
-    const bookIdx = bookIds.indexOf(bookId);
-    const verseData =
-      get().getTranslation(version).books[bookIdx]?.chapters[chapterIdx]
-        ?.verses[verseIdx];
-    if (!verseData)
-      throw new Error(
-        `Verse ${verse} not found in chapter ${chapter} of book ${bookId}`,
-      );
-    return verseData;
+  getVersesText: (cursor: Required<BibleCursor>, endCursor?: BibleCursorRangeEnd) => {
+    const verses = get().getVersesInRange(cursor, endCursor);
+    return endCursor ? verses.map(v => v.text).join('') : verses[0]?.text ?? '';
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {
     const bookIdx = bookIds.indexOf(bookId);
@@ -144,6 +136,125 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     }
 
     return results;
+  },
+  getVersesInRange: (start: Required<BibleCursor>, end: BibleCursorRangeEnd = { bookId: start.bookId, chapter: start.chapter, verse: start.verse }) => {
+    const verses: GetBibleTranslation["books"][number]["chapters"][number]["verses"] = [];
+
+    if (!end.verse) {
+      throw new Error("End verse is required for verse range");
+    }
+
+    // If same book and chapter
+    if (start.bookId === end.bookId && start.chapter === end.chapter) {
+      const chapter = get().getChapterFormatted(start);
+      for (let i = start.verse - 1; i <= end.verse - 1; i++) {
+        const verse = chapter[i];
+        if (verse) verses.push(verse);
+      }
+      return verses;
+    }
+
+    // If different chapters in same book
+    if (start.bookId === end.bookId) {
+      // Add verses from start chapter
+      const startChapter = get().getChapterFormatted(start);
+      for (let i = start.verse - 1; i < startChapter.length; i++) {
+        const verse = startChapter[i];
+        if (verse) verses.push(verse);
+      }
+
+      // Add verses from chapters in between
+      for (let chapter = start.chapter; chapter < end.chapter; chapter++) {
+        const chapterVerses = get().getChapterFormatted({
+          ...start,
+          chapter,
+        });
+        verses.push(...chapterVerses);
+      }
+
+      // Add verses from end chapter
+      const endChapter = get().getChapterFormatted({
+        ...start,
+        chapter: end.chapter,
+      });
+      for (let i = 0; i <= end.verse - 1; i++) {
+        const verse = endChapter[i];
+        if (verse) verses.push(verse);
+      }
+      return verses;
+    }
+
+    // If different books
+    // Add verses from start book
+    const startBook = get().getBook(start.bookId, start.version);
+    if (!startBook) throw new Error(`Book ${start.bookId} not found`);
+
+    // Add verses from start chapter
+    const startChapter = get().getChapterFormatted(start);
+    for (let i = start.verse - 1; i < startChapter.length; i++) {
+      const verse = startChapter[i];
+      if (verse) verses.push(verse);
+    }
+
+    // Add verses from remaining chapters in start book
+    for (let chapter = start.chapter; chapter < startBook.chapters.length; chapter++) {
+      const chapterVerses = get().getChapterFormatted({
+        ...start,
+        chapter,
+      });
+      verses.push(...chapterVerses);
+    }
+
+    // Add verses from books in between
+    const startBookIdx = bookIds.indexOf(start.bookId);
+    const endBookIdx = bookIds.indexOf(end.bookId);
+    if (startBookIdx === -1 || endBookIdx === -1) {
+      throw new Error(`Invalid book indices: ${startBookIdx}, ${endBookIdx}`);
+    }
+
+    for (let bookIdx = startBookIdx + 1; bookIdx < endBookIdx; bookIdx++) {
+      const bookId = bookIds[bookIdx];
+      if (!bookId) continue;
+
+      const book = get().getBook(bookId, start.version);
+      if (!book) throw new Error(`Book ${bookId} not found`);
+
+      for (let chapter = 1; chapter <= book.chapters.length; chapter++) {
+        const chapterVerses = get().getChapterFormatted({
+          ...start,
+          bookId,
+          chapter,
+        });
+        verses.push(...chapterVerses);
+      }
+    }
+
+    // Add verses from end book
+    const endBook = get().getBook(end.bookId, start.version);
+    if (!endBook) throw new Error(`Book ${end.bookId} not found`);
+
+    // Add verses from chapters in end book up to end chapter
+    for (let chapter = 1; chapter < end.chapter; chapter++) {
+      const chapterVerses = get().getChapterFormatted({
+        ...start,
+        bookId: end.bookId,
+        chapter,
+      });
+      verses.push(...chapterVerses);
+    }
+
+    // Add verses from end chapter
+    const endChapter = get().getChapterFormatted({
+      ...start,
+      bookId: end.bookId,
+      chapter: end.chapter,
+    });
+    for (let i = 0; i <= end.verse - 1; i++) {
+      const verse = endChapter[i];
+      if (verse) verses.push(verse);
+    }
+
+    return verses;
   },
 }));
 

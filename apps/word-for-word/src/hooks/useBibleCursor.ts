@@ -1,5 +1,6 @@
 import {
   type BibleCursor,
+  type BibleCursorRangeEnd,
   BOOK_COUNT,
   bookIds,
   cursorToIdxCursor,
@@ -18,19 +19,24 @@ export function useBibleCursorHandler(
     verse: 1,
   });
 
+  const [cursorRangeEnd, setCursorRangeEnd] =
+    useState<BibleCursorRangeEnd | null>(null);
+
   return {
     cursor,
+    cursorRangeEnd,
     hasNextChapterInSameBook,
     hasPrevChapterInSameBook,
     goNext,
     goPrev,
     setCursor,
+    setCursorRangeEnd,
     updateCursor,
   };
 
   function hasNextChapterInSameBook() {
     const nextChapter = cursor.chapter + 1;
-    return nextChapter <= mapBookIdsToChapterCounts[cursor.bookId]
+    return nextChapter <= mapBookIdsToChapterCounts[cursor.bookId];
   }
 
   function hasPrevChapterInSameBook() {
@@ -42,7 +48,8 @@ export function useBibleCursorHandler(
     const idxCursor = cursorToIdxCursor(cursor);
     if (!hasNextChapterInSameBook()) {
       const newBookIdx = mod(idxCursor.bookIdx + 1, BOOK_COUNT);
-      if (!bookIds[newBookIdx]) throw new Error(`Invalid book index ${newBookIdx}`);
+      if (!bookIds[newBookIdx])
+        throw new Error(`Invalid book index ${newBookIdx}`);
       updateCursor({
         bookId: bookIds[newBookIdx],
         chapter: 1,
@@ -58,7 +65,8 @@ export function useBibleCursorHandler(
 
     if (!hasPrevChapterInSameBook()) {
       const newBookIdx = mod(idxCursor.bookIdx - 1, BOOK_COUNT);
-      if (!bookIds[newBookIdx]) throw new Error(`Invalid book index ${newBookIdx}`);
+      if (!bookIds[newBookIdx])
+        throw new Error(`Invalid book index ${newBookIdx}`);
       const newBookdId = bookIds[newBookIdx];
       const nextChapterIdx = mapBookIdsToChapterCounts[newBookdId] - 1;
       const nextChapter = nextChapterIdx + 1;

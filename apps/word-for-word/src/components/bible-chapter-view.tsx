@@ -12,7 +12,8 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
   onPressVerse: (verse: number) => void;
-  highlightedVerse?: number;
+  onLongPressVerse: (verse: number) => void;
+  highlightedVerses?: number[];
   onScrollBegin?: () => void;
 };
 
@@ -23,7 +24,7 @@ export type BibleChapterViewRef = {
 const BibleChapterView = React.forwardRef<
   BibleChapterViewRef,
   BibleChapterView
->(({ cursorHandler, onPressVerse, highlightedVerse, onScrollBegin }, forwardRef) => {
+>(({ cursorHandler, onPressVerse, onLongPressVerse, highlightedVerses, onScrollBegin }, forwardRef) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const bible = useBibleStore();
   const settings = useSettingsStore();
@@ -82,16 +83,19 @@ const BibleChapterView = React.forwardRef<
         </TView>
         <TText>
           {bible.getChapterFormatted(cursorHandler.cursor).map((verse, i) => {
-            const isCurrentVerse = highlightedVerse === i + 1;
+            const isHighlighted = highlightedVerses?.includes(i + 1);;
             return (
               <React.Fragment key={verse.name}>
-                <TText onPress={() => onPressVerse(i + 1)}>
+                <TText
+                  onPress={() => onPressVerse(i + 1)}
+                  onLongPress={() => onLongPressVerse(i + 1)}
+                >
                   <TText
                     className="ml-1 font-bold"
                     style={{
                       // since this component comes first, line height determined here
                       lineHeight: settings.lineHeight,
-                      color: isCurrentVerse
+                      color: isHighlighted
                         ? themeColors.textHighlight
                         : undefined,
                     }}
@@ -112,7 +116,7 @@ const BibleChapterView = React.forwardRef<
                       fontSize: settings.textSize,
                       fontWeight: settings.fontWeight,
                       fontFamily: settings.paragraphFontFamily,
-                      color: isCurrentVerse
+                      color: isHighlighted
                         ? themeColors.textHighlight
                         : undefined,
                     }}

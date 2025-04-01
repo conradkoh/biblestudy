@@ -7,7 +7,7 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
 import { useBibleStore } from "@/src/stores/bible-store";
-import { mapBookIdsToName, type BookId } from "@common/utils/bible-data-utils";
+import { getVerseNameFormatted, isBookId, mapBookIdsToName, type BookId } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
 import { useRouter } from "expo-router";
@@ -20,6 +20,7 @@ import {
 } from "date-fns";
 import { Swipeable } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
+import { isDefined } from "@common/utils/typecheck";
 
 type StreakInfo = {
   lastEntryDate: Date;
@@ -32,13 +33,6 @@ const MemorizeScreen: FC = () => {
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
   const router = useRouter();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
-
-  const getVerseName = useCallback(
-    (bookId: BookId, chapter: number, verse: number) => {
-      return `${mapBookIdsToName[bookId]} ${chapter}:${verse}`;
-    },
-    [],
-  );
 
   const handleVersePress = useCallback(
     (verse: Doc<"memoryVerses">) => {
@@ -80,11 +74,22 @@ const MemorizeScreen: FC = () => {
 
   const renderItem = useCallback(
     ({ item }: { item: Doc<"memoryVerses"> }) => {
-      const verseName = getVerseName(
-        item.bookId as BookId,
-        item.chapter,
-        item.verse,
-      );
+
+      if (!isBookId(item.bookId)) {
+        console.error("Invalid bookId", item.bookId);
+        return null
+      };
+
+      const verseName = getVerseNameFormatted({
+        version: item.version,
+        bookId: item.bookId,
+        chapter: item.chapter,
+        verse: item.verse,
+      }, (isDefined(item.endVerse) && isDefined(item.endChapter) && isDefined(item.endBookId) && isBookId(item.endBookId)) ? {
+        verse: item.endVerse,
+        chapter: item.endChapter,
+        bookId: item.endBookId,
+      } : undefined);
       const streakInfo = getStreakInfo(item.memoryEntries);
       const verseText = `${item.text.split("\n")[0]}...`;
 
@@ -166,7 +171,7 @@ const MemorizeScreen: FC = () => {
         </Swipeable>
       );
     },
-    [getVerseName, themeColors, handleVersePress, renderRightActions],
+    [themeColors, handleVersePress, renderRightActions],
   );
 
   if (!memoryVerses) {

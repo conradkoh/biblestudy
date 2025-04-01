@@ -9,36 +9,51 @@ import React, { type FC } from "react";
 import { View } from "react-native";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
-import type { BibleCursor } from "@common/utils/bible-data-utils";
+import type {
+  BibleCursor,
+  BibleCursorRangeEnd,
+} from "@common/utils/bible-data-utils";
+import { getVerseNameFormatted } from "@common/utils/bible-data-utils";
 import { useBibleStore } from "@/src/stores/bible-store";
 
 type VerseActionsProps = {
   cursor: Required<BibleCursor>;
   verseName: string;
-  version: 'niv' | 'kjv';
+  version: "niv" | "kjv";
+  cursorRangeEnd?: BibleCursorRangeEnd | null;
 };
 
 const VerseActions: FC<VerseActionsProps> = ({
   cursor,
   verseName,
   version,
+  cursorRangeEnd,
 }) => {
   const themeColors = useThemeColors();
-
   const bible = useBibleStore();
-
-
-  const verse = bible.getVerse(cursor);
-  const existingMemoryVerseId = useQuery(api.memoryVerses.getExistingMemoryVerseId, {
-    text: verse.text,
-  });
+  const existingMemoryVerseId = useQuery(
+    api.memoryVerses.getExistingMemoryVerseId2,
+    {
+      version,
+      bookId: cursor.bookId,
+      chapter: cursor.chapter,
+      verse: cursor.verse,
+      ...(cursorRangeEnd && {
+        endVerse: cursorRangeEnd.verse,
+        endChapter: cursorRangeEnd.chapter,
+        endBookId: cursorRangeEnd.bookId,
+      }),
+    },
+  );
 
   const addMemoryVerse = useMutation(api.memoryVerses.addMemoryVerse);
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
 
   const handleCopy = () => {
+    const textToCopy = bible.getVersesText(cursor, cursorRangeEnd ?? undefined);
+
     Clipboard.setString(
-      `${verse.text}\n${verseName} (${version.toUpperCase()})`,
+      `${textToCopy}\n${verseName} (${version.toUpperCase()})`,
     );
     CommonEvents.emit("SHOW_TOAST", {
       message: `${verseName} (${version.toUpperCase()}) copied to clipboard`,
@@ -49,24 +64,28 @@ const VerseActions: FC<VerseActionsProps> = ({
     if (existingMemoryVerseId === undefined) return;
     if (!existingMemoryVerseId) {
       await addMemoryVerse({
-        text: verse.text,
-        verse: verse.verse,
+        text: bible.getVersesText(cursor, cursorRangeEnd ?? undefined), // TODO: remove. only for push notifications
+        verse: cursor.verse,
         chapter: cursor.chapter,
         bookId: cursor.bookId,
         version: version,
+        ...(cursorRangeEnd && {
+          endVerse: cursorRangeEnd.verse,
+          endChapter: cursorRangeEnd.chapter,
+          endBookId: cursorRangeEnd.bookId,
+        }),
       });
       CommonEvents.emit("SHOW_TOAST", {
         message: `${verseName} (${version.toUpperCase()}) added to memory verses.`,
       });
     } else {
       await removeMemoryVerse({
-        id: existingMemoryVerseId
-      })
+        id: existingMemoryVerseId,
+      });
       CommonEvents.emit("SHOW_TOAST", {
         message: `${verseName} (${version.toUpperCase()}) removed from memory verses.`,
       });
     }
-
   };
 
   return (
@@ -89,13 +108,21 @@ const VerseActions: FC<VerseActionsProps> = ({
       </Button>
       <Button
         leadingIcon={(props) => (
-          <Ionicons style={[props.style]} name={existingMemoryVerseId ? "heart-outline" : "heart"} size={24} />
+          <Ionicons
+            style={[props.style]}
+            name={existingMemoryVerseId ? "heart-outline" : "heart"}
+            size={24}
+          />
         )}
         className="flex-col rounded-md p-2 flex-1 ml-2"
         style={{ backgroundColor: themeColors.surfaceSecondary }}
         onPress={handleToggleMemoryVerse}
       >
-        {() => <TText className="text-xs font-bold">{existingMemoryVerseId ? "Remove" : "Memorise"}</TText>}
+        {() => (
+          <TText className="text-xs font-bold">
+            {existingMemoryVerseId ? "Remove" : "Memorise"}
+          </TText>
+        )}
       </Button>
       <Button
         leadingIcon={(props) => (

@@ -42,6 +42,9 @@ export default defineSchema({
     verse: v.number(),
     chapter: v.number(),
     bookId: v.string(),
+    endVerse: v.optional(v.number()),
+    endChapter: v.optional(v.number()),
+    endBookId: v.optional(v.string()),
     createdAt: v.number(),
     memoryEntries: v.array(v.object({
       createdAt: v.number(),

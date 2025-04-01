@@ -32,12 +32,14 @@ import Animated, {
 type VerseDetailBottomSheetProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  setIsSelectingRange: (isSelectingRange: boolean) => void;
   cursorHandler: BibleCursorHandler;
 };
 
 const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
   isOpen,
   setIsOpen,
+  setIsSelectingRange,
   cursorHandler,
 }) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -54,21 +56,12 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
 
   useEffect(() => {
     if (isOpen) bottomSheetRef.current?.snapToIndex(0);
+    if (!isOpen) bottomSheetRef.current?.close();
   }, [isOpen]);
 
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
     LexiconWord | undefined
   >();
-
-  // function onPressVerse(verse: number) {
-  //   setShowInterlinear(true);
-  //   interlinearCursor.updateCursor({
-  //     ...cursorHandler.cursor,
-  //     verse,
-  //   });
-  //   setCurrentStrongsWord(undefined);
-  //   bottomSheetRef.current?.snapToIndex(0);
-  // }
 
   function onPressStrongsNumber(strongsNumber: string) {
     const lexiconWord = bible.lookupStrongsNumber(strongsNumber);
@@ -93,17 +86,23 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
     >
       <BottomSheetScrollView className="flex-1 items-center justify-center">
         <View className="flex-1 px-3 py-1">
-          <View className="flex flex-row items-center" style={{ gap: 8 }}>
-            <Ionicons
-              size={20}
-              name="book"
-              style={{ color: themeColors.text }}
-            />
-            <TText className="text-[17px] font-bold">
-              {getVerseNameFormatted(cursorHandler.cursor)}
-            </TText>
+          <View className="flex-row justify-between items-center">
+            <View className="flex flex-row items-center" style={{ gap: 8 }}>
+              <Ionicons
+                size={20}
+                name="book"
+                style={{ color: themeColors.text }}
+              />
+              <TText className="text-[17px] font-bold">
+                {getVerseNameFormatted(cursorHandler.cursor)}
+              </TText>
+            </View>
+            {/* <TouchableOpacity onPress={() => setIsSelectingRange(true)} className="flex-row">
+              <TText className="text-xs mr-1" style={{ color: themeColors.textSecondary }}>Select multiple</TText>
+              <Ionicons name="chevron-forward-outline" size={16} style={{ color: themeColors.textSecondary }} />
+            </TouchableOpacity> */}
           </View>
-          {cursorHandler.cursor.verse && (
+          {isOpen && cursorHandler.cursor.verse !== undefined && (
             <VerseActions
               cursor={{
                 ...cursorHandler.cursor,
