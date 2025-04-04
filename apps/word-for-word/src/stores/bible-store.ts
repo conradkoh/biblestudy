@@ -1,32 +1,46 @@
-import kjv from "@/assets/bible-en/kjv.json";
-import niv from "@/assets/bible-en/niv.json";
 import { create } from "zustand";
 
-export const versions = { niv, kjv };
-export type BibleVersionId = keyof typeof versions;
+export type BibleVersionId = "niv" | "kjv";
 
-import type { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
-import interlinear, {
-  type InterlinearVerse,
-} from "@/assets/interlinear/interlinear.json";
-import greekLexicon from "@/assets/lexicon/greek.json";
-import hebrewLexicon from "@/assets/lexicon/hebrew.json";
 import strongs from "@/src/libraries/strongs";
 import {
   type BibleCursor,
   type BibleCursorRangeEnd,
   type BookId,
-  bookIds,
-  mapBookIdsToName,
+  bookIds
 } from "@common/utils/bible-data-utils";
 
+import type { GetBibleTranslation } from "@/assets/bible-en/kjv.json";
+
+import type {
+  InterlinearBible,
+  InterlinearVerse,
+} from "@/assets/interlinear/interlinear.json";
+import { Asset } from 'expo-asset'
+import * as FileSystem from 'expo-file-system';
+import { readAsStringAsync } from "expo-file-system";
+
+
 export type BibleStore = {
+  versions: Partial<Record<BibleVersionId, GetBibleTranslation>>;
+  interlinear: InterlinearBible | null;
+  lexicon: {
+    greek: LexiconWord[];
+    hebrew: LexiconWord[];
+  }
+  load: () => Promise<void>;
   getTranslation: (versionId: BibleVersionId) => GetBibleTranslation;
   getChapterFormatted: (
     chapter: Pick<BibleCursor, "bookId" | "chapter" | "version">,
   ) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
-  getVersesText: (cursor: Required<BibleCursor>, endCursor?: BibleCursorRangeEnd) => string;
-  getVersesInRange: (start: Required<BibleCursor>, end?: BibleCursorRangeEnd) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
+  getVersesText: (
+    cursor: Required<BibleCursor>,
+    endCursor?: BibleCursorRangeEnd,
+  ) => string;
+  getVersesInRange: (
+    start: Required<BibleCursor>,
+    end?: BibleCursorRangeEnd,
+  ) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
   getBook: (
     bookId: BookId,
     version: BibleVersionId,
@@ -49,7 +63,47 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
   currentVersionId: "niv",
   bookIdx: 0,
   chapterIdx: 0,
-  getTranslation: (versionId) => versions[versionId],
+  versions: {},
+  interlinear: null,
+  lexicon: {
+    greek: [],
+    hebrew: [],
+  },
+  load: async () => {
+    const nivAsset = Asset.loadAsync(require('@/assets/bible-en/niv.jsonc')); // Adjust path as needed
+    const kjvAsset = Asset.loadAsync(require('@/assets/bible-en/kjv.jsonc')); // Adjust path as needed
+    const interlinearAsset = Asset.loadAsync(require('@/assets/interlinear/interlinear.jsonc')); // Adjust path as needed
+    const hebrewLexiconAsset = Asset.loadAsync(require('@/assets/lexicon/hebrew.jsonc'));
+    const greekLexiconAsset = Asset.loadAsync(require('@/assets/lexicon/greek.jsonc'));
+
+    const [niv, kjv, interlinear, hebrewLexicon, greekLexicon] = await Promise.all((await Promise.all([nivAsset, kjvAsset, interlinearAsset, hebrewLexiconAsset, greekLexiconAsset])).map(async ([asset]) => {
+      if (!asset) throw new Error("Asset not found");
+      if (!asset.localUri) throw new Error("Asset not found");
+      await asset.downloadAsync(); // Ensure the asset is available
+      const jsonString = await readAsStringAsync(asset.localUri);
+      const jsonData = JSON.parse(jsonString);
+      return jsonData;
+    }));
+
+    set({
+      interlinear,
+      lexicon: {
+        hebrew: hebrewLexicon,
+        greek: greekLexicon,
+      },
+      versions: {
+        niv,
+        kjv,
+      }
+    })
+
+    console.log('Bible loaded')
+  },
+  getTranslation: (versionId) => {
+    const translation = get().versions[versionId];
+    if (!translation) throw new Error(`Translation ${versionId} not loaded`);
+    return translation;
+  },
   /**
    * Returns an array of verses
    */
@@ -65,9 +119,14 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     if (!verses) throw new Error(`Chapter ${chapter} not found in ${bookId}`);
     return verses;
   },
-  getVersesText: (cursor: Required<BibleCursor>, endCursor?: BibleCursorRangeEnd) => {
+  getVersesText: (
+    cursor: Required<BibleCursor>,
+    endCursor?: BibleCursorRangeEnd,
+  ) => {
     const verses = get().getVersesInRange(cursor, endCursor);
-    return endCursor ? verses.map(v => v.text).join('') : verses[0]?.text ?? '';
+    return endCursor
+      ? verses.map((v) => v.text).join("")
+      : verses[0]?.text ?? "";
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {
     const bookIdx = bookIds.indexOf(bookId);
@@ -76,6 +135,8 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     return book;
   },
   getInterlinearVerse: (cursor) => {
+    const interlinear = get().interlinear;
+    if (!interlinear) throw new Error("Interlinear not loaded");
     const { bookId, chapter, verse } = cursor;
     if (typeof verse !== "number")
       throw new Error("verse not specified for interlinear verse");
@@ -91,6 +152,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     return verseData;
   },
   lookupStrongsNumber: (strongsNumber: string) => {
+    const { hebrew: hebrewLexicon, greek: greekLexicon } = get().lexicon;
     const lexicon = strongsNumber[0] === "h" ? hebrewLexicon : greekLexicon;
     const lexiconReference = lexicon.find((w) => w.strongs === strongsNumber);
     const strongsDefinition = strongs[strongsNumber.toUpperCase()];
@@ -108,6 +170,8 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     currentVerse: number,
   ) => {
     const results: ReturnType<BibleStore["findVersesByStrongsNumber"]> = [];
+    const interlinear = get().interlinear;
+    if (!interlinear) throw new Error("Interlinear not loaded");
 
     // Search through all books, chapters, and verses
     for (const book of interlinear.books) {
@@ -137,8 +201,16 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
 
     return results;
   },
-  getVersesInRange: (start: Required<BibleCursor>, end: BibleCursorRangeEnd = { bookId: start.bookId, chapter: start.chapter, verse: start.verse }) => {
-    const verses: GetBibleTranslation["books"][number]["chapters"][number]["verses"] = [];
+  getVersesInRange: (
+    start: Required<BibleCursor>,
+    end: BibleCursorRangeEnd = {
+      bookId: start.bookId,
+      chapter: start.chapter,
+      verse: start.verse,
+    },
+  ) => {
+    const verses: GetBibleTranslation["books"][number]["chapters"][number]["verses"] =
+      [];
 
     if (!end.verse) {
       throw new Error("End verse is required for verse range");
@@ -197,7 +269,11 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
     }
 
     // Add verses from remaining chapters in start book
-    for (let chapter = start.chapter; chapter < startBook.chapters.length; chapter++) {
+    for (
+      let chapter = start.chapter;
+      chapter < startBook.chapters.length;
+      chapter++
+    ) {
       const chapterVerses = get().getChapterFormatted({
         ...start,
         chapter,

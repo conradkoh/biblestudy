@@ -1,7 +1,7 @@
 {
-	"name": "word-for-word",
+	"name": "bible-study",
 	"main": "expo-router/entry",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"scripts": {
 		"ios": "npx expo run:ios",
 		"android": "EXPO_USE_METRO_WORKSPACE_ROOT=1 expo run:android",
@@ -30,11 +30,13 @@
 		"date-fns": "4.1.0",
 		"eventemitter3": "5.0.1",
 		"expo": "~51.0.39",
+		"expo-asset": "~10.0.10",
 		"expo-auth-session": "~5.5.2",
 		"expo-constants": "~16.0.2",
 		"expo-crypto": "~13.0.2",
 		"expo-dev-client": "~4.0.29",
 		"expo-device": "~6.0.2",
+		"expo-file-system": "~17.0.1",
 		"expo-font": "~12.0.10",
 		"expo-haptics": "~13.0.1",
 		"expo-linking": "~6.3.1",

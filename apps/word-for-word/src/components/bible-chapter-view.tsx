@@ -3,7 +3,7 @@ import { TView } from "@/src/components/core/TView";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { CommonEvents } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useBibleStore, versions } from "@/src/stores/bible-store";
+import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
 import React, { useImperativeHandle, useRef } from "react";
@@ -63,7 +63,7 @@ const BibleChapterView = React.forwardRef<
             CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
               snapPoint: 200,
               title: "Select Bible Version",
-              options: Object.values(versions).map((v) => ({
+              options: Object.values(bible.versions).map((v) => ({
                 id: v.id,
                 label: v.abbreviation.toUpperCase(),
                 onSelect: () => {
@@ -77,7 +77,7 @@ const BibleChapterView = React.forwardRef<
               className="text-sm mb-1 ml-1"
               style={{ color: themeColors.textSecondary }}
             >
-              {versions[cursorHandler.cursor.version].abbreviation.toUpperCase()}
+              {bible.versions[cursorHandler.cursor.version]?.abbreviation.toUpperCase()}
             </TText>
           </TouchableOpacity>
         </TView>
