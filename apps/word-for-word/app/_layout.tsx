@@ -15,6 +15,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -41,6 +42,7 @@ export default function TabLayout() {
   }, [loadBibleStore]);
 
   if (!fontsLoaded || !isBibleLoaded) return <TSafeAreaView>
+    <StatusBar style="auto" backgroundColor={themeColors.surface} />
     <TView className="h-full justify-center items-center">
       <ActivityIndicator size="large" color={themeColors.primary} />
       <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Loading...</TText>
@@ -48,36 +50,39 @@ export default function TabLayout() {
   </TSafeAreaView>
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <KeyboardProvider>
-          <ConvexAuthProvider client={convex} storage={secureStorage}>
-            <ToastProvider>
-              <AuthLoading>
-                <TSafeAreaView className="h-full">
-                  <TView className="h-full justify-center items-center">
-                    <ActivityIndicator size="large" color={themeColors.primary} />
-                    <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Logging In...</TText>
-                  </TView>
-                </TSafeAreaView>
-              </AuthLoading>
-              <Unauthenticated>
-                <LoginScreen />
-              </Unauthenticated>
-              <Authenticated>
-                <Stack>
-                  <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
-                  <Stack.Screen name="recite-verse-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                  <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                  <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                </Stack>
-              </Authenticated>
-              <OptionSelectorBottomSheet />
-              <InputBottomSheet />
-            </ToastProvider>
-          </ConvexAuthProvider>
-        </KeyboardProvider>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+    <>
+      <StatusBar style="auto" backgroundColor={themeColors.surface} />
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: 'red' }}>
+        <BottomSheetModalProvider>
+          <KeyboardProvider>
+            <ConvexAuthProvider client={convex} storage={secureStorage}>
+              <ToastProvider>
+                <AuthLoading>
+                  <TSafeAreaView className="h-full">
+                    <TView className="h-full justify-center items-center">
+                      <ActivityIndicator size="large" color={themeColors.primary} />
+                      <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Logging In...</TText>
+                    </TView>
+                  </TSafeAreaView>
+                </AuthLoading>
+                <Unauthenticated>
+                  <LoginScreen />
+                </Unauthenticated>
+                <Authenticated>
+                  <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+                    <Stack.Screen name="recite-verse-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                    <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                    <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                  </Stack>
+                </Authenticated>
+                <OptionSelectorBottomSheet />
+                <InputBottomSheet />
+              </ToastProvider>
+            </ConvexAuthProvider>
+          </KeyboardProvider>
+        </BottomSheetModalProvider>
+      </GestureHandlerRootView>
+    </>
   );
 }
