@@ -2,7 +2,7 @@ import type { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "bible-study-mobile",
+  name: "Bible w Frens",
   slug: "bible-study-mobile",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
