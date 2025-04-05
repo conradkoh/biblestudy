@@ -74,6 +74,7 @@ export const SearchUserBottomSheet = React.forwardRef<
       ref={ref}
       index={0}
       snapPoints={snapPoints}
+      skipBottomSheetContainer
     >
       <TView className="px-4 pb-2">
         <TText className="text-lg font-bold mb-2">Search Users</TText>

@@ -53,9 +53,9 @@ export default function TabLayout() {
     <>
       <StatusBar style="auto" backgroundColor={themeColors.surface} />
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: 'red' }}>
-        <BottomSheetModalProvider>
-          <KeyboardProvider>
-            <ConvexAuthProvider client={convex} storage={secureStorage}>
+        <KeyboardProvider>
+          <ConvexAuthProvider client={convex} storage={secureStorage}>
+            <BottomSheetModalProvider>
               <ToastProvider>
                 <AuthLoading>
                   <TSafeAreaView className="h-full">
@@ -79,9 +79,9 @@ export default function TabLayout() {
                 <OptionSelectorBottomSheet />
                 <InputBottomSheet />
               </ToastProvider>
-            </ConvexAuthProvider>
-          </KeyboardProvider>
-        </BottomSheetModalProvider>
+            </BottomSheetModalProvider>
+          </ConvexAuthProvider>
+        </KeyboardProvider>
       </GestureHandlerRootView>
     </>
   );

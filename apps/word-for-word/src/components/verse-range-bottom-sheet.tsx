@@ -1,27 +1,19 @@
+import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import VerseActions from "@/src/components/verse-actions";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import useBottomSheetBackdrop from "@/src/hooks/useBottomSheetBackdrop";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { getVerseNameFormatted, mapBookIdsToName } from "@common/utils/bible-data-utils";
+import {
+  getVerseNameFormatted
+} from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, {
-  type BottomSheetBackdropProps,
-  BottomSheetScrollView,
+import {
+  type BottomSheetModal,
+  BottomSheetScrollView
 } from "@gorhom/bottom-sheet";
-import React, {
-  type FC,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { type FC, useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
-import Animated, {
-  Extrapolate,
-  interpolate,
-  useAnimatedStyle,
-} from "react-native-reanimated";
 
 type VerseRangeBottomSheetProps = {
   isOpen: boolean;
@@ -34,7 +26,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
   setIsOpen,
   cursorHandler,
 }) => {
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
   const themeColors = useThemeColors();
   const renderBackdrop = useBottomSheetBackdrop({ opacity: 0 });
 
@@ -52,7 +44,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
   }, [isOpen]);
 
   return (
-    <BottomSheet
+    <TBottomSheetModal
       ref={bottomSheetRef}
       onChange={handleSheetChanges}
       snapPoints={[150]}
@@ -65,28 +57,38 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
         backgroundColor: themeColors.surface,
       }}
       backdropComponent={renderBackdrop}
+      enableScrollView
     >
-      <BottomSheetScrollView className="flex-1 items-center justify-center">
-        <View className="flex-1 px-3 py-1">
-          <View className="flex flex-row items-center" style={{ gap: 8 }}>
-            <Ionicons
-              size={20}
-              name="book"
-              style={{ color: themeColors.text }}
-            />
-            <TText className="text-[17px] font-bold">
-              {getVerseNameFormatted(cursorHandler.cursor, cursorHandler.cursorRangeEnd)}
-            </TText>
-          </View>
-          {!!cursorHandler.cursor.verse && <VerseActions
-            cursor={{ ...cursorHandler.cursor, verse: cursorHandler.cursor.verse }}
-            verseName={getVerseNameFormatted(cursorHandler.cursor, cursorHandler.cursorRangeEnd)}
+      <View className="flex-1 px-3 py-1">
+        <View className="flex flex-row items-center" style={{ gap: 8 }}>
+          <Ionicons
+            size={20}
+            name="book"
+            style={{ color: themeColors.text }}
+          />
+          <TText className="text-[17px] font-bold">
+            {getVerseNameFormatted(
+              cursorHandler.cursor,
+              cursorHandler.cursorRangeEnd,
+            )}
+          </TText>
+        </View>
+        {!!cursorHandler.cursor.verse && (
+          <VerseActions
+            cursor={{
+              ...cursorHandler.cursor,
+              verse: cursorHandler.cursor.verse,
+            }}
+            verseName={getVerseNameFormatted(
+              cursorHandler.cursor,
+              cursorHandler.cursorRangeEnd,
+            )}
             version={cursorHandler.cursor.version}
             cursorRangeEnd={cursorHandler.cursorRangeEnd}
-          />}
-        </View>
-      </BottomSheetScrollView>
-    </BottomSheet>
+          />
+        )}
+      </View>
+    </TBottomSheetModal>
   );
 };
 
