@@ -1,6 +1,6 @@
 import type { GetBibleTranslation } from "../../apps/word-for-word/assets/bible-en/kjv.d.json";
-const kjv: GetBibleTranslation = require("../../apps/word-for-word/assets/bible-en/kjv.json");
-const niv: GetBibleTranslation = require("../../apps/word-for-word/assets/bible-en/niv.json");
+const kjv: GetBibleTranslation = require("../../apps/word-for-word/assets/bible-en/kjv.jsonc");
+const niv: GetBibleTranslation = require("../../apps/word-for-word/assets/bible-en/niv.jsonc");
 
 const delimiters = new Set<string>();
 

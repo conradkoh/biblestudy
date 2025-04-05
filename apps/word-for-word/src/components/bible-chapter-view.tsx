@@ -77,7 +77,7 @@ const BibleChapterView = React.forwardRef<
               className="text-sm mb-1 ml-1"
               style={{ color: themeColors.textSecondary }}
             >
-              {bible.versions[cursorHandler.cursor.version]?.abbreviation.toUpperCase()}
+              {bible.getTranslation(cursorHandler.cursor.version).abbreviation.toUpperCase()}
             </TText>
           </TouchableOpacity>
         </TView>
@@ -111,7 +111,6 @@ const BibleChapterView = React.forwardRef<
                     }}
                   />
                   <TText
-                    type="paragraph"
                     style={{
                       fontSize: settings.textSize,
                       fontWeight: settings.fontWeight,

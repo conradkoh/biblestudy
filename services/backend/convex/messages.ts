@@ -55,7 +55,7 @@ export const sendMessage = mutation({
             to: receiverUserId,
             body: 'Poked you to read your bible',
             data: {
-              url: 'index',
+              url: '',
             },
           });
 

@@ -104,7 +104,7 @@ const VerseActions: FC<VerseActionsProps> = ({
         className="flex-col rounded-md p-2 flex-1"
         style={{ backgroundColor: themeColors.surfaceSecondary }}
       >
-        {() => <TText className="text-xs font-bold">Highlight</TText>}
+        {() => <TText numberOfLines={1} className="text-xs font-bold">Highlight</TText>}
       </Button>
       <Button
         leadingIcon={(props) => (
@@ -119,7 +119,7 @@ const VerseActions: FC<VerseActionsProps> = ({
         onPress={handleToggleMemoryVerse}
       >
         {() => (
-          <TText className="text-xs font-bold">
+          <TText numberOfLines={1} className="text-xs font-bold">
             {existingMemoryVerseId ? "Remove" : "Memorise"}
           </TText>
         )}
@@ -131,7 +131,7 @@ const VerseActions: FC<VerseActionsProps> = ({
         className="flex-col rounded-md p-2 flex-1 ml-2"
         style={{ backgroundColor: themeColors.surfaceSecondary }}
       >
-        {() => <TText className="text-xs font-bold">Send</TText>}
+        {() => <TText numberOfLines={1} className="text-xs font-bold">Send</TText>}
       </Button>
       <Button
         leadingIcon={(props) => (
@@ -141,7 +141,7 @@ const VerseActions: FC<VerseActionsProps> = ({
         style={{ backgroundColor: themeColors.surfaceSecondary }}
         onPress={handleCopy}
       >
-        {() => <TText className="text-xs font-bold">Copy</TText>}
+        {() => <TText numberOfLines={1} className="text-xs font-bold">Copy</TText>}
       </Button>
     </View>
   );

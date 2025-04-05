@@ -18,7 +18,6 @@ import type {
 } from "@/assets/interlinear/interlinear.json";
 import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system';
-import { readAsStringAsync } from "expo-file-system";
 
 
 export type BibleStore = {
@@ -80,7 +79,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
       if (!asset) throw new Error("Asset not found");
       if (!asset.localUri) throw new Error("Asset not found");
       await asset.downloadAsync(); // Ensure the asset is available
-      const jsonString = await readAsStringAsync(asset.localUri);
+      const jsonString = await FileSystem.readAsStringAsync(asset.localUri);
       const jsonData = JSON.parse(jsonString);
       return jsonData;
     }));

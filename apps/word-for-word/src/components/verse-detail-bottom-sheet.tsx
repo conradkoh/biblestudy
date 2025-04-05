@@ -5,7 +5,6 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import {
   type LexiconWord,
   useBibleStore,
-  versions,
 } from "@/src/stores/bible-store";
 import { getVerseNameFormatted, mapBookIdsToName } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
@@ -167,7 +166,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                   Strongs: {currentStrongsWord.strongs}
                 </TText>
                 {/* Hebrew / Greek + Translit */}
-                <TText type="subtitle" style={{ color: themeColors.success }}>
+                <TText type="subtitle" style={{ color: themeColors.success, textAlign: 'left' }}>
                   {currentStrongsWord.originalWord} -{" "}
                   {currentStrongsWord.transliteration}
                 </TText>
@@ -224,9 +223,9 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                               :{result.verse}
                             </TText>
                             <TText className="text-xs font-semibold">
-                              {versions[
+                              {bible.getTranslation(
                                 cursorHandler.cursor.version
-                              ].abbreviation.toUpperCase()}
+                              ).abbreviation.toUpperCase()}
                             </TText>
                           </View>
 
@@ -244,9 +243,9 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                                   color: themeColors.textContrast,
                                 }}
                               >
-                                {versions[
+                                {bible.getTranslation(
                                   cursorHandler.cursor.version
-                                ].abbreviation.toUpperCase()}
+                                ).abbreviation.toUpperCase()}
                               </TText>
                             </View>
                             {(
