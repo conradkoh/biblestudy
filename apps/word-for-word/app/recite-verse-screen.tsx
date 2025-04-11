@@ -103,7 +103,7 @@ export default function MemoryVersePracticeScreen() {
     if (!memoryVerseCursor) return;
     Alert.alert(
       "Well done!",
-      `You have successfully recited the ${getVerseNameFormatted(memoryVerseCursor)}`,
+      `You have successfully recited ${getVerseNameFormatted(memoryVerseCursor)}`,
     );
     if (!verseId) return;
     await addMemoryEntry({ memoryVerseId: verseId });

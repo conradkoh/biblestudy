@@ -84,7 +84,7 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   );
 
   return (
-    <TSafeAreaView>
+    <TSafeAreaView edges={['top']}>
       <TView className="h-full">
         {/* Content */}
         <View className="flex-1">

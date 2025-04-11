@@ -36,7 +36,7 @@ export default function NotificationsScreen() {
 
   if (!notifications) {
     return (
-      <TSafeAreaView className="h-full">
+      <TSafeAreaView className="h-full" edges={['top']}>
         <TView className="h-full justify-center items-center">
           <ActivityIndicator size="large" color={themeColors.primary} />
         </TView>
@@ -46,7 +46,7 @@ export default function NotificationsScreen() {
 
   if (notifications.length === 0) {
     return (
-      <TSafeAreaView className="h-full">
+      <TSafeAreaView className="h-full" edges={['top']}>
         <TView className="h-full justify-center items-center">
           <TText className="text-lg">No notifications</TText>
         </TView>
@@ -55,7 +55,7 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <TSafeAreaView className="h-full">
+    <TSafeAreaView className="h-full" edges={['top']}>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item._id}

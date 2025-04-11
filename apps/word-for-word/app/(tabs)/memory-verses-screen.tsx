@@ -176,7 +176,7 @@ const MemorizeScreen: FC = () => {
 
   if (!memoryVerses) {
     return (
-      <TSafeAreaView className="items-center justify-center">
+      <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TText>Loading...</TText>
       </TSafeAreaView>
     );
@@ -184,7 +184,7 @@ const MemorizeScreen: FC = () => {
 
   if (memoryVerses.length === 0) {
     return (
-      <TSafeAreaView className="items-center justify-center">
+      <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TView className="items-center">
           <Ionicons
             name="heart-outline"
@@ -203,7 +203,7 @@ const MemorizeScreen: FC = () => {
   }
 
   return (
-    <TSafeAreaView>
+    <TSafeAreaView edges={['top']}>
       <FlatList
         data={memoryVerses}
         renderItem={renderItem}

@@ -26,7 +26,7 @@ const TBottomSheetModal = React.forwardRef<BottomSheetModal, TBottomSheetModalPr
   function withSafeAreaView(children: React.ReactNode) {
     if (enableSafeAreaView) {
       return (
-        <TSafeAreaView>
+        <TSafeAreaView edges={['bottom']}>
           {children}
         </TSafeAreaView>
       );

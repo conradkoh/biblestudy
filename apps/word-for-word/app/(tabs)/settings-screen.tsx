@@ -27,7 +27,7 @@ export default function SettingsScreen() {
   const currentUser = useQuery(api.users.getCurrentUser);
 
   return (
-    <TSafeAreaView style={{ flex: 1 }}>
+    <TSafeAreaView style={{ flex: 1 }} edges={['top']}>
       <TView className="h-full px-4 pt-4">
         <TText type="title" style={{ marginBottom: 16 }}>
           Settings

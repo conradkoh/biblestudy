@@ -4,7 +4,7 @@ import { internal } from "./_generated/api";
 const cron = cronJobs();
 
 cron.daily("sendMemoryVerseReminders", {
-  hourUTC: 1, // 9am SGT
+  hourUTC: 13, // 1pm UTC +8 = 9pm SGT
   minuteUTC: 0,
 }, internal.memoryVerses.sendMemoryVerseReminders, {});
 

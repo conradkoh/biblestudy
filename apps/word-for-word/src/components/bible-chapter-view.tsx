@@ -53,8 +53,8 @@ const BibleChapterView = React.forwardRef<
       ref={scrollViewRef}
       onScrollBeginDrag={onScrollBegin}
     >
-      <TView className="px-6">
-        <TView className="flex-row items-end mb-2 mt-12">
+      <TView className="px-6" >
+        <TView className="flex-row items-end mb-2 mt-6">
           <TText type="title">
             {mapBookIdsToName[cursorHandler.cursor.bookId]}{" "}
             {cursorHandler.cursor.chapter}

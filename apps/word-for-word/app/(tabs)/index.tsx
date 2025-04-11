@@ -132,6 +132,7 @@ export default function ReadScreen() {
         style={{
           flex: 1,
         }}
+        edges={['top']}
       >
         <TView
           style={{
