@@ -1,4 +1,3 @@
-import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { HITSLOP_DEFAULT, HITSLOP_LARGE } from "@/src/consts/hitslop";
@@ -19,6 +18,7 @@ import React, { useEffect, useRef, useState, type FC } from "react";
 import {
   KeyboardAvoidingView,
   Modal,
+  SafeAreaView,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -149,18 +149,19 @@ const SearchBox: FC<SearchBoxProps> = ({
       presentationStyle="overFullScreen"
       transparent={true}
     >
-      <View className="absolute h-screen w-screen bg-black opacity-40" />
-      <KeyboardAvoidingView behavior="padding" className="h-full">
-        <TView
-          style={{
-            backgroundColor: themeColors.surface,
-            borderColor: themeColors.surfaceSecondary,
-            borderWidth: 1,
-            marginBottom: KEYBOARD_TOOLBAR_HEIGHT,
-          }}
-          className="pt-3 pb-1 rounded-sm flex-1"
-        >
-          <TSafeAreaView>
+
+      <SafeAreaView>
+        <View className="absolute h-screen w-screen bg-black opacity-40" />
+        <KeyboardAvoidingView behavior="padding" className="h-full">
+          <TView
+            style={{
+              backgroundColor: themeColors.surface,
+              borderColor: themeColors.surfaceSecondary,
+              borderWidth: 1,
+              marginBottom: KEYBOARD_TOOLBAR_HEIGHT,
+            }}
+            className="pt-3 pb-1 rounded-sm flex-1"
+          >
             <View className="flex flex-row items-center gap-2 px-4 my-2">
               <TextInput
                 autoFocus
@@ -349,36 +350,37 @@ const SearchBox: FC<SearchBoxProps> = ({
                 </View>
               )}
             </ScrollView>
-          </TSafeAreaView>
-        </TView>
-      </KeyboardAvoidingView>
-      <KeyboardStickyView className="absolute bottom-0 w-screen">
-        <TView
-          className="w-full h-full flex flex-row items-center justify-between py-2 px-4"
-          style={{ ...SHADOW_SMALL, height: KEYBOARD_TOOLBAR_HEIGHT }}
-        >
-          <TouchableOpacity
-            onPress={() => setIsVisible(false)}
-            hitSlop={HITSLOP_LARGE}
+          </TView>
+        </KeyboardAvoidingView>
+        <KeyboardStickyView className="absolute bottom-0 w-screen">
+          <TView
+            className="w-full h-full flex flex-row items-center justify-between py-2 px-4"
+            style={{ ...SHADOW_SMALL, height: KEYBOARD_TOOLBAR_HEIGHT }}
           >
-            <TText className="font-bold">Cancel</TText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={onSubmitAccessoryView}
-            hitSlop={HITSLOP_LARGE}
-            disabled={!canSubmit && currentFocus === "verse"}
-            style={{
-              opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
-            }}
-          >
-            <TText className="font-bold">
-              {currentFocus !== "verse"
-                ? "Next"
-                : `Go to ${bookNameSearch} ${chapterSearch}:${verseSearch}`}
-            </TText>
-          </TouchableOpacity>
-        </TView>
-      </KeyboardStickyView>
+            <TouchableOpacity
+              onPress={() => setIsVisible(false)}
+              hitSlop={HITSLOP_LARGE}
+            >
+              <TText className="font-bold">Cancel</TText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onSubmitAccessoryView}
+              hitSlop={HITSLOP_LARGE}
+              disabled={!canSubmit && currentFocus === "verse"}
+              style={{
+                opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
+              }}
+            >
+              <TText className="font-bold">
+                {currentFocus !== "verse"
+                  ? "Next"
+                  : `Go to ${bookNameSearch} ${chapterSearch}:${verseSearch}`}
+              </TText>
+            </TouchableOpacity>
+          </TView>
+        </KeyboardStickyView>
+
+      </SafeAreaView>
     </Modal>
   );
 };

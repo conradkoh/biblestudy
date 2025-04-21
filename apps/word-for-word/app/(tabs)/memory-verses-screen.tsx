@@ -17,6 +17,7 @@ import {
   isYesterday,
   isToday,
   differenceInDays,
+  formatDistanceToNow,
 } from "date-fns";
 import { Swipeable } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
@@ -164,7 +165,7 @@ const MemorizeScreen: FC = () => {
               >
                 {!streakInfo
                   ? "Not memorized"
-                  : `Last memorized: ${streakInfo.lastEntryDate.toLocaleDateString()}`}
+                  : `Last memorized ${formatDistanceToNow(new Date(streakInfo.lastEntryDate), { addSuffix: true })}`}
               </TText>
             </TView>
           </TouchableOpacity>

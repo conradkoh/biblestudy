@@ -72,4 +72,15 @@ export default defineSchema({
     // USER_INVITE fields
     inviteId: v.optional(v.id("userInvites")),
   })).index("userId", ["userId"]),
+  userSessions: defineTable(v.object({
+    userId: v.id("users"),
+    date: v.string(), // YYYY-MM-DD
+    verses: v.array(v.object({
+      bookId: v.string(),
+      chapter: v.number(),
+      startVerse: v.number(),
+      endVerse: v.optional(v.number()),
+      count: v.number(), // Number of verses in this range
+    })),
+  })).index("userId", ["userId"]),
 });

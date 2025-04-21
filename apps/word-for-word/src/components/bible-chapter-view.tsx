@@ -2,12 +2,13 @@ import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { CommonEvents } from "@/src/hooks/useEvents";
+import { sessionLogger } from "@/src/hooks/useSessionLogger";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
-import React, { useImperativeHandle, useRef } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View } from "react-native";
 
 type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
@@ -30,6 +31,13 @@ const BibleChapterView = React.forwardRef<
   const settings = useSettingsStore();
   const themeColors = useThemeColors();
   const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});
+  const scrollYRef = useRef(0);
+  const scrollViewHeightRef = useRef(0);
+
+  useEffect(() => {
+    const unmount = sessionLogger.mountBibleChapterView(cursorHandler, verseYCoordsRef, scrollYRef, scrollViewHeightRef);
+    return unmount;
+  }, [cursorHandler]);
 
   useImperativeHandle(
     forwardRef,
@@ -48,10 +56,18 @@ const BibleChapterView = React.forwardRef<
     [],
   );
 
+  const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    scrollYRef.current = e.nativeEvent.contentOffset.y;
+  }, []);
+
   return (
     <ScrollView
       ref={scrollViewRef}
       onScrollBeginDrag={onScrollBegin}
+      onScroll={onScroll}
+      onLayout={e => {
+        scrollViewHeightRef.current = e.nativeEvent.layout.height;
+      }}
     >
       <TView className="px-6" >
         <TView className="flex-row items-end mb-2 mt-6">

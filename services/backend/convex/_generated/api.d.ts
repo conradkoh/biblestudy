@@ -22,6 +22,7 @@ import type * as models_user_user_friendship from "../models/user/user_friendshi
 import type * as models_user_user_groups from "../models/user/user_groups.js";
 import type * as models_user_user_invites from "../models/user/user_invites.js";
 import type * as pushNotifications from "../pushNotifications.js";
+import type * as sessionLogger from "../sessionLogger.js";
 import type * as system from "../system.js";
 import type * as telegram from "../telegram.js";
 import type * as userNotifications from "../userNotifications.js";
@@ -56,6 +57,7 @@ declare const fullApi: ApiFromModules<{
   "models/user/user_groups": typeof models_user_user_groups;
   "models/user/user_invites": typeof models_user_user_invites;
   pushNotifications: typeof pushNotifications;
+  sessionLogger: typeof sessionLogger;
   system: typeof system;
   telegram: typeof telegram;
   userNotifications: typeof userNotifications;

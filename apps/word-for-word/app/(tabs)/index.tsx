@@ -11,6 +11,7 @@ import VerseRangeBottomSheet from "@/src/components/verse-range-bottom-sheet";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { useBibleBookmark } from "@/src/hooks/useBibleBookmark";
 import { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import { useSessionLogger } from "@/src/hooks/useSessionLogger";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
@@ -58,19 +59,8 @@ export default function ReadScreen() {
   const [showFocusVerseRange, setShowFocusVerseRange] = useState(false);
   const [isSelectingRange, setIsSelectingRange] = useState(false)
   const focusCursorHandler = useBibleCursorHandler();
-  const scrollTimeout = useRef<NodeJS.Timeout>();
 
-
-  // Handle scroll state
-  const handleScrollBegin = useCallback(() => {
-    setIsScrolling(true);
-    if (scrollTimeout.current) {
-      clearTimeout(scrollTimeout.current);
-    }
-    scrollTimeout.current = setTimeout(() => {
-      setIsScrolling(false);
-    }, 150); // Reset after 150ms of no scrolling
-  }, []);
+  useSessionLogger();
 
   function onPressVerse(verse: number) {
 
@@ -176,7 +166,6 @@ export default function ReadScreen() {
                     ? [focusCursorHandler.cursor.verse]
                     : undefined
               }
-              onScrollBegin={handleScrollBegin}
             />
           </SwipeableContainer>
 
@@ -222,28 +211,27 @@ export default function ReadScreen() {
             </TouchableOpacity>
           </View>
         </TView>
+        <SearchBox
+          isVisible={isSearchVisible}
+          setIsVisible={setIsSearchVisible}
+          cursorHandler={cursorHandler}
+        />
+        <VerseDetailBottomSheet
+          isOpen={showFocusVerseSingle}
+          setIsOpen={setShowFocusVerseSingle}
+          cursorHandler={focusCursorHandler}
+          setIsSelectingRange={() => {
+            setIsSelectingRange(true);
+            setShowFocusVerseRange(false);
+            setShowFocusVerseSingle(false);
+          }}
+        />
+        <VerseRangeBottomSheet
+          isOpen={showFocusVerseRange}
+          setIsOpen={setShowFocusVerseRange}
+          cursorHandler={focusCursorHandler}
+        />
       </TSafeAreaView>
-      <SearchBox
-        isVisible={isSearchVisible}
-        setIsVisible={setIsSearchVisible}
-        cursorHandler={cursorHandler}
-      />
-      <VerseDetailBottomSheet
-        isOpen={showFocusVerseSingle}
-        setIsOpen={setShowFocusVerseSingle}
-        cursorHandler={focusCursorHandler}
-        setIsSelectingRange={() => {
-          setIsSelectingRange(true);
-          setShowFocusVerseRange(false);
-          setShowFocusVerseSingle(false);
-        }}
-      />
-      <VerseRangeBottomSheet
-        isOpen={showFocusVerseRange}
-        setIsOpen={setShowFocusVerseRange}
-        cursorHandler={focusCursorHandler}
-      />
-
     </>
   );
 }

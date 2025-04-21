@@ -14,3 +14,13 @@ export function useAppState(): AppStateStatus {
 
   return appState;
 }
+
+export function useAppStateListener(onChange: (appState: AppStateStatus) => void) {
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", onChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, [onChange]);
+}
