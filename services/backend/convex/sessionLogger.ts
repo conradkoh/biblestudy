@@ -169,3 +169,65 @@ function shouldLogNewSession(existingSession: Doc<"userSessions">, newEntries: {
   // All new entries are covered by existing ranges
   return false;
 }
+
+export const getSessionContributionData = query({
+  args: {
+    userId: v.id("users"),
+    endDateStr: v.string(), // YYYY-MM-DD
+    startDateStr: v.string(), // YYYY-MM-DD
+  },
+  handler: async (ctx, args): Promise<{ date: string; count: number }[]> => {
+    const { userId, endDateStr, startDateStr } = args;
+
+    // Query sessions within the date range
+    const sessions = await ctx.db
+      .query("userSessions")
+      .filter(q => q.eq(q.field("userId"), userId))
+      .filter(q => q.gte(q.field("date"), startDateStr))
+      .filter(q => q.lte(q.field("date"), endDateStr))
+      .collect();
+
+    // Create a map to store daily verse counts
+    const dailyCounts = new Map<string, number>();
+
+    // Parse start and end dates
+    const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
+    const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
+
+    // Initialize all dates in the range with 0
+    let currentYear = startYear;
+    let currentMonth = startMonth;
+    let currentDay = startDay;
+
+    while (
+      currentYear < endYear ||
+      (currentYear === endYear && currentMonth < endMonth) ||
+      (currentYear === endYear && currentMonth === endMonth && currentDay <= endDay)
+    ) {
+      const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
+      dailyCounts.set(dateStr, 0);
+
+      // Move to next day
+      currentDay++;
+      if (currentDay > new Date(currentYear, currentMonth, 0).getDate()) {
+        currentDay = 1;
+        currentMonth++;
+        if (currentMonth > 12) {
+          currentMonth = 1;
+          currentYear++;
+        }
+      }
+    }
+
+    // Aggregate verse counts from sessions
+    for (const session of sessions) {
+      const totalVerses = session.verses.reduce((sum, verse) => sum + verse.count, 0);
+      dailyCounts.set(session.date, totalVerses);
+    }
+
+    // Convert to array of { date, count } objects
+    return Array.from(dailyCounts.entries())
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+});

@@ -9,9 +9,11 @@ import { useMutation, useQuery } from "convex/react";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import React, { type FC, useCallback, useRef, useState } from "react";
+import React, { type FC, useCallback, useRef, useState, useEffect } from "react";
 import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
 import { CommonEvents } from "@/src/hooks/useEvents";
+import SessionHistoryGraph from "@/src/components/session-history-graph";
+import { formatDate } from "date-fns";
 
 type FriendsScreenProps = unknown;
 
@@ -170,15 +172,15 @@ type FriendUserItemProps = {
   navigateToUserProfile: (userId: Id<"users">) => void;
 }
 const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPrayer, navigateToUserProfile, }) => {
-
   const [expandReceivedPrayer, setExpandReceivedPrayer] = useState(false);
   const [expandSentPrayer, setExpandSentPrayer] = useState(false);
+  const sessionGraphData = useQuery(api.sessionLogger.getSessionContributionData, { userId: user._id, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
 
   const themeColors = useThemeColors();
   const removeFriend = useMutation(api.users.removeFriend);
   const sendMessage = useMutation(api.messages.sendMessage);
 
-  return <View className="flex-col p-3 border-b" style={{ borderBottomColor: themeColors.divider }}>
+  return <View className="flex-col px-3 py-2 border-b" style={{ borderBottomColor: themeColors.divider }}>
     <TouchableOpacity
       className="flex-row items-center"
       onPress={() => {
@@ -205,7 +207,6 @@ const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPra
               id: "prayer",
               label: "Leave a prayer",
               onSelect: () => {
-
                 const prayerHints = [
                   "Write your prayer here...",
                   'What is the Lord saying?',
@@ -245,7 +246,10 @@ const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPra
           {(user.name ?? user.username)?.charAt(0).toUpperCase()}
         </TText>}
       </View>
-      <TText className="font-bold">@{user.username}</TText>
+      <TText className="font-bold mr-auto">@{user.username}</TText>
+      <SessionHistoryGraph
+        data={sessionGraphData ?? []}
+      />
     </TouchableOpacity>
     {receivedPrayer && <TouchableOpacity onPress={() => setExpandReceivedPrayer(!expandReceivedPrayer)}>
       <View className="rounded-md p-2 mt-2" style={{ backgroundColor: themeColors.surfaceSecondary }}>

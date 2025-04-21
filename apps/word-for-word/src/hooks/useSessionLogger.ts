@@ -161,11 +161,8 @@ function makeSessionLogger() {
         date: formatDate(new Date(), "yyyy-MM-dd"),
         verses: consolidatedEntries,
       });
-
-      console.log('flushed', consolidatedEntries);
     },
     logEntry: (bookId: BookId, chapter: number, verse: number) => {
-      console.log("logEntry", bookId, chapter, verse);
       entries.push({ bookId, chapter, verse });
       sessionLogger.flush();
     },
