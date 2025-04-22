@@ -39,7 +39,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
   );
 
   useEffect(() => {
-    if (isOpen) bottomSheetRef.current?.snapToIndex(0);
+    if (isOpen) bottomSheetRef.current?.present();
     if (!isOpen) bottomSheetRef.current?.close();
   }, [isOpen]);
 
@@ -49,7 +49,6 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
       onChange={handleSheetChanges}
       snapPoints={[150]}
       enablePanDownToClose
-      index={-1}
       handleIndicatorStyle={{
         backgroundColor: themeColors.text,
       }}
