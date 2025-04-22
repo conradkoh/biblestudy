@@ -9,7 +9,7 @@ import type { Doc, Id } from "@backend/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useMutation, useQuery } from "convex/react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useSegments } from "expo-router";
 import React, {
   type FC,
   useCallback,
@@ -25,14 +25,28 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import SessionHistoryGraph from "@/src/components/session-history-graph";
+import { formatDate } from "date-fns";
 
-const UserProfileScreen: FC = () => {
+interface UserProfileScreenProps {
+  userId?: Id<"users">;
+  isTab?: boolean;
+}
+
+export default function UserProfileScreen({ userId: propUserId, isTab = false }: UserProfileScreenProps) {
   const themeColors = useThemeColors();
-  const { userId } = useLocalSearchParams<{ userId: Id<"users"> }>();
+  const { userId: paramUserId } = useLocalSearchParams<{ userId: Id<"users"> }>();
   const router = useRouter();
+
+  // Use prop userId if provided, otherwise use the one from params
+  const userId = propUserId ?? paramUserId;
+  if (!userId) {
+    return null;
+  }
 
   const user = useQuery(api.users.getUserById, { userId });
   const currentUser = useQuery(api.users.getCurrentUser);
+  const sessionHistoryData = useQuery(api.sessionLogger.getSessionHistoryData, { userId, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,7 +58,6 @@ const UserProfileScreen: FC = () => {
   const friendshipStatus = useQuery(api.invites.getFriendshipStatus, {
     otherUserId: userId,
   });
-
 
   const sendInvite = useCallback(
     async (friendType: "FRIEND" | "CLOSE_FRIEND") => {
@@ -242,15 +255,17 @@ const UserProfileScreen: FC = () => {
   }
 
   return (
-    <TSafeAreaView className="h-full">
+    <TSafeAreaView className="h-full" edges={isTab ? [] : ['top', 'bottom']}>
       <TView className="h-full">
         {/* Header with back button */}
-        <View className="flex-row items-center px-4 py-3">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={themeColors.text} />
-          </TouchableOpacity>
-          <TText className="ml-3 text-lg font-semibold">Profile</TText>
-        </View>
+        {!isTab && (
+          <View className="flex-row items-center px-4 py-3">
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+            </TouchableOpacity>
+            <TText className="ml-3 text-lg font-semibold">Profile</TText>
+          </View>
+        )}
 
         {/* User Profile Content */}
         <View className="items-center px-4 pt-6">
@@ -292,9 +307,22 @@ const UserProfileScreen: FC = () => {
             <TText className="text-gray-500">Groups</TText>
           </View>
         </View>
+
+        {/* Session History Graph */}
+        <View className="mt-6 px-4">
+          <TText className="text-lg font-semibold mb-4">Bible Reading History</TText>
+          {sessionHistoryData ? (
+            <SessionHistoryGraph
+              size={18}
+              spacing={2}
+              xLabelSize={10}
+              data={sessionHistoryData}
+            />
+          ) : (
+            <TText className="text-center text-gray-500">No activity data available</TText>
+          )}
+        </View>
       </TView>
     </TSafeAreaView>
   );
-};
-
-export default UserProfileScreen;
+}

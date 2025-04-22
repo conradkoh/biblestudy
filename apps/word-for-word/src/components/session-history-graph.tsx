@@ -4,21 +4,25 @@ import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { TText } from '@/src/components/core/TText';
 import { formatDate } from 'date-fns';
 
-interface ContributionData {
+interface SessionHistoryData {
   date: string;
   count: number;
 }
 
 interface SessionHistoryGraphProps {
-  data: ContributionData[];
+  data: SessionHistoryData[];
   size?: number;
   spacing?: number;
+  xLabelSize?: number;
+  legend?: boolean;
 }
 
 const SessionHistoryGraph: React.FC<SessionHistoryGraphProps> = ({
   data,
   size = 10,
   spacing = 1,
+  xLabelSize = 6,
+  legend = true,
 }) => {
   const themeColors = useThemeColors();
 
@@ -60,7 +64,7 @@ const SessionHistoryGraph: React.FC<SessionHistoryGraphProps> = ({
   const dateToCount = new Map<string, number>(data.map(item => [item.date, item.count]));
 
   // Find the maximum count for scaling the colors
-  const maxCount = 25;
+  const maxCount = 50;
 
   // Helper function to add days to a date string
   const addDays = (dateStr: string, days: number): string => {
@@ -134,13 +138,35 @@ const SessionHistoryGraph: React.FC<SessionHistoryGraphProps> = ({
                 margin: spacing,
               }}
             >
-              <TText className="text-[6px] text-center" style={{ color: themeColors.textTertiary }}>
+              <TText className="text-center" style={{ color: themeColors.textTertiary, fontSize: xLabelSize }}>
                 {day}
               </TText>
             </View>
           ))}
         </View>
         {squares}
+
+        {legend && (
+          <View className="flex-row items-center mt-4 justify-between">
+            <TText className="text-xs" style={{ color: themeColors.textTertiary }}>0 verses</TText>
+            <View className="flex-row items-center">
+              {[0.1, 0.25, 0.5, 0.75, 1].map((intensity) => (
+                <View
+                  key={`legend-${intensity}`}
+                  style={[
+                    {
+                      width: size / 2,
+                      height: size / 2,
+                      margin: spacing,
+                      backgroundColor: `rgba(16, 185, 129, ${intensity})`,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+            <TText className="text-xs" style={{ color: themeColors.textTertiary }}>{maxCount} verses</TText>
+          </View>
+        )}
       </View>
     </View>
   );

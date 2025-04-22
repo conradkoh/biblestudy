@@ -174,7 +174,7 @@ type FriendUserItemProps = {
 const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPrayer, navigateToUserProfile, }) => {
   const [expandReceivedPrayer, setExpandReceivedPrayer] = useState(false);
   const [expandSentPrayer, setExpandSentPrayer] = useState(false);
-  const sessionGraphData = useQuery(api.sessionLogger.getSessionContributionData, { userId: user._id, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
+  const sessionGraphData = useQuery(api.sessionLogger.getSessionHistoryData, { userId: user._id, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
 
   const themeColors = useThemeColors();
   const removeFriend = useMutation(api.users.removeFriend);
@@ -249,6 +249,7 @@ const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPra
       <TText className="font-bold mr-auto">@{user.username}</TText>
       <SessionHistoryGraph
         data={sessionGraphData ?? []}
+        legend={false}
       />
     </TouchableOpacity>
     {receivedPrayer && <TouchableOpacity onPress={() => setExpandReceivedPrayer(!expandReceivedPrayer)}>
