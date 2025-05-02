@@ -17,7 +17,7 @@ import {
   View,
   ScrollView,
   TextInput,
-  TouchableOpacity,
+  Vibration,
   Alert,
 } from "react-native";
 import { useQuery, useMutation } from "convex/react";
@@ -28,6 +28,7 @@ import { Button } from "@/src/components/core/Button";
 import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { isDefined } from "@common/utils/typecheck";
+import { useSettingsStore } from "@/src/stores/settings-store";
 
 function memoryVerseToCursor(
   memoryVerse: Doc<"memoryVerses"> | null | undefined,
@@ -60,6 +61,7 @@ export default function MemoryVersePracticeScreen() {
   const themeColors = useThemeColors();
   const bible = useBibleStore();
 
+  const settingsStore = useSettingsStore();
   const memoryVerse = useQuery(api.memoryVerses.getMemoryVerse, {
     id: verseId,
   });
@@ -84,13 +86,14 @@ export default function MemoryVersePracticeScreen() {
   }, [isPeeking]);
 
   const handleTextChange = (text: string) => {
+    if (settingsStore.memoryVerseMode !== 'full_word') return;
     if (text === " ") {
       setUserText("");
       return;
     }
     setUserText(text);
 
-    if (!memoryVerse || !memoryVerseText) return;
+    if (!memoryVerseText) return;
     const latestTokens = tokeniseVerse(memoryVerseText, text);
     // Check if the verse is complete
     const isComplete = latestTokens
@@ -98,6 +101,30 @@ export default function MemoryVersePracticeScreen() {
       .every((token: Token) => token.userAttempted && token.match);
     if (isComplete) handleVerseComplete();
   };
+
+  const handleKeyDown = (key: string) => {
+    if (settingsStore.memoryVerseMode !== 'first_letter') return;
+    if (!memoryVerseText) return;
+    const latestTokens = tokeniseVerse(memoryVerseText, userText);
+    const nextWordIndex = latestTokens.findIndex(t => !t.isDelimiter && !t.userAttempted);
+    const nextWord = latestTokens[nextWordIndex];
+
+    const isCorrectFirstWord = key.toLowerCase() === nextWord?.text.toLowerCase()[0];
+    if (isCorrectFirstWord) {
+      // We want to add the word, and any possible de-limiters before this word
+      const textToAppend = [nextWord.text];
+      for (let i = nextWordIndex - 1; i >= 0; i--) {
+        const token = latestTokens[i];
+        if (!isDefined(token)) break;
+        if (!token.isDelimiter) break; // reached previous word
+        textToAppend.unshift(token.text);
+      }
+
+      setUserText(userText + textToAppend.join(''))
+    } else {
+      Vibration.vibrate()
+    }
+  }
 
   const handleVerseComplete = async () => {
     if (!memoryVerseCursor) return;
@@ -116,7 +143,7 @@ export default function MemoryVersePracticeScreen() {
     setIsPeeking(!isPeeking);
   };
 
-  if (!memoryVerse || !memoryVerseCursor || !memoryVerseText) {
+  if (!memoryVerseCursor || !memoryVerseText) {
     return (
       <TSafeAreaView className="flex-1 items-center justify-center">
         <TText>Loading...</TText>
@@ -187,6 +214,22 @@ export default function MemoryVersePracticeScreen() {
           }}
         >
           <View className="flex-row items-center justify-between mb-4">
+            <Button
+              onPress={() => settingsStore.toggleMemoryVerseMode()}
+              leadingIcon={(props) => (
+                <Ionicons
+                  {...props}
+                  name={settingsStore.memoryVerseMode === 'full_word' ? 'chatbox-ellipses' : 'flash'}
+                  size={16}
+                />
+              )}
+            >
+              {(props) => (
+                <TText className="ml-1" {...props}>
+                  {settingsStore.memoryVerseMode === 'full_word' ? "Full Text" : "First Letter"}
+                </TText>
+              )}
+            </Button>
             <View className="flex-1" />
             <Button
               onPress={togglePeek}
@@ -217,7 +260,8 @@ export default function MemoryVersePracticeScreen() {
             onFocus={() => setIsPeeking(false)}
             placeholderTextColor={themeColors.textSecondary}
             value={userText}
-            onChangeText={handleTextChange}
+            onKeyPress={settingsStore.memoryVerseMode === 'first_letter' ? e => handleKeyDown(e.nativeEvent.key) : undefined}
+            onChangeText={settingsStore.memoryVerseMode === 'full_word' ? handleTextChange : undefined}
             className="p-2 rounded-md min-h-[100px]"
             style={{
               color: themeColors.text,

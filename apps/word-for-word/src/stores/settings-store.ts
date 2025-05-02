@@ -20,10 +20,12 @@ interface SettingsState {
   fontWeight: TextStyle["fontWeight"];
   fontFamily: string;
   paragraphFontFamily: keyof typeof PARAGRAPH_FONT_OPTIONS;
+  memoryVerseMode: 'first_letter' | 'full_word';
 }
 
 interface SettingsActions {
   setParagraphFontFamily: (font: keyof typeof PARAGRAPH_FONT_OPTIONS) => void;
+  toggleMemoryVerseMode: () => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -34,13 +36,15 @@ const initialState: SettingsState = {
   fontWeight: "400",
   fontFamily: "Inter",
   paragraphFontFamily: "Sahitya-Regular",
+  memoryVerseMode: 'full_word',
 };
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...initialState,
       setParagraphFontFamily: (font) => set({ paragraphFontFamily: font }),
+      toggleMemoryVerseMode: () => set({ memoryVerseMode: get().memoryVerseMode === 'full_word' ? 'first_letter' : 'full_word' })
     }),
     {
       name: "settings",
