@@ -104,6 +104,8 @@ export default function MemoryVersePracticeScreen() {
 
   const handleKeyDown = (key: string) => {
     if (settingsStore.memoryVerseMode !== 'first_letter') return;
+    if (key.length > 1) return; // ignore state changes
+
     if (!memoryVerseText) return;
     const latestTokens = tokeniseVerse(memoryVerseText, userText);
     const nextWordIndex = latestTokens.findIndex(t => !t.isDelimiter && !t.userAttempted);
