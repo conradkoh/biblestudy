@@ -7,6 +7,8 @@ import { useQuery } from "convex/react";
 import { router } from "expo-router";
 import { useNotificationObserver } from "@/src/services/push-notifications";
 import { useAuthToken } from "@convex-dev/auth/react";
+import LoginScreen from "@/src/components/auth/login-screen";
+import { usePresentLoginScreen } from "@/src/hooks/usePresentLoginScreen";
 
 export default function TabsLayout() {
   const themeColors = useThemeColors();
@@ -29,10 +31,14 @@ export default function TabsLayout() {
   }, [currentUser, currentUser?.username]);
 
 
+  const presentLoginScreen = usePresentLoginScreen();
 
   const rootNavigationState = useRootNavigationState();
 
+  if (presentLoginScreen) return <LoginScreen />
+
   if (!rootNavigationState?.key) return null;
+
 
   return <Tabs
     screenOptions={{

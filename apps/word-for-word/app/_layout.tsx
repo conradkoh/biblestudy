@@ -59,34 +59,21 @@ export default function TabLayout() {
             <ConvexAuthProvider client={convex} storage={secureStorage}>
               <BottomSheetModalProvider>
                 <ToastProvider>
-                  <AuthLoading>
-                    <TSafeAreaView className="h-full">
-                      <TView className="h-full justify-center items-center">
-                        <ActivityIndicator size="large" color={themeColors.primary} />
-                        <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Logging In...</TText>
-                      </TView>
-                    </TSafeAreaView>
-                  </AuthLoading>
-                  <Unauthenticated>
-                    <LoginScreen />
-                  </Unauthenticated>
-                  <Authenticated>
-                    <Stack>
-                      <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
-                      <Stack.Screen name="recite-verse-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                      <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                      <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
-                      <Stack.Screen name="settings-screen" options={{
-                        headerShown: true,
-                        headerTitle: '',
-                        headerBackTitle: 'Back',
-                        animation: 'default',
-                        headerStyle: {
-                          backgroundColor: themeColors.surfaceSecondary
-                        }
-                      }} />
-                    </Stack>
-                  </Authenticated>
+                  <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade' }} />
+                    <Stack.Screen name="recite-verse-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                    <Stack.Screen name="user-profile-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                    <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
+                    <Stack.Screen name="settings-screen" options={{
+                      headerShown: true,
+                      headerTitle: '',
+                      headerBackTitle: 'Back',
+                      animation: 'default',
+                      headerStyle: {
+                        backgroundColor: themeColors.surfaceSecondary
+                      }
+                    }} />
+                  </Stack>
                   <OptionSelectorBottomSheet />
                   <InputBottomSheet />
                 </ToastProvider>

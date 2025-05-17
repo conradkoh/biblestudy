@@ -22,6 +22,8 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import * as Haptics from "expo-haptics";
 import { isDefined } from "@common/utils/typecheck";
+import { Button } from "@/src/components/core/Button";
+import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
 
 type StreakInfo = {
   lastEntryDate: Date;
@@ -30,7 +32,11 @@ type StreakInfo = {
 
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
+  const getVersesText = useBibleStore(s => s.getVersesText);
   const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
+
+  const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
+
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
   const router = useRouter();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
@@ -81,18 +87,22 @@ const MemorizeScreen: FC = () => {
         return null
       };
 
-      const verseName = getVerseNameFormatted({
+      const cursorStart = {
         version: item.version,
         bookId: item.bookId,
         chapter: item.chapter,
         verse: item.verse,
-      }, (isDefined(item.endVerse) && isDefined(item.endChapter) && isDefined(item.endBookId) && isBookId(item.endBookId)) ? {
+      };
+
+      const cursorEnd = (isDefined(item.endVerse) && isDefined(item.endChapter) && isDefined(item.endBookId) && isBookId(item.endBookId)) ? {
         verse: item.endVerse,
         chapter: item.endChapter,
         bookId: item.endBookId,
-      } : undefined);
+      } : undefined;
+
+      const verseName = getVerseNameFormatted(cursorStart, cursorEnd);
       const streakInfo = getStreakInfo(item.memoryEntries);
-      const verseText = `${item.text.split("\n")[0]}...`;
+      const verseText = getVersesText(cursorStart, cursorEnd);
 
       const setSwipeableRef = (ref: Swipeable | null) => {
         swipeableRefs.current[item._id] = ref;
@@ -172,10 +182,10 @@ const MemorizeScreen: FC = () => {
         </Swipeable>
       );
     },
-    [themeColors, handleVersePress, renderRightActions],
+    [themeColors, handleVersePress, renderRightActions, getVersesText],
   );
 
-  if (!memoryVerses) {
+  if (!cachedOrActualVerses) {
     return (
       <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TText>Loading...</TText>
@@ -183,7 +193,7 @@ const MemorizeScreen: FC = () => {
     );
   }
 
-  if (memoryVerses.length === 0) {
+  if (cachedOrActualVerses.length === 0) {
     return (
       <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TView className="items-center">
@@ -206,11 +216,16 @@ const MemorizeScreen: FC = () => {
   return (
     <TSafeAreaView edges={['top']}>
       <FlatList
-        data={memoryVerses}
+        data={cachedOrActualVerses}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
       />
+      <Button className="w-full py-3 items-center justify-center" style={{ backgroundColor: themeColors.primary }}>
+        {props => {
+          return <TText {...props} className="font-bold">Start Daily Test</TText>
+        }}
+      </Button>
     </TSafeAreaView>
   );
 };

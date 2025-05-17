@@ -257,7 +257,7 @@ export const sendMemoryVerseReminders = internalAction({
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `Keep it fresh: ${verseName}`,
+          title: `${verseName}: keep it fresh!`,
           body: randomVerse.text,
           data: {
             url: "memory-verses-screen",
@@ -297,8 +297,8 @@ export const sendMemoryVerseReminders = internalAction({
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `Time to refresh your memory: ${verseName}`,
-          body: randomVerse.text.slice(0, 50),
+          title: `${verseName}: refresh now!`,
+          body: randomVerse.text,
           data: {
             url: "memory-verses-screen",
           },

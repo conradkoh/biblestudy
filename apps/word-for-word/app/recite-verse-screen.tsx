@@ -19,6 +19,7 @@ import {
   TextInput,
   Vibration,
   Alert,
+  Text,
 } from "react-native";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
@@ -29,6 +30,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { isDefined } from "@common/utils/typecheck";
 import { useSettingsStore } from "@/src/stores/settings-store";
+import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
 
 function memoryVerseToCursor(
   memoryVerse: Doc<"memoryVerses"> | null | undefined,
@@ -65,8 +67,13 @@ export default function MemoryVersePracticeScreen() {
   const memoryVerse = useQuery(api.memoryVerses.getMemoryVerse, {
     id: verseId,
   });
+
+  const cachedMemoryVerses = useCachedMemoryVerses(void 0);
+  const cachedOrActualVerse = isDefined(memoryVerse) ? memoryVerse : cachedMemoryVerses?.find(v => v._id === verseId);
+  const isOffline = !isDefined(memoryVerse);
+
   const addMemoryEntry = useMutation(api.memoryVerses.addMemoryEntry);
-  const { cursor: memoryVerseCursor, endCursor: memoryVerseEndCursor } = memoryVerseToCursor(memoryVerse) ?? {};
+  const { cursor: memoryVerseCursor, endCursor: memoryVerseEndCursor } = memoryVerseToCursor(cachedOrActualVerse) ?? {};
 
   const verseRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
@@ -207,6 +214,9 @@ export default function MemoryVersePracticeScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior="padding">
+        {isOffline && <View style={{ backgroundColor: themeColors.warning }} className="px-3 py-2">
+          <Text className="text-center">You are offline, completion might not be tracked.</Text>
+        </View>}
         <View
           className="p-4"
           style={{
