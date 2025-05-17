@@ -50,13 +50,15 @@ export type BibleStore = {
     strongsNumber: string,
     currentChapter: number,
     currentVerse: number,
-  ) => Array<{
-    bookId: BookId;
-    chapter: number;
-    verse: number;
-    contents: InterlinearVerse["contents"];
-  }>;
+  ) => LexiconVerseReference[];
 };
+
+export type LexiconVerseReference = {
+  bookId: BookId;
+  chapter: number;
+  verse: number;
+  contents: InterlinearVerse["contents"];
+}
 
 export const useBibleStore = create<BibleStore>((set, get) => ({
   currentVersionId: "niv",

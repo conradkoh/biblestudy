@@ -220,6 +220,7 @@ export default function ReadScreen() {
           isOpen={showFocusVerseSingle}
           setIsOpen={setShowFocusVerseSingle}
           cursorHandler={focusCursorHandler}
+          bibleCursorHandler={cursorHandler}
           setIsSelectingRange={() => {
             setIsSelectingRange(true);
             setShowFocusVerseRange(false);

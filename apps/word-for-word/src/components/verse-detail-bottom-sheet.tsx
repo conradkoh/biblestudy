@@ -1,9 +1,11 @@
 import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import VerseActions from "@/src/components/verse-actions";
+import WordAlsoUsedInBottomSheet from "@/src/components/word-also-used-in-bottom-sheet";
+import WordAlsoUsedInVerseItem from "@/src/components/word-also-used-in-verse-item";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { type LexiconWord, useBibleStore } from "@/src/stores/bible-store";
+import { LexiconVerseReference, type LexiconWord, useBibleStore } from "@/src/stores/bible-store";
 import {
   getVerseNameFormatted,
   mapBookIdsToName,
@@ -33,7 +35,8 @@ type VerseDetailBottomSheetProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   setIsSelectingRange: (isSelectingRange: boolean) => void;
-  cursorHandler: BibleCursorHandler;
+  cursorHandler: BibleCursorHandler; // Handling which verses the detail view focuses on
+  bibleCursorHandler: BibleCursorHandler; // Handles cursor of outside chapter-view bible
 };
 
 const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
@@ -41,10 +44,13 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
   setIsOpen,
   setIsSelectingRange,
   cursorHandler,
+  bibleCursorHandler,
 }) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const themeColors = useThemeColors();
   const bible = useBibleStore();
+
+  const [showAllUsedInBottomSheet, setShowAllUsedInBottomSheet] = useState(false);
 
   // callbacks
   const handleSheetChanges = useCallback(
@@ -56,7 +62,10 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
 
   useEffect(() => {
     if (isOpen) bottomSheetRef.current?.present();
-    if (!isOpen) bottomSheetRef.current?.close();
+    if (!isOpen) {
+      bottomSheetRef.current?.close();
+      setShowAllUsedInBottomSheet(false);
+    }
   }, [isOpen]);
 
   const [currentStrongsWord, setCurrentStrongsWord] = useState<
@@ -69,267 +78,190 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
     bottomSheetRef.current?.snapToIndex(1);
   }
 
+  const alsoUsedInVerses = currentStrongsWord && cursorHandler.cursor.verse ?
+    bible
+      .findVersesByStrongsNumber(
+        currentStrongsWord.strongs,
+        cursorHandler.cursor.chapter,
+        cursorHandler.cursor.verse,
+      ) : null
+
+  const onSelectLexiconVerseReference = useCallback((item: LexiconVerseReference) => {
+    cursorHandler.updateCursor({
+      bookId: item.bookId,
+      chapter: item.chapter,
+      verse: item.verse,
+    });
+
+
+    bibleCursorHandler.updateCursor({
+      bookId: item.bookId,
+      chapter: item.chapter,
+      verse: item.verse,
+    })
+
+    setCurrentStrongsWord(undefined);
+    bottomSheetRef.current?.snapToIndex(0);
+    setShowAllUsedInBottomSheet(false);
+  }, [cursorHandler.updateCursor, bibleCursorHandler.updateCursor]);
+
   return (
-    <TBottomSheetModal
-      ref={bottomSheetRef}
-      onChange={handleSheetChanges}
-      snapPoints={["50%", "90%"]}
-      enablePanDownToClose
-      handleIndicatorStyle={{
-        backgroundColor: themeColors.text,
-      }}
-      backgroundStyle={{
-        backgroundColor: themeColors.surface,
-      }}
-      backdropComponent={CustomBackdrop}
-      enableScrollView
-    >
-      <View className="flex-1 px-3 py-1">
-        <View className="flex-row justify-between items-center">
-          <View className="flex flex-row items-center" style={{ gap: 8 }}>
-            <Ionicons
-              size={20}
-              name="book"
-              style={{ color: themeColors.text }}
-            />
-            <TText className="text-[17px] font-bold">
-              {getVerseNameFormatted(cursorHandler.cursor)}
-            </TText>
-          </View>
-          {/* <TouchableOpacity onPress={() => setIsSelectingRange(true)} className="flex-row">
+    <>
+      <TBottomSheetModal
+        ref={bottomSheetRef}
+        onChange={handleSheetChanges}
+        snapPoints={["50%", "90%"]}
+        enablePanDownToClose
+        handleIndicatorStyle={{
+          backgroundColor: themeColors.text,
+        }}
+        backgroundStyle={{
+          backgroundColor: themeColors.surface,
+        }}
+        backdropComponent={CustomBackdrop}
+        enableScrollView
+      >
+        <View className="flex-1 px-3 py-1">
+          <View className="flex-row justify-between items-center">
+            <View className="flex flex-row items-center" style={{ gap: 8 }}>
+              <Ionicons
+                size={20}
+                name="book"
+                style={{ color: themeColors.text }}
+              />
+              <TText className="text-[17px] font-bold">
+                {getVerseNameFormatted(cursorHandler.cursor)}
+              </TText>
+            </View>
+            {/* <TouchableOpacity onPress={() => setIsSelectingRange(true)} className="flex-row">
               <TText className="text-xs mr-1" style={{ color: themeColors.textSecondary }}>Select multiple</TText>
               <Ionicons name="chevron-forward-outline" size={16} style={{ color: themeColors.textSecondary }} />
             </TouchableOpacity> */}
-        </View>
-        {isOpen && cursorHandler.cursor.verse !== undefined && (
-          <VerseActions
-            cursor={{
-              ...cursorHandler.cursor,
-              verse: cursorHandler.cursor.verse,
-            }}
-            verseName={getVerseNameFormatted(cursorHandler.cursor)}
-            version={cursorHandler.cursor.version}
-          />
-        )}
-        <View className="flex flex-row flex-wrap" style={{ gap: 8 }}>
-          {bible
-            .getInterlinearVerse(cursorHandler.cursor)
-            ?.contents.map((content, i) => {
-              const isCurrentStrongsWord =
-                content.strongsNumber === currentStrongsWord?.strongs;
-              return (
-                <View
-                  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                  key={content.text + i}
-                  className="flex flex-col items-center"
-                >
-                  <TText>{content.text || "-"}</TText>
-                  <TouchableOpacity
-                    onPress={() => {
-                      onPressStrongsNumber(content.strongsNumber);
-                    }}
+          </View>
+          {isOpen && cursorHandler.cursor.verse !== undefined && (
+            <VerseActions
+              cursor={{
+                ...cursorHandler.cursor,
+                verse: cursorHandler.cursor.verse,
+              }}
+              verseName={getVerseNameFormatted(cursorHandler.cursor)}
+              version={cursorHandler.cursor.version}
+            />
+          )}
+          <View className="flex flex-row flex-wrap" style={{ gap: 8 }}>
+            {bible
+              .getInterlinearVerse(cursorHandler.cursor)
+              ?.contents.map((content, i) => {
+                const isCurrentStrongsWord =
+                  content.strongsNumber === currentStrongsWord?.strongs;
+                return (
+                  <View
+                    // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                    key={content.text + i}
                     className="flex flex-col items-center"
                   >
-                    <TText
-                      className={classNames("text-xs")}
-                      style={{
-                        color: isCurrentStrongsWord
-                          ? themeColors.success
-                          : themeColors.textHighlight,
+                    <TText>{content.text || "-"}</TText>
+                    <TouchableOpacity
+                      onPress={() => {
+                        onPressStrongsNumber(content.strongsNumber);
                       }}
+                      className="flex flex-col items-center"
                     >
-                      {content.originalWord}
-                    </TText>
-                    <TText
-                      className={classNames("text-xs")}
-                      style={{
-                        color: isCurrentStrongsWord
-                          ? themeColors.success
-                          : themeColors.textHighlight,
-                      }}
-                    >
-                      {content.strongsNumber}
-                    </TText>
-                  </TouchableOpacity>
-                </View>
-              );
-            })}
-        </View>
-
-        {cursorHandler && currentStrongsWord && (
-          <View className="mt-6">
-            <View className="flex flex-col" style={{ gap: 8 }}>
-              <TText
-                className="text-xs font-semibold "
-                style={{ color: themeColors.success }}
-              >
-                Strongs: {currentStrongsWord.strongs}
-              </TText>
-              {/* Hebrew / Greek + Translit */}
-              <TText
-                type="subtitle"
-                style={{ color: themeColors.success, textAlign: "left" }}
-              >
-                {currentStrongsWord.originalWord} -{" "}
-                {currentStrongsWord.transliteration}
-              </TText>
-              {/* Pronunciation */}
-              {currentStrongsWord.pronounciation && (
-                <TText className="italic text-xs">
-                  {currentStrongsWord.pronounciation}
-                </TText>
-              )}
-              {/* English Word */}
-              <TText>{currentStrongsWord.word}</TText>
-              <TText className="mt-3" type="subtitle">
-                Short Definition:
-              </TText>
-              <TText>{currentStrongsWord.data.def?.short}</TText>
-              {/* Used in... section */}
-              <TText className="mt-6" type="subtitle">
-                Also used in...
-              </TText>
-              <View className="flex flex-col mb-2" style={{ gap: 12 }}>
-                {!!cursorHandler.cursor.verse &&
-                  bible
-                    .findVersesByStrongsNumber(
-                      currentStrongsWord.strongs,
-                      cursorHandler.cursor.chapter,
-                      cursorHandler.cursor.verse,
-                    )
-                    .slice(0, 5) // Show only first 5 results
-                    .map((result, idx) => (
-                      <TouchableOpacity
-                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                        key={idx}
-                        className="flex flex-col"
-                        style={{ gap: 4 }}
-                        onPress={() => {
-                          // TODO: open new modal
-                          cursorHandler.updateCursor({
-                            bookId: result.bookId,
-                            chapter: result.chapter,
-                          });
-
-                          cursorHandler.updateCursor({
-                            bookId: result.bookId,
-                            chapter: result.chapter,
-                            verse: result.verse,
-                          });
-                          setCurrentStrongsWord(undefined);
-                          bottomSheetRef.current?.snapToIndex(0);
+                      <TText
+                        className={classNames("text-xs")}
+                        style={{
+                          color: isCurrentStrongsWord
+                            ? themeColors.success
+                            : themeColors.textHighlight,
                         }}
                       >
-                        <View className="flex-row" style={{ gap: 4 }}>
-                          <TText className="text-xs font-semibold">
-                            {mapBookIdsToName[result.bookId]} {result.chapter}
-                            :{result.verse}
-                          </TText>
-                          <TText className="text-xs font-semibold">
-                            {bible
-                              .getTranslation(cursorHandler.cursor.version)
-                              .abbreviation.toUpperCase()}
-                          </TText>
-                        </View>
+                        {content.originalWord}
+                      </TText>
+                      <TText
+                        className={classNames("text-xs")}
+                        style={{
+                          color: isCurrentStrongsWord
+                            ? themeColors.success
+                            : themeColors.textHighlight,
+                        }}
+                      >
+                        {content.strongsNumber}
+                      </TText>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+          </View>
 
-                        {/* Original version's text */}
-                        <View className="flex flex-row flex-wrap">
-                          <View
-                            className="rounded-md items-center justify-center px-1 mr-1"
-                            style={{
-                              backgroundColor: themeColors.textSecondary,
-                            }}
-                          >
-                            <TText
-                              className="text-xs"
-                              style={{
-                                color: themeColors.textContrast,
-                              }}
-                            >
-                              {bible
-                                .getTranslation(cursorHandler.cursor.version)
-                                .abbreviation.toUpperCase()}
-                            </TText>
-                          </View>
-                          {(
-                            bible.getBook(
-                              result.bookId,
-                              cursorHandler.cursor.version,
-                            )?.chapters[result.chapter - 1]?.verses[
-                              result.verse - 1
-                            ]?.text || ""
-                          )
-                            .split(" ")
-                            .map((t, i) => (
-                              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                              <TText key={i} className="mr-1 text-sm">
-                                {t}
-                              </TText>
-                            ))}
-                        </View>
-
-                        {/* Interlinear's English text */}
-                        <View className="flex flex-row flex-wrap">
-                          <View
-                            className="rounded-md items-center justify-center px-1 mr-1"
-                            style={{
-                              backgroundColor: themeColors.textSecondary,
-                            }}
-                          >
-                            <TText
-                              className="text-xs"
-                              style={{
-                                color: themeColors.textContrast,
-                              }}
-                            >
-                              Interlinear (KJV)
-                            </TText>
-                          </View>
-                          {result.contents.map((content, wordIdx) => (
-                            <TText
-                              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                              key={wordIdx}
-                              className={classNames("mr-1 text-sm", {
-                                "font-semibold":
-                                  content.strongsNumber ===
-                                  currentStrongsWord.strongs,
-                              })}
-                              style={{
-                                color:
-                                  content.strongsNumber ===
-                                    currentStrongsWord.strongs
-                                    ? themeColors.success
-                                    : themeColors.text,
-                              }}
-                            >
-                              {content.text}
-                            </TText>
-                          ))}
-                        </View>
-                        {/* Original language text */}
-                        {/* <View className="flex flex-row flex-wrap">
-                            {result.contents.map((content, wordIdx) => (
-                              <TText
-                                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                                key={wordIdx}
-                                className={classNames("mr-1 text-sm", {
-                                  "text-green-700 font-semibold":
-                                    content.strongsNumber ===
-                                    currentStrongsWord.strongs,
-                                })}
-                              >
-                                {content.originalWord}
-                              </TText>
-                            ))}
-                          </View> */}
-                      </TouchableOpacity>
+          {cursorHandler && currentStrongsWord && (
+            <View className="mt-6">
+              <View className="flex flex-col" style={{ gap: 8 }}>
+                <TText
+                  className="text-xs font-semibold "
+                  style={{ color: themeColors.success }}
+                >
+                  Strongs: {currentStrongsWord.strongs}
+                </TText>
+                {/* Hebrew / Greek + Translit */}
+                <TText
+                  type="subtitle"
+                  style={{ color: themeColors.success, textAlign: "left" }}
+                >
+                  {currentStrongsWord.originalWord} -{" "}
+                  {currentStrongsWord.transliteration}
+                </TText>
+                {/* Pronunciation */}
+                {currentStrongsWord.pronounciation && (
+                  <TText className="italic text-xs">
+                    {currentStrongsWord.pronounciation}
+                  </TText>
+                )}
+                {/* English Word */}
+                <TText>{currentStrongsWord.word}</TText>
+                <TText className="mt-3" type="subtitle">
+                  Short Definition:
+                </TText>
+                <TText>{currentStrongsWord.data.def?.short}</TText>
+                {/* Used in... section */}
+                <TText className="mt-6" type="subtitle">
+                  Also used in...
+                </TText>
+                <View className="flex flex-col mb-2" style={{ gap: 12 }}>
+                  {!!alsoUsedInVerses && alsoUsedInVerses
+                    .slice(0, 5) // Show only first 5 results
+                    .map((result, idx) => (
+                      <WordAlsoUsedInVerseItem
+                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+                        key={idx}
+                        onPress={() => onSelectLexiconVerseReference(result)}
+                        cursorHandler={cursorHandler}
+                        bible={bible}
+                        currentStrongsWord={currentStrongsWord}
+                        item={result}
+                      />
                     ))}
+                  {alsoUsedInVerses && alsoUsedInVerses?.length > 5 &&
+                    <TouchableOpacity
+                      onPress={() => setShowAllUsedInBottomSheet(true)}
+                    >
+                      <TText className="text-center" style={{ color: themeColors.textHighlight }}>
+                        Show All {alsoUsedInVerses.length} Results
+                      </TText>
+                    </TouchableOpacity>
+                  }
+                </View>
               </View>
             </View>
-          </View>
-        )}
-      </View>
-    </TBottomSheetModal>
+          )}
+        </View>
+      </TBottomSheetModal>
+      {currentStrongsWord && <WordAlsoUsedInBottomSheet
+        currentStrongsWord={currentStrongsWord}
+        cursorHandler={cursorHandler}
+        isOpen={showAllUsedInBottomSheet}
+        onSelectVerse={(verseReference) => onSelectLexiconVerseReference(verseReference)}
+      />}
+    </>
   );
 };
 

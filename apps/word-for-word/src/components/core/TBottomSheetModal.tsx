@@ -9,15 +9,17 @@ import {
   type BottomSheetModalProps,
 } from "@gorhom/bottom-sheet";
 import React from "react";
+import { Edges } from "react-native-safe-area-context";
 
 type TBottomSheetModalProps = BottomSheetModalProps & {
   children: React.ReactNode;
   enableSafeAreaView?: boolean;
+  safeAreaViewEdges?: Edges;
   enableScrollView?: boolean;
   skipBottomSheetContainer?: boolean;
 };
 
-const TBottomSheetModal = React.forwardRef<BottomSheetModal, TBottomSheetModalProps>(({ children, enableSafeAreaView = true, enableScrollView = false, skipBottomSheetContainer = false, ...props }, ref) => {
+const TBottomSheetModal = React.forwardRef<BottomSheetModal, TBottomSheetModalProps>(({ children, safeAreaViewEdges = ['bottom'], enableSafeAreaView = true, enableScrollView = false, skipBottomSheetContainer = false, ...props }, ref) => {
   const renderBackdrop = useBottomSheetBackdrop();
   const themeColors = useThemeColors();
 
@@ -26,7 +28,7 @@ const TBottomSheetModal = React.forwardRef<BottomSheetModal, TBottomSheetModalPr
   function withSafeAreaView(children: React.ReactNode) {
     if (enableSafeAreaView) {
       return (
-        <TSafeAreaView edges={['bottom']}>
+        <TSafeAreaView edges={safeAreaViewEdges}>
           {children}
         </TSafeAreaView>
       );
