@@ -20,16 +20,31 @@ import {
   getVersesFromRange,
   mapBookIdsToName,
 } from "@common/utils/bible-data-utils";
+import { isDefined } from "@common/utils/typecheck";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useRef, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { useDerivedValue, useSharedValue } from "react-native-reanimated";
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+const BIBLE_CHAPTER_CONTROLS_HEIGHT = 40;
 
 export default function ReadScreen() {
   const bible = useBibleStore();
   const settings = useSettingsStore();
   const bibleChapterViewRef = useRef<BibleChapterViewRef | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
+  const tabBarHeight = useBottomTabBarHeight();
+
+  const bottomSheetAnimatedValue = useSharedValue(0);
+
+  const dimensions = useWindowDimensions();
+
+  const chapterViewMarginBottom = useDerivedValue(() => {
+    if (!bottomSheetAnimatedValue.value) return 0;
+    return Math.max(dimensions.height - bottomSheetAnimatedValue.value - tabBarHeight - BIBLE_CHAPTER_CONTROLS_HEIGHT, 0);
+  }, [bottomSheetAnimatedValue]);
 
   const onCursorChange = useCallback((delta: Partial<BibleCursor>) => {
     const verse = delta.verse;
@@ -87,7 +102,6 @@ export default function ReadScreen() {
       return;
     }
 
-    console.log(focusCursorHandler.cursor, longPressVerse)
     if (longPressVerse > focusCursorHandler.cursor.verse) {
 
       focusCursorHandler.setCursorRangeEnd({
@@ -166,13 +180,15 @@ export default function ReadScreen() {
                     ? [focusCursorHandler.cursor.verse]
                     : undefined
               }
+              marginBottom={chapterViewMarginBottom}
             />
           </SwipeableContainer>
 
           <View
-            className="flex flex-row items-center justify-between px-2 h-10"
+            className="flex flex-row items-center justify-between px-2"
             style={{
               backgroundColor: themeColors.surfaceSecondary,
+              height: BIBLE_CHAPTER_CONTROLS_HEIGHT
             }}
           >
             <TouchableOpacity
@@ -226,6 +242,7 @@ export default function ReadScreen() {
             setShowFocusVerseRange(false);
             setShowFocusVerseSingle(false);
           }}
+          bottomSheetAnimatedValue={bottomSheetAnimatedValue}
         />
         <VerseRangeBottomSheet
           isOpen={showFocusVerseRange}

@@ -8,7 +8,9 @@ import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
 import React, { useCallback, useEffect, useImperativeHandle, useRef } from "react";
-import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View } from "react-native";
+import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View, DimensionValue, useWindowDimensions } from "react-native";
+import Reanimated, { useDerivedValue } from "react-native-reanimated";
+import { SharedValue } from "react-native-reanimated";
 
 type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
@@ -16,6 +18,7 @@ type BibleChapterView = {
   onLongPressVerse: (verse: number) => void;
   highlightedVerses?: number[];
   onScrollBegin?: () => void;
+  marginBottom?: SharedValue<number>;
 };
 
 export type BibleChapterViewRef = {
@@ -25,8 +28,8 @@ export type BibleChapterViewRef = {
 const BibleChapterView = React.forwardRef<
   BibleChapterViewRef,
   BibleChapterView
->(({ cursorHandler, onPressVerse, onLongPressVerse, highlightedVerses, onScrollBegin }, forwardRef) => {
-  const scrollViewRef = useRef<ScrollView>(null);
+>(({ cursorHandler, onPressVerse, onLongPressVerse, highlightedVerses, onScrollBegin, marginBottom }, forwardRef) => {
+  const scrollViewRef = useRef<Reanimated.ScrollView>(null);
   const bible = useBibleStore();
   const settings = useSettingsStore();
   const themeColors = useThemeColors();
@@ -61,13 +64,14 @@ const BibleChapterView = React.forwardRef<
   }, []);
 
   return (
-    <ScrollView
+    <Reanimated.ScrollView
       ref={scrollViewRef}
       onScrollBeginDrag={onScrollBegin}
       onScroll={onScroll}
       onLayout={e => {
         scrollViewHeightRef.current = e.nativeEvent.layout.height;
       }}
+      style={{ marginBottom }}
     >
       <TView className="px-6" >
         <TView className="flex-row items-end mb-2 mt-6">
@@ -144,7 +148,7 @@ const BibleChapterView = React.forwardRef<
           })}
         </TText>
       </TView>
-    </ScrollView>
+    </Reanimated.ScrollView>
   );
 });
 export default BibleChapterView;

@@ -7,13 +7,13 @@ import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { LexiconVerseReference, type LexiconWord, useBibleStore } from "@/src/stores/bible-store";
 import {
-  getVerseNameFormatted,
-  mapBookIdsToName,
+  getVerseNameFormatted
 } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import BottomSheet, {
+import {
   type BottomSheetBackdropProps,
   type BottomSheetModal,
+  BottomSheetModalProps,
 } from "@gorhom/bottom-sheet";
 import classNames from "classnames";
 import React, {
@@ -37,6 +37,7 @@ type VerseDetailBottomSheetProps = {
   setIsSelectingRange: (isSelectingRange: boolean) => void;
   cursorHandler: BibleCursorHandler; // Handling which verses the detail view focuses on
   bibleCursorHandler: BibleCursorHandler; // Handles cursor of outside chapter-view bible
+  bottomSheetAnimatedValue?: BottomSheetModalProps['animatedPosition'];
 };
 
 const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
@@ -45,6 +46,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
   setIsSelectingRange,
   cursorHandler,
   bibleCursorHandler,
+  bottomSheetAnimatedValue
 }) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const themeColors = useThemeColors();
@@ -120,6 +122,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
         }}
         backdropComponent={CustomBackdrop}
         enableScrollView
+        animatedPosition={bottomSheetAnimatedValue}
       >
         <View className="flex-1 px-3 py-1">
           <View className="flex-row justify-between items-center">
