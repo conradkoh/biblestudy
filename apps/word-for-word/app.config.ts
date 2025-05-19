@@ -34,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: "./assets/images/favicon.png",
   },
   plugins: [
+    "./androidEnableLargeHeap.js",
     "expo-router",
     [
       "expo-font",

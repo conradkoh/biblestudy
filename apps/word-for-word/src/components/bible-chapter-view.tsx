@@ -7,6 +7,7 @@ import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
+import { isDefined } from "@common/utils/typecheck";
 import React, { useCallback, useEffect, useImperativeHandle, useRef } from "react";
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View, DimensionValue, useWindowDimensions } from "react-native";
 import Reanimated, { useDerivedValue } from "react-native-reanimated";
@@ -47,8 +48,8 @@ const BibleChapterView = React.forwardRef<
     () => ({
       scrollToVerse: (verse: number) => {
         const verseIdx = verse - 1;
-        const y = verseYCoordsRef.current[verseIdx];
-        if (!y) {
+        const verseY = verseYCoordsRef.current[verseIdx];
+        if (!isDefined(verseY)) {
           console.warn(`Verse ${verse} element ref not found`);
           return;
         }
@@ -58,7 +59,7 @@ const BibleChapterView = React.forwardRef<
           return;
         }
 
-        scrollViewRef.current?.scrollTo({ y: y, animated: false });
+        scrollViewRef.current?.scrollTo({ y: verseY, animated: false });
       },
     }),
     [],
@@ -67,6 +68,8 @@ const BibleChapterView = React.forwardRef<
   const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     scrollYRef.current = e.nativeEvent.contentOffset.y;
   }, []);
+
+  const verses = bible.getChapterFormatted(cursorHandler.cursor);
 
   return (
     <Reanimated.ScrollView
@@ -106,8 +109,24 @@ const BibleChapterView = React.forwardRef<
             </TText>
           </TouchableOpacity>
         </TView>
-        <TText>
-          {bible.getChapterFormatted(cursorHandler.cursor).map((verse, i) => {
+        <TText
+          onTextLayout={e => {
+            const { lines } = e.nativeEvent;
+            let currentTextLength = 0;
+            let currentVerseIndex = 0;
+            let currentVerseTextLength = 0;
+            for (const line of lines) {
+              currentTextLength += line.text.length;
+              if (currentTextLength > currentVerseTextLength) {
+                const currentVerse = verses[currentVerseIndex];
+                if (!currentVerse) break;
+                currentVerseTextLength += ` ${currentVerse.verse} `.length + currentVerse.text.length;
+                verseYCoordsRef.current[currentVerseIndex] = line.y;
+                currentVerseIndex++;
+              }
+            }
+          }}>
+          {verses.map((verse, i) => {
             const isHighlighted = highlightedVerses?.includes(i + 1);;
             return (
               <React.Fragment key={verse.name}>
@@ -125,16 +144,9 @@ const BibleChapterView = React.forwardRef<
                         : undefined,
                     }}
                   >
-                    {" "}
-                    {i + 1}{" "}
+                    {` ${verse.verse} `}
                   </TText>
                   {/* Used as marker for position. Must be after first TText so it doesn't interfere with lineheight */}
-                  <View
-                    key={`${verse.name}-marker`}
-                    onLayout={(e) => {
-                      verseYCoordsRef.current[i] = e.nativeEvent.layout.y;
-                    }}
-                  />
                   <TText
                     style={{
                       fontSize: settings.textSize,
