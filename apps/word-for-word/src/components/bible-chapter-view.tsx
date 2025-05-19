@@ -53,6 +53,11 @@ const BibleChapterView = React.forwardRef<
           return;
         }
 
+        if (verseIdx === 0) {
+          scrollViewRef.current?.scrollTo({ y: 0, animated: false }); // scroll to top
+          return;
+        }
+
         scrollViewRef.current?.scrollTo({ y: y, animated: false });
       },
     }),
