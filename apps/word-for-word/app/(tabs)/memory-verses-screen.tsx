@@ -2,7 +2,7 @@ import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import React, { type FC, useCallback, useRef } from "react";
-import { FlatList, TouchableOpacity, View, Animated } from "react-native";
+import { FlatList, TouchableOpacity, View, Animated, Alert } from "react-native";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
@@ -34,12 +34,12 @@ const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
   const getVersesText = useBibleStore(s => s.getVersesText);
   const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
+  const router = useRouter();
+  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
   const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
 
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
-  const router = useRouter();
-  const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
   const handleVersePress = useCallback(
     (verse: Doc<"memoryVerses">) => {
@@ -78,6 +78,73 @@ const MemorizeScreen: FC = () => {
     },
     [handleDelete],
   );
+
+  const handleStartDailyTest = () => {
+    if (!cachedOrActualVerses || cachedOrActualVerses.length === 0) {
+      Alert.alert(
+        "No Verses Available",
+        "You need to add some memory verses before starting a daily test.",
+        [
+          {
+            text: "OK",
+            style: "default"
+          }
+        ]
+      );
+      return;
+    }
+
+    const today = startOfDay(new Date());
+
+    // Filter out verses that have been recited today
+    const versesNotRecitedToday = cachedOrActualVerses.filter(verse => {
+      const todayEntries = verse.memoryEntries.filter(entry => {
+        const entryDate = startOfDay(new Date(entry.createdAt));
+        return entryDate.valueOf() === today.valueOf();
+      });
+      return todayEntries.length === 0;
+    });
+
+    // If we don't have enough verses, use all verses
+    const availableVerses = versesNotRecitedToday.length < 5 ? cachedOrActualVerses : versesNotRecitedToday;
+
+    // Randomly select 5 verses
+    const selectedVerses = [];
+    const versesToChooseFrom = [...availableVerses];
+
+    for (let i = 0; i < 5; i++) {
+      if (versesToChooseFrom.length === 0) break;
+      const randomIndex = Math.floor(Math.random() * versesToChooseFrom.length);
+      selectedVerses.push(versesToChooseFrom[randomIndex]);
+      versesToChooseFrom.splice(randomIndex, 1);
+    }
+
+    if (selectedVerses.length === 0) {
+      Alert.alert(
+        "No Verses Available",
+        "You need to add some memory verses before starting a daily test.",
+        [
+          {
+            text: "OK",
+            style: "default"
+          }
+        ]
+      );
+      return;
+    }
+
+    // Start with the first verse
+    const firstVerse = selectedVerses[0];
+    if (!firstVerse) return;
+
+    router.push({
+      pathname: "/recite-verse-screen",
+      params: {
+        verseId: firstVerse._id,
+        verseIdsStr: selectedVerses.map(v => v?._id).filter(isDefined).join(','),
+      }
+    });
+  };
 
   const renderItem = useCallback(
     ({ item }: { item: Doc<"memoryVerses"> }) => {
@@ -221,7 +288,12 @@ const MemorizeScreen: FC = () => {
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
       />
-      <Button className="w-full py-3 items-center justify-center" style={{ backgroundColor: themeColors.primary }}>
+      <Button
+        className="w-full py-3 items-center justify-center"
+        style={{ backgroundColor: themeColors.primary }}
+        onPress={handleStartDailyTest}
+        disabled={!cachedOrActualVerses.length}
+      >
         {props => {
           return <TText {...props} className="font-bold">Start Daily Test</TText>
         }}

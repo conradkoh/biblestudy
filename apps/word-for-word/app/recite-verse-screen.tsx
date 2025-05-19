@@ -59,7 +59,7 @@ function memoryVerseToCursor(
 }
 
 export default function MemoryVersePracticeScreen() {
-  const { verseId } = useLocalSearchParams<{ verseId: Id<"memoryVerses"> }>();
+  const { verseId, verseIdsStr, isPeekingDefault = 'true' } = useLocalSearchParams<{ verseId: Id<"memoryVerses">, verseIdsStr?: string, isPeekingDefault?: 'false' | 'true' }>();
   const themeColors = useThemeColors();
   const bible = useBibleStore();
 
@@ -67,6 +67,11 @@ export default function MemoryVersePracticeScreen() {
   const memoryVerse = useQuery(api.memoryVerses.getMemoryVerse, {
     id: verseId,
   });
+
+  const verseIds = verseIdsStr ? verseIdsStr.split(',').map(id => id as Id<"memoryVerses">) : undefined;
+  const currentVerseIndex = verseIds?.findIndex(id => id === verseId) ?? 0;
+  const totalVerseCount = verseIds?.length;
+  const isMultiVerse = totalVerseCount && totalVerseCount > 1;
 
   const cachedMemoryVerses = useCachedMemoryVerses(void 0);
   const cachedOrActualVerse = isDefined(memoryVerse) ? memoryVerse : cachedMemoryVerses?.find(v => v._id === verseId);
@@ -78,7 +83,7 @@ export default function MemoryVersePracticeScreen() {
   const verseRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
 
-  const [isPeeking, setIsPeeking] = useState(true);
+  const [isPeeking, setIsPeeking] = useState(isPeekingDefault === 'true');
   const [userText, setUserText] = useState("");
 
   const memoryVerseText = memoryVerseCursor ? bible.getVersesText(memoryVerseCursor, memoryVerseEndCursor) : undefined;
@@ -91,6 +96,12 @@ export default function MemoryVersePracticeScreen() {
       inputRef.current?.focus();
     }
   }, [isPeeking]);
+
+  useEffect(() => {
+    if (settingsStore.memoryVerseMode === 'first_letter') {
+      inputRef.current?.setSelection(userText.length, userText.length);
+    }
+  }, [userText, settingsStore.memoryVerseMode])
 
   const handleTextChange = (text: string) => {
     if (settingsStore.memoryVerseMode !== 'full_word') return;
@@ -148,11 +159,21 @@ export default function MemoryVersePracticeScreen() {
       "Well done!",
       `You have successfully recited ${getVerseNameFormatted(memoryVerseCursor)}`,
     );
-    if (!verseId) return;
-    await addMemoryEntry({ memoryVerseId: verseId });
+
+    if (verseId) addMemoryEntry({ memoryVerseId: verseId });
+
     setUserText("");
     setIsPeeking(true);
-    router.replace({ pathname: "/memory-verses-screen" });
+
+    const nextVerseId = verseIds?.[currentVerseIndex + 1];
+
+    if (!nextVerseId) {
+      router.replace({ pathname: "/memory-verses-screen" });
+      return;
+    }
+
+    // go next verse
+    router.replace({ pathname: "/recite-verse-screen", params: { verseId: nextVerseId, verseIdsStr, isPeekingDefault: 'false' } });
   };
 
   const togglePeek = () => {
@@ -223,6 +244,9 @@ export default function MemoryVersePracticeScreen() {
       <KeyboardAvoidingView behavior="padding">
         {isOffline && <View style={{ backgroundColor: themeColors.warning }} className="px-3 py-2">
           <Text className="text-center">You are offline, completion might not be tracked.</Text>
+        </View>}
+        {isMultiVerse && <View style={{ backgroundColor: themeColors.secondary }} className="px-3 py-2">
+          <Text className="text-center">Verse {currentVerseIndex + 1} of {totalVerseCount}</Text>
         </View>}
         <View
           className="p-4"
