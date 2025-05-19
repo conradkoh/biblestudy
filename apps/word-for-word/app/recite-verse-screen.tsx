@@ -129,7 +129,14 @@ export default function MemoryVersePracticeScreen() {
         textToAppend.unshift(token.text);
       }
 
-      setUserText(userText + textToAppend.join(''))
+      const finalText = userText + textToAppend.join('');
+      setUserText(finalText);
+
+      // Check if the verse is complete
+      const isComplete = tokeniseVerse(memoryVerseText, finalText)
+        .filter((t) => isWord(t.text))
+        .every((token: Token) => token.userAttempted && token.match);
+      if (isComplete) handleVerseComplete();
     } else {
       Vibration.vibrate()
     }
