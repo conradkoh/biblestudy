@@ -76,6 +76,23 @@ export default function MemoryVersePracticeScreen() {
   const cachedMemoryVerses = useCachedMemoryVerses(void 0);
   const cachedOrActualVerse = isDefined(memoryVerse) ? memoryVerse : cachedMemoryVerses?.find(v => v._id === verseId);
   const isOffline = !isDefined(memoryVerse);
+  const [showIsOffline, setShowIsOffline] = useState(false);
+  const isOfflineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    isOfflineTimeoutRef.current && clearTimeout(isOfflineTimeoutRef.current);
+
+    // if online, reflect immediately
+    if (!isOffline) {
+      setShowIsOffline(false);
+      return;
+    }
+
+    // if offline, show after 1 second
+    isOfflineTimeoutRef.current = setTimeout(() => {
+      setShowIsOffline(isOffline);
+    }, 5000);
+  }, [isOffline])
 
   const addMemoryEntry = useMutation(api.memoryVerses.addMemoryEntry);
   const { cursor: memoryVerseCursor, endCursor: memoryVerseEndCursor } = memoryVerseToCursor(cachedOrActualVerse) ?? {};
@@ -242,7 +259,7 @@ export default function MemoryVersePracticeScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior="padding">
-        {isOffline && <View style={{ backgroundColor: themeColors.warning }} className="px-3 py-2">
+        {showIsOffline && <View style={{ backgroundColor: themeColors.warning }} className="px-3 py-2">
           <Text className="text-center">You are offline, completion might not be tracked.</Text>
         </View>}
         {isMultiVerse && <View style={{ backgroundColor: themeColors.secondary }} className="px-3 py-2">
