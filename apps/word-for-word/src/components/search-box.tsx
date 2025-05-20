@@ -54,12 +54,14 @@ const SearchBox: FC<SearchBoxProps> = ({
   const [currentFocus, setCurrentFocus] = useState<
     "book" | "chapter" | "verse" | null
   >(null);
+  const [isPristine, setIsPristine] = useState(true);
   const chapterTextInputRef = useRef<TextInput>(null);
   const verseTextInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (!isVisible) {
       setBookNameSearch("");
+      setIsPristine(true);
       return;
     }
     setBookNameSearch(mapBookIdsToName[cursorHandler.cursor.bookId]);
@@ -67,7 +69,7 @@ const SearchBox: FC<SearchBoxProps> = ({
   }, [isVisible, cursorHandler.cursor.bookId, cursorHandler.cursor.chapter]);
 
   const result = fuse.search(bookNameSearch);
-  const filteredOptions = bookNameSearch.length
+  const filteredOptions = (!isPristine && bookNameSearch.length)
     ? result.map((v) => v.item)
     : bookNames;
 
@@ -170,6 +172,7 @@ const SearchBox: FC<SearchBoxProps> = ({
                 onChangeText={(text) => {
                   setBookNameSearch(text);
                   setVerseSearch("1");
+                  setIsPristine(false);
                 }}
                 className="font-bold text-[18px] rounded-md p-2"
                 style={{
@@ -249,12 +252,14 @@ const SearchBox: FC<SearchBoxProps> = ({
             >
               {currentFocus === "book" &&
                 filteredOptions.map((book, i) => {
-                  const isFirstOption = i === 0;
+                  // When search first opens, we show all books in order. In that case, the current
+                  // option is the one that matches the search string.
+                  const isCurrent = isPristine ? book.toLowerCase() === bookNameSearch.toLowerCase() : i === 0;
                   return (
                     <TouchableOpacity
                       key={book}
                       style={{
-                        backgroundColor: isFirstOption
+                        backgroundColor: isCurrent
                           ? themeColors.surfaceSecondary
                           : themeColors.surface,
                       }}
@@ -269,7 +274,7 @@ const SearchBox: FC<SearchBoxProps> = ({
                     >
                       <TText>{book}</TText>
                       <View className="flex-1" />
-                      {isFirstOption && (
+                      {isCurrent && (
                         <View
                           className="flex flex-row items-center py-1 px-2 rounded-md"
                           style={{
