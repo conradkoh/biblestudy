@@ -40,6 +40,7 @@ const fuse = new Fuse(bookNames, {
   threshold: 0.7,
 });
 
+const SEARCH_BOOK_ITEM_HEIGHT = 48;
 const SearchBox: FC<SearchBoxProps> = ({
   isVisible,
   setIsVisible,
@@ -47,6 +48,7 @@ const SearchBox: FC<SearchBoxProps> = ({
 }) => {
   const bible = useBibleStore();
   const themeColors = useThemeColors();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   const [bookNameSearch, setBookNameSearch] = useState("");
   const [chapterSearch, setChapterSearch] = useState("1");
@@ -67,6 +69,22 @@ const SearchBox: FC<SearchBoxProps> = ({
     setBookNameSearch(mapBookIdsToName[cursorHandler.cursor.bookId]);
     setChapterSearch(`${cursorHandler.cursor.chapter}`);
   }, [isVisible, cursorHandler.cursor.bookId, cursorHandler.cursor.chapter]);
+
+  useEffect(() => {
+    if (isVisible && isPristine) {
+      const currentBookIndex = bookNames.findIndex(
+        (book) => book.toLowerCase() === bookNameSearch.toLowerCase()
+      );
+      if (currentBookIndex !== -1) {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({
+            y: currentBookIndex * SEARCH_BOOK_ITEM_HEIGHT - 100, // so that it shows the books before the current book
+            animated: false,
+          });
+        }, 100); // scroll after mounting
+      }
+    }
+  }, [isVisible, isPristine, bookNameSearch]);
 
   const result = fuse.search(bookNameSearch);
   const filteredOptions = (!isPristine && bookNameSearch.length)
@@ -247,6 +265,7 @@ const SearchBox: FC<SearchBoxProps> = ({
               </TouchableOpacity>
             </View>
             <ScrollView
+              ref={scrollViewRef}
               className="mt-2 flex-1"
               keyboardShouldPersistTaps="always"
             >
@@ -262,6 +281,7 @@ const SearchBox: FC<SearchBoxProps> = ({
                         backgroundColor: isCurrent
                           ? themeColors.surfaceSecondary
                           : themeColors.surface,
+                        height: SEARCH_BOOK_ITEM_HEIGHT,
                       }}
                       className="px-4 py-3 flex flex-row items-center"
                       onPress={() => {
