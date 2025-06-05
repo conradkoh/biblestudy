@@ -4,7 +4,7 @@ import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
 import { CommonEvents } from "@/src/hooks/useEvents";
 import { sessionLogger } from "@/src/hooks/useSessionLogger";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useBibleStore } from "@/src/stores/bible-store";
+import { toSuperscript, useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
 import { isDefined } from "@common/utils/typecheck";
@@ -144,7 +144,7 @@ const BibleChapterView = React.forwardRef<
                         : undefined,
                     }}
                   >
-                    {` ${verse.verse} `}
+                    {` ${toSuperscript(verse.verse)} `}
                   </TText>
                   {/* Used as marker for position. Must be after first TText so it doesn't interfere with lineheight */}
                   <TText

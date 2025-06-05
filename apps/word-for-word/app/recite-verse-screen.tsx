@@ -3,7 +3,7 @@ import React from "react";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useBibleStore } from "@/src/stores/bible-store";
+import { toSuperscript, useBibleStore } from "@/src/stores/bible-store";
 import {
   type BibleCursorRangeEnd,
   getVerseNameFormatted,
@@ -247,13 +247,10 @@ export default function MemoryVersePracticeScreen() {
               <React.Fragment key={`verse-${verse.verse}`}>
                 <TText
                   style={{
-                    fontSize: 12,
-                    lineHeight: 16,
-                    verticalAlign: 'top',
                     color: themeColors.textSecondary
                   }}
                 >
-                  {verse.verse}
+                  {` ${toSuperscript(verse.verse)}`}
                 </TText>
                 {verseTokens.map((token: Token, tokenIndex: number) => {
                   let tokenTextColor = themeColors.text;

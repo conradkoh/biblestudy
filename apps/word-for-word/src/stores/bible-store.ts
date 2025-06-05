@@ -60,6 +60,24 @@ export type LexiconVerseReference = {
   contents: InterlinearVerse["contents"];
 }
 
+// Helper function to convert numbers to superscript Unicode characters
+export const toSuperscript = (num: number): string => {
+  const superscriptMap: Record<string, string> = {
+    '0': '⁰',
+    '1': '¹',
+    '2': '²',
+    '3': '³',
+    '4': '⁴',
+    '5': '⁵',
+    '6': '⁶',
+    '7': '⁷',
+    '8': '⁸',
+    '9': '⁹'
+  };
+
+  return num.toString().split('').map(digit => superscriptMap[digit] || digit).join('');
+};
+
 export const useBibleStore = create<BibleStore>((set, get) => ({
   currentVersionId: "niv",
   bookIdx: 0,
@@ -126,7 +144,7 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
   ) => {
     const verses = get().getVersesInRange(cursor, endCursor);
     return endCursor
-      ? verses.map((v) => v.text).join("")
+      ? verses.map((v) => toSuperscript(v.verse) + v.text).join("")
       : verses[0]?.text ?? "";
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {
