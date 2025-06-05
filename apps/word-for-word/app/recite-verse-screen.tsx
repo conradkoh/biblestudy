@@ -12,7 +12,7 @@ import {
   type BibleCursor,
   type BookId,
 } from "@common/utils/bible-data-utils";
-import { isWord, tokeniseVerse, type Token } from "@/src/utils/verse-tokenizer";
+import { isWord, tokeniseVerses, type Token } from "@/src/utils/verse-tokenizer";
 import {
   View,
   ScrollView,
@@ -103,7 +103,8 @@ export default function MemoryVersePracticeScreen() {
   const [isPeeking, setIsPeeking] = useState(isPeekingDefault === 'true');
   const [userText, setUserText] = useState("");
 
-  const memoryVerseText = memoryVerseCursor ? bible.getVersesText(memoryVerseCursor, memoryVerseEndCursor) : undefined;
+  const memoryVerses = memoryVerseCursor ? bible.getVersesInRange(memoryVerseCursor, memoryVerseEndCursor) : undefined;
+  const memoryVersesTexts = memoryVerses?.map(v => v.text) || [];
 
   useEffect(() => {
     if (isPeeking) {
@@ -128,8 +129,13 @@ export default function MemoryVersePracticeScreen() {
     }
     setUserText(text);
 
-    if (!memoryVerseText) return;
-    const latestTokens = tokeniseVerse(memoryVerseText, text);
+    if (!memoryVersesTexts.length) return;
+
+    const firstVerseText = memoryVersesTexts[0];
+    if (!firstVerseText) return;
+
+    const latestTokens = tokeniseVerses(memoryVersesTexts, text).flat();
+
     // Check if the verse is complete
     const isComplete = latestTokens
       .filter((t) => isWord(t.text))
@@ -141,8 +147,13 @@ export default function MemoryVersePracticeScreen() {
     if (settingsStore.memoryVerseMode !== 'first_letter') return;
     if (key.length > 1) return; // ignore state changes
 
-    if (!memoryVerseText) return;
-    const latestTokens = tokeniseVerse(memoryVerseText, userText);
+    if (!memoryVersesTexts.length) return;
+
+    const firstVerseText = memoryVersesTexts[0];
+    if (!firstVerseText) return;
+
+    const latestTokens = tokeniseVerses(memoryVersesTexts, userText).flat();
+
     const nextWordIndex = latestTokens.findIndex(t => !t.isDelimiter && !t.userAttempted);
     const nextWord = latestTokens[nextWordIndex];
 
@@ -161,7 +172,9 @@ export default function MemoryVersePracticeScreen() {
       setUserText(finalText);
 
       // Check if the verse is complete
-      const isComplete = tokeniseVerse(memoryVerseText, finalText)
+      const finalTokens = tokeniseVerses(memoryVersesTexts, finalText).flat();
+
+      const isComplete = finalTokens
         .filter((t) => isWord(t.text))
         .every((token: Token) => token.userAttempted && token.match);
       if (isComplete) handleVerseComplete();
@@ -197,7 +210,7 @@ export default function MemoryVersePracticeScreen() {
     setIsPeeking(!isPeeking);
   };
 
-  if (!memoryVerseCursor || !memoryVerseText) {
+  if (!memoryVerseCursor || !memoryVersesTexts.length) {
     return (
       <TSafeAreaView className="flex-1 items-center justify-center">
         <TText>Loading...</TText>
@@ -205,7 +218,16 @@ export default function MemoryVersePracticeScreen() {
     );
   }
 
-  const tokens = tokeniseVerse(memoryVerseText, userText);
+  const firstVerseText = memoryVersesTexts[0];
+  if (!firstVerseText) {
+    return (
+      <TSafeAreaView className="flex-1 items-center justify-center">
+        <TText>Loading...</TText>
+      </TSafeAreaView>
+    );
+  }
+
+  const allTokens = tokeniseVerses(memoryVersesTexts, userText);
 
   return (
     <TSafeAreaView className="flex-1">
@@ -217,42 +239,61 @@ export default function MemoryVersePracticeScreen() {
       </View>
       <ScrollView ref={verseRef} className="flex-1 p-4">
         <View className="flex-row flex-wrap">
-          {tokens.map((token: Token, index: number) => {
-            let tokenTextColor = themeColors.text;
-            let tokenBackgroundColor = "transparent";
-            const isSolved = token.match && token.userAttempted;
-
-            const revealToken = token.isDelimiter || isPeeking;
-
-            if (!revealToken) {
-              tokenTextColor = themeColors.secondary;
-              tokenBackgroundColor = themeColors.secondary;
-
-              if (isSolved) {
-                tokenTextColor = themeColors.success;
-                tokenBackgroundColor = themeColors.success;
-              }
-
-              if (token.userAttempted) {
-                tokenTextColor = token.match
-                  ? themeColors.success
-                  : themeColors.error;
-                tokenBackgroundColor = token.match
-                  ? themeColors.success
-                  : themeColors.error;
-              }
-            }
+          {memoryVerses?.map((verse, verseIndex) => {
+            const verseTokens = allTokens[verseIndex];
+            if (!verseTokens) return null;
 
             return (
-              <TText
-                key={`token-${token.text}-${index}`}
-                style={{
-                  color: tokenTextColor,
-                  backgroundColor: tokenBackgroundColor,
-                }}
-              >
-                {token.text}
-              </TText>
+              <React.Fragment key={`verse-${verse.verse}`}>
+                <TText
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    verticalAlign: 'top',
+                    color: themeColors.textSecondary
+                  }}
+                >
+                  {verse.verse}
+                </TText>
+                {verseTokens.map((token: Token, tokenIndex: number) => {
+                  let tokenTextColor = themeColors.text;
+                  let tokenBackgroundColor = "transparent";
+                  const isSolved = token.match && token.userAttempted;
+
+                  const revealToken = token.isDelimiter || isPeeking;
+
+                  if (!revealToken) {
+                    tokenTextColor = themeColors.secondary;
+                    tokenBackgroundColor = themeColors.secondary;
+
+                    if (isSolved) {
+                      tokenTextColor = themeColors.success;
+                      tokenBackgroundColor = themeColors.success;
+                    }
+
+                    if (token.userAttempted) {
+                      tokenTextColor = token.match
+                        ? themeColors.success
+                        : themeColors.error;
+                      tokenBackgroundColor = token.match
+                        ? themeColors.success
+                        : themeColors.error;
+                    }
+                  }
+
+                  return (
+                    <TText
+                      key={`verse-${verse.verse}-token-${tokenIndex}`}
+                      style={{
+                        color: tokenTextColor,
+                        backgroundColor: tokenBackgroundColor,
+                      }}
+                    >
+                      {token.text}
+                    </TText>
+                  );
+                })}
+              </React.Fragment>
             );
           })}
         </View>
