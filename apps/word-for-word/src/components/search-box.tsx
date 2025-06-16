@@ -116,7 +116,7 @@ const SearchBox: FC<SearchBoxProps> = ({
   function onSubmitBook() {
     // Select first option, if any
     if (filteredOptions.length > 0) {
-      setBookNameSearch(filteredOptions[0] ?? "");
+      !isPristine && setBookNameSearch(filteredOptions[0] ?? "");
       setTimeout(() => {
         chapterTextInputRef.current?.focus();
       }, 100);
@@ -191,6 +191,10 @@ const SearchBox: FC<SearchBoxProps> = ({
                   setBookNameSearch(text);
                   setVerseSearch("1");
                   setIsPristine(false);
+                  scrollViewRef.current?.scrollTo({
+                    y: 0,
+                    animated: false,
+                  });
                 }}
                 className="font-bold text-[18px] rounded-md p-2"
                 style={{
