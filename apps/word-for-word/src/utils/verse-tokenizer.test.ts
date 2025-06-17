@@ -220,5 +220,29 @@ describe('verse-tokenizer', () => {
       expect(thirdWords.every(w => !w.match)).toBe(true);
       expect(thirdWords.every(w => !w.userAttempted)).toBe(true);
     });
+
+    it('should handle psalms 16:', () => {
+      const verses = [
+        "To man belong the plans of the heart, but from the LORD comes the reply of the tongue.",
+        "All a man's ways seem innocent to him, but motives are weighed by the LORD.",
+        "Commit to the LORD whatever you do, and your plans will succeed.",
+        "The LORD works out everything for his own ends- even the wicked for a day of disaster.",
+        "The LORD detests all the proud of heart. Be sure of this: They will not go unpunished.",
+        "Through love and faithfulness sin is atoned for; through the fear of the LORD a man avoids evil.",
+        "When a man's ways are pleasing to the LORD, he makes even his enemies live at peace with him.",
+        "Better a little with righteousness than much gain with injustice.",
+        "In his heart a man plans his course, but the LORD determines his steps."
+      ];
+      const result = tokeniseVerses(verses, '');
+
+      expect(result[0]?.[0]?.text).toEqual('To');
+      expect(result[1]?.[0]?.text).toEqual('All');
+      expect(result[2]?.[0]?.text).toEqual('Commit');
+      expect(result[3]?.[0]?.text).toEqual('The');
+      expect(result[4]?.[0]?.text).toEqual('The');
+      expect(result[5]?.[0]?.text).toEqual('Through');
+      expect(result[6]?.[0]?.text).toEqual('When');
+      expect(result[7]?.[0]?.text).toEqual('Better');
+    })
   });
 }); 

@@ -103,8 +103,9 @@ export default function MemoryVersePracticeScreen() {
   const [isPeeking, setIsPeeking] = useState(isPeekingDefault === 'true');
   const [userText, setUserText] = useState("");
 
-  const memoryVerses = memoryVerseCursor ? bible.getVersesInRange(memoryVerseCursor, memoryVerseEndCursor) : undefined;
+  const memoryVerses = memoryVerseCursor ? bible.getVersesInRange(memoryVerseCursor, memoryVerseEndCursor, { includeChapterNumber: false }) : undefined;
   const memoryVersesTexts = memoryVerses?.map(v => v.text) || [];
+  console.log('verses', memoryVersesTexts)
 
   useEffect(() => {
     if (isPeeking) {
@@ -227,7 +228,9 @@ export default function MemoryVersePracticeScreen() {
     );
   }
 
+  console.log(memoryVersesTexts)
   const allTokens = tokeniseVerses(memoryVersesTexts, userText);
+  console.log(allTokens)
 
   return (
     <TSafeAreaView className="flex-1">

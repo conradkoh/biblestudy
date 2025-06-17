@@ -39,6 +39,9 @@ export type BibleStore = {
   getVersesInRange: (
     start: Required<BibleCursor>,
     end?: BibleCursorRangeEnd,
+    options?: {
+      includeChapterNumber?: boolean;
+    }
   ) => GetBibleTranslation["books"][number]["chapters"][number]["verses"];
   getBook: (
     bookId: BookId,
@@ -141,10 +144,16 @@ export const useBibleStore = create<BibleStore>((set, get) => ({
   getVersesText: (
     cursor: Required<BibleCursor>,
     endCursor?: BibleCursorRangeEnd,
+    options: {
+      includeChapterNumber?: boolean;
+    } = { includeChapterNumber: true }
   ) => {
     const verses = get().getVersesInRange(cursor, endCursor);
     return endCursor
-      ? verses.map((v) => toSuperscript(v.verse) + v.text).join("")
+      ? verses.map((v) => {
+        if (!options?.includeChapterNumber) return v.text;
+        return toSuperscript(v.verse) + v.text;
+      }).join("")
       : verses[0]?.text ?? "";
   },
   getBook: (bookId: BookId, version: BibleVersionId) => {

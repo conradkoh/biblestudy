@@ -15,7 +15,7 @@ export function useCachedMemoryVerses(memoryVerses: Doc<"memoryVerses">[] | unde
       try {
         const savedState = await AsyncStorage.getItem(CACHE_MEMORY_VERSES_KEY);
         if (savedState) {
-          console.log(savedState);
+          console.log('saved', savedState);
           const verses = JSON.parse(savedState) as Doc<"memoryVerses">[];
 
           setMemoryVersesCache(verses);
@@ -25,8 +25,11 @@ export function useCachedMemoryVerses(memoryVerses: Doc<"memoryVerses">[] | unde
       }
     };
 
+    // No need to load if there are verses
+    if (!memoryVerses) return;
+
     load();
-  }, []);
+  }, [memoryVerses]);
 
 
   // save to cache

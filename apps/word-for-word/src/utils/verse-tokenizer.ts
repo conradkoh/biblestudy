@@ -160,7 +160,7 @@ export function tokeniseVerses(verses: string[], userText: string): Token[][] {
   let tokenIndex = 0;
 
   for (const verse of verses) {
-    const verseTokens = getTokens(verse);
+    const verseTokens = getTokens(verse).concat([' ']); // there is an extra space with the .join(' ') above
     const verseResult: Token[] = [];
 
     for (let i = 0; i < verseTokens.length; i++) {
