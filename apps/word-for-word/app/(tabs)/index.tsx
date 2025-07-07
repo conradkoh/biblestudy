@@ -4,7 +4,7 @@ import BibleChapterView, {
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import SearchBox from "@/src/components/search-box";
+import { BibleSearchBottomSheet } from "@/src/components/search/bible-search-bottom-sheet";
 import SwipeableContainer from "@/src/components/swipeable-container";
 import VerseDetailBottomSheet from "@/src/components/verse-detail-bottom-sheet";
 import VerseRangeBottomSheet from "@/src/components/verse-range-bottom-sheet";
@@ -185,7 +185,7 @@ export default function ReadScreen() {
           </SwipeableContainer>
 
           <View
-            className="flex flex-row items-center justify-between px-2"
+            className="flex flex-row items-center px-2"
             style={{
               backgroundColor: themeColors.surfaceSecondary,
               height: BIBLE_CHAPTER_CONTROLS_HEIGHT
@@ -202,22 +202,28 @@ export default function ReadScreen() {
               />
             </TouchableOpacity>
             <TouchableOpacity
-              className="flex flex-row items-center justify-center flex-1"
+              className="flex flex-row items-center justify-center flex-1 mx-2"
               onPress={() => setIsSearchVisible(true)}
             >
-              <Ionicons
-                size={18}
-                name="search-sharp"
-                style={{ color: themeColors.text }}
-              />
-              <TText className="font-bold text-[18px] ml-1">
+              <TText className="font-bold text-[18px]">
                 {mapBookIdsToName[cursorHandler.cursor.bookId]} Chapter{" "}
                 {cursorHandler?.cursor.chapter}
               </TText>
             </TouchableOpacity>
             <TouchableOpacity
               hitSlop={HITSLOP_DEFAULT}
+              onPress={() => setIsSearchVisible(true)}
+            >
+              <Ionicons
+                size={20}
+                name="search-sharp"
+                style={{ color: themeColors.textHighlight }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              hitSlop={HITSLOP_DEFAULT}
               onPress={() => cursorHandler?.goNext()}
+              className="ml-2"
             >
               <Ionicons
                 size={20}
@@ -227,9 +233,9 @@ export default function ReadScreen() {
             </TouchableOpacity>
           </View>
         </TView>
-        <SearchBox
+        <BibleSearchBottomSheet
           isVisible={isSearchVisible}
-          setIsVisible={setIsSearchVisible}
+          onClose={() => setIsSearchVisible(false)}
           cursorHandler={cursorHandler}
         />
         <VerseDetailBottomSheet
