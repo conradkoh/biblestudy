@@ -29,7 +29,7 @@ import { KeyboardStickyView } from "react-native-keyboard-controller";
 const NUM_BUTTONS_PER_ROW = 5;
 const KEYBOARD_TOOLBAR_HEIGHT = 42;
 
-interface SearchBoxProps {
+interface ChapterVerseSelectorProps {
   isVisible: boolean;
   setIsVisible: (isVisible: boolean) => void;
   cursorHandler: ReturnType<typeof useBibleCursorHandler>;
@@ -41,7 +41,7 @@ const fuse = new Fuse(bookNames, {
 });
 
 const SEARCH_BOOK_ITEM_HEIGHT = 48;
-const SearchBox: FC<SearchBoxProps> = ({
+const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
   isVisible,
   setIsVisible,
   cursorHandler,
@@ -167,11 +167,8 @@ const SearchBox: FC<SearchBoxProps> = ({
       visible={isVisible}
       onRequestClose={() => setIsVisible(false)}
       presentationStyle="overFullScreen"
-      transparent={true}
     >
-
       <SafeAreaView>
-        <View className="absolute h-screen w-screen bg-black opacity-40" />
         <KeyboardAvoidingView behavior="padding" className="h-full">
           <TView
             style={{
@@ -410,4 +407,4 @@ const SearchBox: FC<SearchBoxProps> = ({
   );
 };
 
-export default SearchBox;
+export default ChapterVerseSelector;

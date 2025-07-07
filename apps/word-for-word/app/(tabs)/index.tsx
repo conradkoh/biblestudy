@@ -28,6 +28,7 @@ import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ChapterVerseSelector from "@/src/components/chapter-verse-selector";
 
 const BIBLE_CHAPTER_CONTROLS_HEIGHT = 40;
 
@@ -70,6 +71,7 @@ export default function ReadScreen() {
 
   useBibleBookmark(bible, cursorHandler);
   const themeColors = useThemeColors();
+  const [isChapterVerseSelectorVisible, setIsChapterVerseSelectorVisible] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [showFocusVerseSingle, setShowFocusVerseSingle] = useState(false);
   const [showFocusVerseRange, setShowFocusVerseRange] = useState(false);
@@ -199,16 +201,6 @@ export default function ReadScreen() {
             }}
           >
             <TouchableOpacity
-              hitSlop={HITSLOP_DEFAULT}
-              onPress={() => cursorHandler?.goPrev()}
-            >
-              <Ionicons
-                size={20}
-                name="arrow-back-sharp"
-                style={{ color: themeColors.text }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
               className="flex flex-row items-center justify-center flex-1 mx-2"
               onPress={() => setIsSearchVisible(true)}
             >
@@ -227,19 +219,13 @@ export default function ReadScreen() {
                 style={{ color: themeColors.textHighlight }}
               />
             </TouchableOpacity>
-            <TouchableOpacity
-              hitSlop={HITSLOP_DEFAULT}
-              onPress={() => cursorHandler?.goNext()}
-              className="ml-2"
-            >
-              <Ionicons
-                size={20}
-                name="arrow-forward-sharp"
-                style={{ color: themeColors.text }}
-              />
-            </TouchableOpacity>
           </View>
         </TView>
+        <ChapterVerseSelector
+          isVisible={isChapterVerseSelectorVisible}
+          setIsVisible={setIsChapterVerseSelectorVisible}
+          cursorHandler={cursorHandler}
+        />
         <BibleSearchBottomSheet
           isVisible={isSearchVisible}
           onClose={() => setIsSearchVisible(false)}
