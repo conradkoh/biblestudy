@@ -1,0 +1,11 @@
+{
+  "name": "chat-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@ai-sdk/google": "1.2.19",
+    "ai": "4.3.16"
+  }
+}

@@ -13,12 +13,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     resizeMode: "contain",
     backgroundColor: "#ffffff",
   },
+  jsEngine: "jsc", // For huggingface tokenizers
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.moosedev.biblestudy",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
-    },
+    }
   },
   android: {
     adaptiveIcon: {
@@ -55,7 +56,18 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "./assets/interlinear/interlinear.jsonc",
           "./assets/lexicon/hebrew.jsonc",
           "./assets/lexicon/greek.jsonc",
+          "./assets/embedding/snowflake_model_q4.onnx",
+          "./assets/embedding/tokenizer.json",
+          "./assets/embedding/tokenizer_config.json",
         ],
+      },
+    ],
+    [
+      "expo-build-properties",
+      {
+        ios: {
+          deploymentTarget: "15.1",
+        },
       },
     ],
   ],

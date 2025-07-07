@@ -17,5 +17,6 @@ config.resolver.nodeModulesPaths = [
 ];
 
 config.resolver.assetExts.push("jsonc");
+config.resolver.assetExts.push("onnx");
 
 module.exports = config;

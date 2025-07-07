@@ -9,6 +9,7 @@ import { useExpoUpdates } from "@/src/hooks/useExpoUpdates";
 import { useFontLoader } from "@/src/hooks/useFontLoader";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { convex } from "@/src/services/convex";
+import { SemanticSearch } from "@/src/services/semantic-search";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -21,6 +22,8 @@ import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import 'fast-text-encoding'; // polyfill for TextEncoder
+import { cos_sim } from '@huggingface/transformers/src/utils/maths';
 
 const secureStorage = {
   getItem: SecureStore.getItemAsync,
@@ -39,6 +42,32 @@ export default function TabLayout() {
   useEffect(() => {
     loadBibleStore().then(() => {
       setIsBibleLoaded(true);
+    }).then(async () => {
+      const semanticSearch = new SemanticSearch();
+      await semanticSearch.init();
+
+      const bibleStore = useBibleStore.getState();
+
+      const verseText = bibleStore.getVersesText({
+        version: 'niv',
+        bookId: 'romans',
+        chapter: 6,
+        verse: 23,
+      });
+      const verseEmbedding = await semanticSearch.createEmbedding(verseText);
+      const verse2Text = bibleStore.getVersesText({
+        version: 'niv',
+        bookId: 'genesis',
+        chapter: 1,
+        verse: 23,
+      });
+      const verse2Embedding = await semanticSearch.createEmbedding(verse2Text);
+      const queryEmbedding = await semanticSearch.createEmbedding("the earth was not created");
+
+      console.log(verseText);
+      console.log(verse2Text);
+      console.log(cos_sim(Array.from(verseEmbedding), Array.from(queryEmbedding)));
+      console.log(cos_sim(Array.from(verse2Embedding), Array.from(queryEmbedding)));
     });
   }, [loadBibleStore]);
 
