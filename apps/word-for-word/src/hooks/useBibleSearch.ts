@@ -25,19 +25,6 @@ export interface UseBibleSearchActions {
   setQuery: (query: string) => void;
 }
 
-// Cache interface for search results
-interface SearchCache {
-  [key: string]: {
-    results: SearchResultItem[];
-    totalCount: number;
-    hasMore: boolean;
-    timestamp: number;
-  };
-}
-
-// Cache expiration time (5 minutes)
-const CACHE_EXPIRATION = 5 * 60 * 1000;
-
 export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState & UseBibleSearchActions {
   const bibleStore = useBibleStore();
 
@@ -54,70 +41,9 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
 
   // Refs for pagination
   const isSearching = useRef(false);
-  const searchCache = useRef<SearchCache>({});
 
-  // Helper function to generate cache key
-  const generateCacheKey = useCallback((query: SearchQuery): string => {
-    return `${query.text}-${query.strategyType}-${query.version}-${query.limit}`;
-  }, []);
-
-  // Helper function to get cached results
-  const getCachedResults = useCallback((query: SearchQuery): SearchResultItem[] | null => {
-    const cacheKey = generateCacheKey(query);
-    const cached = searchCache.current[cacheKey];
-
-    if (cached && Date.now() - cached.timestamp < CACHE_EXPIRATION) {
-      // Return results up to the requested offset
-      const offset = query.offset || 0;
-      const limit = query.limit || 20;
-      return cached.results.slice(0, offset + limit);
-    }
-
-    return null;
-  }, [generateCacheKey]);
-
-  // Helper function to cache results
-  const cacheResults = useCallback((query: SearchQuery, results: SearchResultItem[], totalCount: number, hasMore: boolean) => {
-    const cacheKey = generateCacheKey(query);
-    const cached = searchCache.current[cacheKey];
-
-    if (cached) {
-      // Merge with existing cached results
-      const mergedResults = [...cached.results];
-
-      // Add new results that aren't already cached
-      for (const result of results) {
-        const exists = mergedResults.some(existing =>
-          existing.bookId === result.bookId &&
-          existing.chapter === result.chapter &&
-          existing.verse === result.verse &&
-          existing.version === result.version
-        );
-
-        if (!exists) {
-          mergedResults.push(result);
-        }
-      }
-
-      searchCache.current[cacheKey] = {
-        results: mergedResults,
-        totalCount: Math.max(cached.totalCount, totalCount),
-        hasMore,
-        timestamp: Date.now()
-      };
-    } else {
-      // Create new cache entry
-      searchCache.current[cacheKey] = {
-        results,
-        totalCount,
-        hasMore,
-        timestamp: Date.now()
-      };
-    }
-  }, [generateCacheKey]);
-
-  // Create search context
-  const createSearchContext = useCallback((): SearchContext => ({
+  // Create memoized search context
+  const searchContext = useMemo((): SearchContext => ({
     bibleStore,
     currentCursor
   }), [bibleStore, currentCursor]);
@@ -158,22 +84,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
         offset: 0
       };
 
-      // Check cache first
-      const cachedResults = getCachedResults(searchQuery);
-      if (cachedResults) {
-        setSearchResults(cachedResults);
-        setTotalCount(cachedResults.length);
-        setHasMore(cachedResults.length >= (searchQuery.limit || 20));
-        setLastQuery(searchQuery);
-        setIsInitialLoading(false);
-        return;
-      }
-
-      const context = createSearchContext();
-      const result = await executeSearchWithFallback(searchQuery, context);
-
-      // Cache the results
-      cacheResults(searchQuery, result.items, result.totalCount, result.hasMore);
+      const result = await executeSearchWithFallback(searchQuery, searchContext);
 
       setSearchResults(result.items);
       setTotalCount(result.totalCount);
@@ -192,7 +103,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
       setIsLoading(false);
       isSearching.current = false;
     }
-  }, [searchQuery, selectedStrategy, currentCursor, createSearchContext, getCachedResults, cacheResults]);
+  }, [searchQuery, selectedStrategy, currentCursor, searchContext]);
 
   // Load more results
   const loadMore = useCallback(async () => {
@@ -214,21 +125,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
         offset: nextOffset
       };
 
-      // Check cache first
-      const cachedResults = getCachedResults(searchQuery);
-      if (cachedResults) {
-        // Return only the new results (from current offset onwards)
-        const newResults = cachedResults.slice(nextOffset);
-        setSearchResults(prev => [...prev, ...newResults]);
-        setHasMore(newResults.length >= (searchQuery.limit || 20));
-        return;
-      }
-
-      const context = createSearchContext();
-      const result = await executeSearchWithFallback(searchQuery, context);
-
-      // Cache the results
-      cacheResults(searchQuery, result.items, result.totalCount, result.hasMore);
+      const result = await executeSearchWithFallback(searchQuery, searchContext);
 
       setSearchResults(prev => [...prev, ...result.items]);
       setHasMore(result.hasMore);
@@ -239,7 +136,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
       setIsLoading(false);
       isSearching.current = false;
     }
-  }, [lastQuery, hasMore, searchResults.length, createSearchContext, getCachedResults, cacheResults]);
+  }, [lastQuery, hasMore, searchResults.length, searchContext]);
 
   // Clear results
   const clearResults = useCallback(() => {
@@ -249,8 +146,6 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
     setError(null);
     setLastQuery(null);
     setIsInitialLoading(true);
-    // Clear the search cache
-    searchCache.current = {};
   }, []);
 
   // Set strategy
