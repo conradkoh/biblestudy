@@ -15,7 +15,6 @@ export function useCachedMemoryVerses(memoryVerses: Doc<"memoryVerses">[] | unde
       try {
         const savedState = await AsyncStorage.getItem(CACHE_MEMORY_VERSES_KEY);
         if (savedState) {
-          console.log(savedState);
           const verses = JSON.parse(savedState) as Doc<"memoryVerses">[];
 
           setMemoryVersesCache(verses);

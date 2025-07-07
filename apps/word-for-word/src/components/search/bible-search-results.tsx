@@ -33,8 +33,6 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
 }) => {
   const themeColors = useThemeColors();
 
-  console.log(isTyping);
-
   const renderItem = useCallback(({ item }: { item: SearchResultItem }) => (
     <SearchResultItemComponent
       item={item}

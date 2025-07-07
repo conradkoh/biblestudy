@@ -33,6 +33,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const renderBackdrop = useBottomSheetBackdrop({ opacity: 0.3 });
   const [isDebouncing, setIsDebouncing] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   // Snap points for the bottom sheet
   const snapPoints = useMemo(() => ["90%"], []);
@@ -98,6 +99,11 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     setIsDebouncing(isDebouncing);
   }, []);
 
+  // Handle focus state change
+  const handleFocusChange = useCallback((isFocused: boolean) => {
+    setIsFocused(isFocused);
+  }, []);
+
   // Show/hide bottom sheet based on visibility prop
   useEffect(() => {
     if (isVisible) {
@@ -127,6 +133,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
         backgroundColor: themeColors.surface,
       }}
       backdropComponent={renderBackdrop}
+      safeAreaViewEdges={isFocused ? [] : undefined}
     >
       <TView className="flex-1 px-4">
         {/* Header */}
@@ -158,6 +165,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             placeholder="Search for words, phrases, or topics..."
             isLoading={isLoading}
             onDebounceStateChange={handleDebounceStateChange}
+            onFocusChange={handleFocusChange}
           />
         </TView>
 

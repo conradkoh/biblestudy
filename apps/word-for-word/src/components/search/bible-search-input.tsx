@@ -18,6 +18,7 @@ interface BibleSearchInputProps {
   onStrategyChange?: (strategy: SearchStrategyType) => void;
   isLoading?: boolean;
   onDebounceStateChange?: (isDebouncing: boolean) => void;
+  onFocusChange?: (isFocused: boolean) => void;
   className?: string;
 }
 
@@ -29,6 +30,7 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
   debounceMs = 300,
   isLoading = false,
   onDebounceStateChange,
+  onFocusChange,
   className = ""
 }) => {
   const themeColors = useThemeColors();
@@ -66,6 +68,15 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
     setInputValue(text);
     debouncedSearch(text);
   }, [debouncedSearch]);
+
+  // Handle focus change
+  const handleFocus = useCallback(() => {
+    onFocusChange?.(true);
+  }, [onFocusChange]);
+
+  const handleBlur = useCallback(() => {
+    onFocusChange?.(false);
+  }, [onFocusChange]);
 
   // Handle clear
   const handleClear = useCallback(() => {
@@ -111,6 +122,8 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
       <BottomSheetTextInput
         value={inputValue}
         onChangeText={handleInputChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
         placeholder={placeholder}
         placeholderTextColor={themeColors.textTertiary}
         style={{
