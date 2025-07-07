@@ -5,6 +5,7 @@ import { TView } from "@/src/components/core/TView";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { SearchStrategyType } from "@/src/types/search";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 
 interface BibleSearchInputProps {
   value: string;
@@ -83,7 +84,7 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
       />
 
       {/* Search Input */}
-      <TextInput
+      <BottomSheetTextInput
         value={inputValue}
         onChangeText={handleInputChange}
         placeholder={placeholder}
@@ -95,6 +96,7 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
           fontFamily: "System",
         }}
         autoCorrect={false}
+        autoFocus
         autoCapitalize="none"
         returnKeyType="search"
         clearButtonMode="never"

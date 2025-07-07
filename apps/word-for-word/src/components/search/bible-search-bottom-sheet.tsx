@@ -105,6 +105,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
 
   return (
     <TBottomSheetModal
+      keyboardBehavior="extend"
       ref={bottomSheetRef}
       index={0}
       snapPoints={snapPoints}
@@ -185,7 +186,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             emptyStateMessage={
               searchQuery.trim()
                 ? "No results found for your search"
-                : "Enter a search term to find Bible verses"
+                : "Enter a search term to find verses"
             }
           />
         </TView>
