@@ -449,6 +449,29 @@
             </ul>
           </li>
         </ul>
+
+        <h4>Recent Improvements (December 2024)</h4>
+        <ul>
+          <li>[x] Enhanced keyword search with phrase matching and term order consideration
+            <ul>
+              <li>File: `apps/word-for-word/src/utils/search/text-processor.ts`</li>
+              <li>File: `apps/word-for-word/src/utils/search/strategies/keyword.ts`</li>
+              <li>New functions: `extractAllWords()`, `findOrderedSequenceMatch()`, `calculateImprovedRelevanceScore()`</li>
+              <li>Features: Exact phrase matching, ordered sequence matching, improved relevance scoring</li>
+              <li>Fixes: Query "wages sin death" now correctly finds Romans 6:23 with high relevance score</li>
+            </ul>
+          </li>
+          <li>[x] Improved search coverage and quality filtering
+            <ul>
+              <li>File: `apps/word-for-word/src/utils/search/strategies/keyword.ts`</li>
+              <li>Feature: Scan all books before applying limit (was stopping at Genesis/Exodus)</li>
+              <li>Feature: Dynamic quality threshold based on query complexity (2.0-5.0)</li>
+              <li>Feature: Console logging for debugging search results</li>
+              <li>Improvement: Better result sorting and pagination</li>
+              <li>Quality threshold formula: `Math.max(2.0, Math.min(5.0, queryWords.length * 1.5))`</li>
+            </ul>
+          </li>
+        </ul>
       </section>
       
     </section>

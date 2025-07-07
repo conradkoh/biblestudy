@@ -1,12 +1,22 @@
 import type { SearchQuery, SearchContext, SearchResult, SearchResultItem, SearchMatch } from "@/src/types/search";
 import { SearchStrategyType } from "@/src/types/search";
-import { extractKeywords, findMatches, calculateRelevanceScore, getMatchContext, normalizeText } from "../text-processor";
+import {
+    extractKeywords,
+    extractAllWords,
+    findMatches,
+    calculateRelevanceScore,
+    calculateImprovedRelevanceScore,
+    findOrderedSequenceMatch,
+    getMatchContext,
+    normalizeText
+} from "../text-processor";
 import type { BookId } from "@common/utils/bible-data-utils";
 import { bookIds } from "@common/utils/bible-data-utils";
 
 /**
  * Keyword search strategy
  * Performs word-based search with better relevance scoring by focusing on individual keywords
+ * and phrase matching with improved term order consideration
  */
 export const keywordSearch = async (
     query: SearchQuery,
@@ -25,13 +35,16 @@ export const keywordSearch = async (
         };
     }
 
-    const results: SearchResultItem[] = [];
+    const allResults: SearchResultItem[] = [];
     const bibleStore = context.bibleStore;
 
-    // Extract keywords from the search query
+    // Extract keywords from the search query (for backward compatibility)
     const queryKeywords = extractKeywords(text);
-    if (queryKeywords.length === 0) {
-        // If no keywords found, fall back to simple substring search
+
+    // Extract all words from the search query (including common words for phrase matching)
+    const queryAllWords = extractAllWords(text);
+
+    if (queryKeywords.length === 0 && queryAllWords.length === 0) {
         return {
             items: [],
             totalCount: 0,
@@ -41,7 +54,13 @@ export const keywordSearch = async (
         };
     }
 
-    // Search through all books
+    // Calculate quality threshold based on query complexity
+    // Higher threshold for longer queries to ensure quality matches
+    const qualityThreshold = Math.max(2.0, Math.min(5.0, queryAllWords.length * 1.5));
+
+    console.log(`Searching with quality threshold: ${qualityThreshold} for query: "${text}"`);
+
+    // Search through all books to collect all potential matches
     for (const bookId of bookIds) {
         const book = bibleStore.getBook(bookId, version);
         if (!book) continue;
@@ -57,96 +76,89 @@ export const keywordSearch = async (
                 const verseNumber = verseIndex + 1;
                 const verseText = verse.text;
                 const normalizedVerseText = normalizeText(verseText);
+                const verseWords = extractAllWords(verseText);
 
-                // Check how many keywords match in this verse
-                const matchingKeywords = queryKeywords.filter(keyword =>
-                    normalizedVerseText.includes(keyword)
-                );
+                // Use improved sequence matching
+                const sequenceMatch = findOrderedSequenceMatch(queryAllWords, verseWords);
 
-                if (matchingKeywords.length > 0) {
-                    // Calculate keyword match ratio
-                    const keywordMatchRatio = matchingKeywords.length / queryKeywords.length;
+                if (sequenceMatch.score > 0) {
+                    // Calculate improved relevance score
+                    const relevanceScore = calculateImprovedRelevanceScore(
+                        verseText,
+                        queryAllWords,
+                        sequenceMatch
+                    );
 
-                    // Find all matches for the best matching keyword
-                    const bestKeyword = matchingKeywords[0];
-                    if (!bestKeyword) continue;
-                    const matches = findMatches(verseText, bestKeyword);
+                    // Only include results above the quality threshold
+                    if (relevanceScore >= qualityThreshold) {
+                        // Create search matches based on the sequence match positions
+                        const searchMatches: SearchMatch[] = sequenceMatch.positions.map((pos: number) => {
+                            const word = verseWords[pos];
+                            if (!word) return null;
 
-                    if (matches.length > 0) {
-                        // Convert matches to SearchMatch format
-                        const searchMatches: SearchMatch[] = matches.map(match => ({
-                            startIndex: match.startIndex,
-                            endIndex: match.endIndex,
-                            text: verseText.substring(match.startIndex, match.endIndex),
-                            isHighlighted: true
-                        }));
+                            // Find the actual position of this word in the original text
+                            const wordIndex = normalizedVerseText.indexOf(word, pos > 0 ?
+                                normalizedVerseText.indexOf(verseWords[pos - 1] || '') + (verseWords[pos - 1]?.length || 0) : 0);
 
-                        // Calculate base relevance score
-                        const bestMatch = matches[0];
-                        if (!bestMatch) continue;
+                            if (wordIndex === -1) return null;
 
-                        let relevanceScore = calculateRelevanceScore(
-                            verseText,
-                            bestKeyword,
-                            bestMatch.startIndex,
-                            bestMatch.endIndex
-                        );
+                            return {
+                                startIndex: wordIndex,
+                                endIndex: wordIndex + word.length,
+                                text: word,
+                                isHighlighted: true
+                            };
+                        }).filter((match: SearchMatch | null): match is SearchMatch => match !== null);
 
-                        // Boost score based on keyword match ratio
-                        relevanceScore += keywordMatchRatio * 3.0;
+                        if (searchMatches.length > 0) {
+                            // Get context around the first match
+                            const firstMatch = searchMatches[0];
+                            if (firstMatch) {
+                                const context = getMatchContext(verseText, firstMatch.startIndex, firstMatch.endIndex);
 
-                        // Boost score for verses that match more keywords
-                        if (matchingKeywords.length > 1) {
-                            relevanceScore += (matchingKeywords.length - 1) * 1.5;
-                        }
+                                const resultItem: SearchResultItem = {
+                                    bookId,
+                                    chapter: chapterNumber,
+                                    verse: verseNumber,
+                                    version,
+                                    text: verseText,
+                                    matches: searchMatches,
+                                    relevanceScore,
+                                    context: {
+                                        previousVerse: context.before,
+                                        nextVerse: context.after
+                                    }
+                                };
 
-                        // Get context around the first match
-                        const context = getMatchContext(verseText, bestMatch.startIndex, bestMatch.endIndex);
-
-                        const resultItem: SearchResultItem = {
-                            bookId,
-                            chapter: chapterNumber,
-                            verse: verseNumber,
-                            version,
-                            text: verseText,
-                            matches: searchMatches,
-                            relevanceScore,
-                            context: {
-                                previousVerse: context.before,
-                                nextVerse: context.after
+                                allResults.push(resultItem);
                             }
-                        };
-
-                        results.push(resultItem);
-
-                        // Check if we've reached the limit
-                        if (results.length >= limit + offset) {
-                            break;
                         }
                     }
                 }
             }
-
-            if (results.length >= limit + offset) {
-                break;
-            }
-        }
-
-        if (results.length >= limit + offset) {
-            break;
         }
     }
 
     // Sort by relevance score (highest first)
-    results.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    allResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
-    // Apply offset and limit
-    const paginatedResults = results.slice(offset, offset + limit);
-    const hasMore = results.length > offset + limit;
+    console.log(`Found ${allResults.length} results above quality threshold ${qualityThreshold}`);
+
+    // Log some sample results for debugging
+    if (allResults.length > 0) {
+        console.log(`Top 3 results:`);
+        allResults.slice(0, 3).forEach((result, index) => {
+            console.log(`${index + 1}. ${result.bookId} ${result.chapter}:${result.verse} (score: ${result.relevanceScore.toFixed(2)})`);
+        });
+    }
+
+    // Apply offset and limit for pagination
+    const paginatedResults = allResults.slice(offset, offset + limit);
+    const hasMore = allResults.length > offset + limit;
 
     return {
         items: paginatedResults,
-        totalCount: results.length,
+        totalCount: allResults.length,
         hasMore,
         query,
         executionTime: Date.now() - startTime
