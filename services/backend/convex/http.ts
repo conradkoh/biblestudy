@@ -5,6 +5,7 @@ import {
   processMessage,
   ProcessMessageParams,
 } from '@/features/process-message';
+import { auth } from 'auth';
 
 const http = httpRouter();
 
@@ -36,5 +37,7 @@ http.route({
     return new Response(null, { status: 200 });
   }),
 });
+
+auth.addHttpRoutes(http);
 
 export default http;

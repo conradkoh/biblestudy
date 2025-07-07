@@ -1,9 +1,14 @@
 import { loadKJV } from '@/features/import-bible';
-import { internalAction, internalMutation } from 'convex/_generated/server';
-import type { BibleChapter } from 'convex/models/bible/bible_chapters';
-import { bibleChapterConvexSchema } from 'convex/models/bible/bible_chapters';
-import type { BibleVerse } from 'convex/models/bible/bible_verses';
-import { bibleVerseConvexSchema } from 'convex/models/bible/bible_verses';
+import {
+  internalAction,
+  internalMutation,
+  mutation,
+  query,
+} from './_generated/server';
+import type { BibleChapter } from './models/bible/bible_chapters';
+import { bibleChapterConvexSchema } from './models/bible/bible_chapters';
+import type { BibleVerse } from './models/bible/bible_verses';
+import { bibleVerseConvexSchema } from './models/bible/bible_verses';
 import { v } from 'convex/values';
 
 export const _importKJV = internalAction({
@@ -76,5 +81,32 @@ export const _batchWriteVerses = internalMutation({
       })();
     });
     await Promise.all(tasks);
+  },
+});
+
+export const getVersesInChapter = query({
+  args: {
+    bookIdx: v.number(),
+    chapter: v.number(),
+    version: v.string(),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query('bible_verses')
+      .filter((q) =>
+        q.and(
+          q.eq(q.field('bookIdx'), args.bookIdx),
+          q.eq(q.field('chapter'), args.chapter),
+          q.eq(q.field('version'), args.version),
+        ),
+      )
+      .take(10);
+  },
+});
+
+export const get = mutation({
+  args: v.object({}),
+  handler: async (ctx, args) => {
+    return {};
   },
 });

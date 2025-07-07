@@ -1,5 +1,5 @@
-import { internal } from 'convex/_generated/api';
-import { internalAction } from 'convex/_generated/server';
+import { internal } from '@/../convex/_generated/api';
+import { internalAction } from '@/../convex/_generated/server';
 import { DateTime } from 'luxon';
 
 /**
