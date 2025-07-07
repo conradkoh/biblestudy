@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Current Tasks Progress Tracker</title>
+  <meta name="description" content="Key information about current tasks and their progress" />
+</head>
+
+<body>
+  <!-- 
+    IMPORTANT: READ BEFORE MODIFYING
+    - Sections marked with 'importance: high' should not be removed or significantly altered unless explicitly instructed to do so.
+    - The task lists under 'Detailed Technical Tasks' should be updated to reflect current progress.
+    - Comments like this one are for guidance and should not be removed.
+    - IMPORTANT: This file is synced across multiple users. Each user is responsible for updating
+      the progress markers as they complete tasks.
+  -->
+
+  <h1>Current Tasks Progress Tracker</h1>
+
+  <section id="tech-stack">
+    <h2>Tech Stack</h2>
+    <meta name="importance" content="high" />
+    <!-- 
+      IMPORTANT: This section must be updated before working on any other tasks.
+      -->
+    <p>
+      Please specify the technologies and frameworks used in this project.
+    </p>
+    <ul>
+      <li>Frontend:
+        <ul>
+          <li>React Native 0.74.5</li>
+          <li>Expo SDK 51</li>
+          <li>React 18.2.0</li>
+          <li>TypeScript 5.3.3</li>
+          <li>NativeWind (TailwindCSS for React Native)</li>
+          <li>Expo Router (file-based routing)</li>
+          <li>Zustand (state management)</li>
+          <li>React Native Reanimated</li>
+          <li>@gorhom/bottom-sheet</li>
+        </ul>
+      </li>
+      <li>Backend:
+        <ul>
+          <li>Convex (serverless backend platform)</li>
+          <li>TypeScript</li>
+          <li>Zod (schema validation)</li>
+          <li>OpenAI API integration</li>
+          <li>Push notifications</li>
+        </ul>
+      </li>
+      <li>Package Management:
+        <ul>
+          <li>Yarn Workspaces</li>
+          <li>Monorepo structure</li>
+        </ul>
+      </li>
+      <li>Testing:
+        <ul>
+          <li>Jest</li>
+          <li>Jest Expo preset</li>
+          <li>React Test Renderer</li>
+        </ul>
+      </li>
+      <li>Tools:
+        <ul>
+          <li>Biome (linting and formatting)</li>
+          <li>Babel (with module resolver)</li>
+          <li>Metro bundler</li>
+        </ul>
+      </li>
+      <li>Bible Data:
+        <ul>
+          <li>KJV and NIV Bible translations</li>
+          <li>Interlinear Bible data</li>
+          <li>Strong's Concordance (Greek & Hebrew lexicons)</li>
+          <li>Greek utilities library</li>
+        </ul>
+      </li>
+    </ul>
+  </section>
+
+  <section id="overview">
+    <h2>Overview</h2>
+    <meta name="importance" content="high" />
+    <!-- 
+      DO NOT REMOVE: This section provides critical context for the entire document.
+      You may update the content if project guidelines change, but maintain the overall structure.
+    -->
+    <p>
+      This file contains key information about the tasks that you are
+      currently working on.
+    </p>
+    <ul>
+      <li>Each task should be about 1-3 story points</li>
+      <li>
+        If modifying existing functionality, do some research about existing
+        function names, entities, naming enums, and key interface names and
+        properties.
+      </li>
+      <li>
+        Plan and include key details into each task for better consistency
+        across tasks
+      </li>
+      <li>Update progress markers ([x], [.], [ ]) as you complete tasks</li>
+    </ul>
+  </section>
+
+  <section id="project-structure">
+    <h2>Project Structure</h2>
+    <meta name="importance" content="high" />
+    <!-- 
+      DO NOT REMOVE: This section outlines the critical project structure.
+      - Keep this structure updated as new components or modules are added
+      - Maintain consistent naming conventions
+      - Document any structural changes
+
+      Structure Documentation Guidelines:
+      - Focus on documenting:
+        * Feature-specific directories and their purpose
+        * Key architectural components (e.g. workspace packages)
+        * Critical implementation locations such as:
+          - Convex backend directory
+          - React components directory
+          - Shared utilities
+      - Omit auxiliary files (e.g., framework configuration files, assets) unless they are
+        critical to domain related feature implementation
+
+      Naming Conventions:
+      - React Components: PascalCase (e.g., BibleChapterView.tsx)
+      - Utility functions: camelCase (e.g., verseTokenizer.ts)
+      - Database tables: camelCase (e.g., memoryVerses, userFriendships)
+      - Convex functions: camelCase (e.g., getMemoryVerses, createUserInvite)
+      - Type definitions: PascalCase (e.g., BibleVersionId, BibleCursor)
+      - Constants: UPPER_SNAKE_CASE (e.g., BIBLE_BOOKS_ORDERED_LIST)
+      - Enums: PascalCase (e.g., BibleBookEnum)
+      - Store files: kebab-case (e.g., bible-store.ts, settings-store.ts)
+      - Hook files: camelCase with 'use' prefix (e.g., useBibleStore, useThemeColors)
+    -->
+    <h3>Directory Structure</h3>
+    <pre>
+/
+├── apps/
+│   └── word-for-word/             # React Native Expo application
+│       ├── app/                   # Expo Router pages (file-based routing)
+│       │   ├── _layout.tsx        # Root layout
+│       │   ├── (tabs)/            # Tab navigation
+│       │   └── *.tsx              # Screen components
+│       ├── assets/                # Static assets
+│       │   ├── bible-en/          # Bible translation data (KJV, NIV)
+│       │   ├── interlinear/       # Interlinear Bible data
+│       │   ├── lexicon/           # Strong's Concordance data
+│       │   ├── fonts/             # Custom fonts
+│       │   └── images/            # App icons and images
+│       ├── src/
+│       │   ├── components/        # UI components
+│       │   │   ├── core/          # Core UI components (TText, TView, etc.)
+│       │   │   ├── auth/          # Authentication components
+│       │   │   ├── navigation/    # Navigation components
+│       │   │   └── settings/      # Settings components
+│       │   ├── stores/            # Zustand state stores
+│       │   │   ├── bible-store.ts # Bible data and navigation state
+│       │   │   └── settings-store.ts # App settings state
+│       │   ├── hooks/             # Custom React hooks
+│       │   ├── services/          # External service integrations
+│       │   ├── utils/             # Utility functions
+│       │   ├── constants/         # App constants
+│       │   ├── consts/            # Additional constants
+│       │   ├── libraries/         # Third-party library integrations
+│       │   └── use-cases/         # Business logic use cases
+│       ├── types/                 # TypeScript type definitions
+│       └── scripts/               # Build and utility scripts
+│
+├── services/
+│   └── backend/                   # Backend service
+│       ├── convex/                # Convex backend
+│       │   ├── _generated/        # Auto-generated Convex files
+│       │   ├── schema.ts          # Database schema
+│       │   ├── auth.ts            # Authentication logic
+│       │   ├── bible.ts           # Bible-related functions
+│       │   ├── users.ts           # User management
+│       │   ├── memoryVerses.ts    # Memory verse functionality
+│       │   ├── messages.ts        # Messaging system
+│       │   ├── groups.ts          # Group management
+│       │   ├── invites.ts         # User invitation system
+│       │   ├── pushNotifications.ts # Push notification handling
+│       │   ├── sessionLogger.ts   # Session tracking
+│       │   ├── userNotifications.ts # User notification system
+│       │   ├── crons.ts           # Scheduled tasks
+│       │   ├── http.ts            # HTTP endpoints
+│       │   ├── telegram.ts        # Telegram integration
+│       │   └── models/            # Data models
+│       │       ├── bible/         # Bible-related models
+│       │       └── user/          # User-related models
+│       └── src/                   # Backend source code
+│           ├── domain/            # Domain entities
+│           ├── features/          # Feature implementations
+│           ├── infra/             # Infrastructure code
+│           └── utils/             # Backend utilities
+│
+├── common/                        # Shared code between frontend and backend
+│   ├── assets/                    # Shared assets
+│   ├── scripts/                   # Shared scripts
+│   └── utils/                     # Shared utilities
+│
+└── docs/                          # Documentation
+      </pre>
+
+    <section id="process">
+      <h2>Process</h2>
+      <meta name="importance" content="high" />
+      <!-- 
+      DO NOT REMOVE: This section outlines the critical process steps.
+      Update only if the process changes, otherwise keep as is.
+    -->
+      <ol>
+        <li>Update the tech stack before proceeding with any tasks.</li>
+        <li>Do some research for the feature.</li>
+        <li>
+          Create a list of technical tasks with important information (file
+          names, function names, component names, interface names, and enums
+          where applicable)
+        </li>
+        <li>Start working on each task one by one.</li>
+        <li>Run the type checks to ensure that everything is working.</li>
+        <li>Run the tests to ensure that everything is working.</li>
+        <li>
+          Provide an update for the latest state of the task list and update
+          this file.
+        </li>
+      </ol>
+    </section>
+
+    <section id="legend">
+      <h2>Legend</h2>
+      <meta name="importance" content="medium" />
+      <!-- 
+      This legend explains the task status markers.
+      Update only if the status marking system changes.
+    -->
+      <ul>
+        <li>[ ] - Not started</li>
+        <li>[.] - In progress</li>
+        <li>[x] - Completed</li>
+      </ul>
+    </section>
+
+    <section id="technical-tasks">
+      <h2>Technical Tasks</h2>
+      <meta name="importance" content="high" />
+      <!-- 
+      IMPORTANT: This section contains the actual task lists.
+      - Update the status markers ([ ], [.], [x]) as tasks progress.
+      - Add new tasks or versions as needed.
+      - Keep the structure (headings, subheadings) consistent.
+      - Ensure all task descriptions include relevant details such as:
+        * File names
+        * Function names
+        * Component names
+        * Interface / Type / Enum names (where applicable)
+        * Enum Values (where applicable)
+      - Do not include tests in the list of tasks.
+      - The implementation notes at the end of each version provide context and should be updated as needed.
+      - When adding a new version, create a new section with appropriate metadata.
+
+      ⚠️ Implementation Reminders:
+      - Keep changes incremental - Make small, focused changes that are easy to validate
+      - Verify before proceeding - After creating each file, verify it compiles before moving on
+      - Follow existing patterns - Match the code style and patterns already in the codebase
+      - Preserve existing code - Be very careful when modifying existing files
+      - Minimal dependencies - Avoid adding unnecessary dependencies
+      - Implementation order - Start with data models, then backend, then frontend core components, then integration
+      - Type safety first - Ensure strong typing throughout the implementation
+      - Complete one feature at a time - Implement features vertically (backend to frontend) before moving to the next
+      - Bible data handling - Always validate Bible references and handle missing data gracefully
+      - Mobile-first design - Consider mobile UX patterns and performance
+      - Offline capability - Design for potential offline usage with Bible data
+      - Accessibility - Ensure Bible text is readable and navigation is accessible
+      - Theme compatibility - Use ThemeColors.ts for consistent theming across light/dark modes
+    -->
+      
+      <!-- Add new task sections here as needed -->
+      
+    </section>
+
+    <section id="project-overview">
+      <h2>Project Overview</h2>
+      <meta name="importance" content="high" />
+      <!-- 
+        DO NOT REMOVE: This section provides critical context for the Bible study application.
+        Update this section as new features are added or existing features are modified.
+      -->
+      <p>
+        This is a Bible study mobile application that helps users study the Bible with friends.
+        The app provides features for reading, memorizing, and discussing Bible verses.
+      </p>
+      
+      <h3>Key Features</h3>
+      <ul>
+        <li>Bible Reading:
+          <ul>
+            <li>Multiple Bible translations (KJV, NIV)</li>
+            <li>Interlinear Bible with Strong's Concordance</li>
+            <li>Greek and Hebrew lexicon integration</li>
+            <li>Verse-by-verse reading with word highlighting</li>
+          </ul>
+        </li>
+        <li>Memory Verses:
+          <ul>
+            <li>Save and track memory verses</li>
+            <li>Practice reciting verses</li>
+            <li>Progress tracking and statistics</li>
+          </ul>
+        </li>
+        <li>Social Features:
+          <ul>
+            <li>Friend system with invitations</li>
+            <li>Group Bible study sessions</li>
+            <li>Messaging and prayer requests</li>
+            <li>Session logging and sharing</li>
+          </ul>
+        </li>
+        <li>Study Tools:
+          <ul>
+            <li>Word search and concordance</li>
+            <li>Cross-references and related verses</li>
+            <li>Session history and analytics</li>
+            <li>Customizable reading settings</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h3>Domain Concepts</h3>
+      <ul>
+        <li>Bible Data:
+          <ul>
+            <li>BibleVersionId: "niv" | "kjv"</li>
+            <li>BibleCursor: Navigation position in Bible</li>
+            <li>BibleBookEnum: All 66 books of the Bible</li>
+            <li>Strong's Numbers: Greek/Hebrew word references</li>
+          </ul>
+        </li>
+        <li>User Management:
+          <ul>
+            <li>User authentication via Convex Auth</li>
+            <li>User profiles and usernames</li>
+            <li>Friendship system</li>
+            <li>Group membership and roles</li>
+          </ul>
+        </li>
+        <li>Study Features:
+          <ul>
+            <li>Memory verses with practice tracking</li>
+            <li>Session logging for study analytics</li>
+            <li>Verse ranges and selections</li>
+            <li>Study progress and statistics</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+</body>
+
+</html>
