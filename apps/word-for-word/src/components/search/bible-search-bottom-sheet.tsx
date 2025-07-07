@@ -19,13 +19,15 @@ interface BibleSearchBottomSheetProps {
     onClose: () => void;
     cursorHandler: BibleCursorHandler;
     initialQuery?: string;
+    onSearchResultSelect?: (result: SearchResultItem) => void;
 }
 
 export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     isVisible,
     onClose,
     cursorHandler,
-    initialQuery = ""
+    initialQuery = "",
+    onSearchResultSelect
 }) => {
     const themeColors = useThemeColors();
     const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -67,9 +69,12 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             version: result.version
         });
 
+        // Trigger search result highlighting
+        onSearchResultSelect?.(result);
+
         // Close the search bottom sheet
         onClose();
-    }, [cursorHandler, onClose]);
+    }, [cursorHandler, onClose, onSearchResultSelect]);
 
     // Handle search input
     const handleSearch = useCallback((query: string) => {

@@ -8,7 +8,7 @@ import { toSuperscript, useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { mapBookIdsToName } from "@common/utils/bible-data-utils";
 import { isDefined } from "@common/utils/typecheck";
-import React, { useCallback, useEffect, useImperativeHandle, useRef } from "react";
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View, DimensionValue, useWindowDimensions } from "react-native";
 import Reanimated, { useDerivedValue } from "react-native-reanimated";
 import { SharedValue } from "react-native-reanimated";
@@ -24,6 +24,7 @@ type BibleChapterView = {
 
 export type BibleChapterViewRef = {
   scrollToVerse: (verse: number) => void;
+  highlightSearchResult: (verse: number) => void;
 };
 
 const BibleChapterView = React.forwardRef<
@@ -37,6 +38,22 @@ const BibleChapterView = React.forwardRef<
   const verseYCoordsRef = useRef<{ [verseIdx: number]: number }>({});
   const scrollYRef = useRef(0);
   const scrollViewHeightRef = useRef(0);
+
+  // Search result highlighting state
+  const [searchResultHighlight, setSearchResultHighlight] = useState<{
+    verses: number[];
+    timestamp: number;
+  } | null>(null);
+
+  // Auto-clear search result highlighting after 3 seconds
+  useEffect(() => {
+    if (searchResultHighlight) {
+      const timer = setTimeout(() => {
+        setSearchResultHighlight(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchResultHighlight]);
 
   useEffect(() => {
     const unmount = sessionLogger.mountBibleChapterView(cursorHandler, verseYCoordsRef, scrollYRef, scrollViewHeightRef);
@@ -60,6 +77,12 @@ const BibleChapterView = React.forwardRef<
         }
 
         scrollViewRef.current?.scrollTo({ y: verseY, animated: false });
+      },
+      highlightSearchResult: (verse: number) => {
+        setSearchResultHighlight({
+          verses: [verse],
+          timestamp: Date.now()
+        });
       },
     }),
     [],
@@ -127,7 +150,9 @@ const BibleChapterView = React.forwardRef<
             }
           }}>
           {verses.map((verse, i) => {
-            const isHighlighted = highlightedVerses?.includes(i + 1);;
+            // Combine external highlighting with internal search result highlighting
+            const isHighlighted = highlightedVerses?.includes(i + 1) ||
+              searchResultHighlight?.verses.includes(i + 1);
             return (
               <React.Fragment key={verse.name}>
                 <TText

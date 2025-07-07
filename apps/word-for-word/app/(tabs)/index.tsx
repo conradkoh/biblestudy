@@ -15,6 +15,7 @@ import { useSessionLogger } from "@/src/hooks/useSessionLogger";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
+import type { SearchResultItem } from "@/src/types/search";
 import {
   type BibleCursor,
   getVersesFromRange,
@@ -76,6 +77,12 @@ export default function ReadScreen() {
   const focusCursorHandler = useBibleCursorHandler();
 
   useSessionLogger();
+
+  // Handle search result selection to trigger highlighting
+  const handleSearchResultSelect = useCallback((result: SearchResultItem) => {
+    // Trigger highlighting in BibleChapterView
+    bibleChapterViewRef.current?.highlightSearchResult(result.verse);
+  }, []);
 
   function onPressVerse(verse: number) {
 
@@ -237,6 +244,7 @@ export default function ReadScreen() {
           isVisible={isSearchVisible}
           onClose={() => setIsSearchVisible(false)}
           cursorHandler={cursorHandler}
+          onSearchResultSelect={handleSearchResultSelect}
         />
         <VerseDetailBottomSheet
           isOpen={showFocusVerseSingle}
