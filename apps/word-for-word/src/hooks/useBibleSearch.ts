@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import type { SearchQuery, SearchContext, SearchResult, SearchResultItem } from "@/src/types/search";
 import { SearchStrategyType } from "@/src/types/search";
-import { getSearchStrategy, getAvailableStrategyTypes } from "@/src/utils/search/search-registry";
 import { executeSearchWithFallback } from "@/src/utils/search/search-composer";
 import { useBibleStore } from "@/src/stores/bible-store";
 import type { BibleCursor } from "@common/utils/bible-data-utils";

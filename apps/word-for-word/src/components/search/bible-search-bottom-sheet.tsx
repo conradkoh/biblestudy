@@ -47,7 +47,6 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     error,
     performSearch,
     clearResults,
-    setStrategy,
     loadMore,
     setQuery
   } = useBibleSearch(cursorHandler.cursor);
@@ -84,12 +83,6 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       clearResults();
     }
   }, [performSearch, selectedStrategy, clearResults]);
-
-  // Handle strategy change
-  const handleStrategyChange = useCallback((strategy: any) => {
-    setStrategy(strategy);
-  }, [setStrategy]);
-
   // Handle clear
   const handleClear = useCallback(() => {
     clearResults();
@@ -153,8 +146,6 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             onSearch={handleSearch}
             onClear={handleClear}
             placeholder="Search for words, phrases, or topics..."
-            strategyType={selectedStrategy}
-            onStrategyChange={handleStrategyChange}
             isLoading={isLoading}
           />
         </TView>

@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { SearchStrategyType } from "@/src/types/search";
-import { getStrategyInfo } from "@/src/utils/search/search-registry";
 
 interface BibleSearchInputProps {
   value: string;
@@ -26,8 +24,6 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
   onClear,
   placeholder = "Search Bible...",
   debounceMs = 300,
-  strategyType,
-  onStrategyChange,
   isLoading = false,
   className = ""
 }) => {
@@ -67,10 +63,6 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
       clearTimeout(debounceTimeout);
     }
   }, [onClear, debounceTimeout]);
-
-  // Get strategy info for display
-  const strategyInfo = strategyType ? getStrategyInfo(strategyType) : null;
-
   return (
     <TView
       className={`flex-row items-center px-3 py-2 rounded-lg ${className}`}
@@ -107,37 +99,6 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
         returnKeyType="search"
         clearButtonMode="never"
       />
-
-      {/* Strategy Indicator (if provided) */}
-      {strategyInfo && (
-        <TouchableOpacity
-          onPress={() => {
-            // Cycle through available strategies
-            const strategies: SearchStrategyType[] = [
-              "keyword" as SearchStrategyType,
-              "simple_substring" as SearchStrategyType,
-            ];
-            const currentIndex = strategies.indexOf(strategyType || SearchStrategyType.KEYWORD);
-            const nextIndex = (currentIndex + 1) % strategies.length;
-            const nextStrategy = strategies[nextIndex];
-            if (nextStrategy) {
-              onStrategyChange?.(nextStrategy);
-            }
-          }}
-          hitSlop={HITSLOP_DEFAULT}
-          style={{ marginRight: 8 }}
-        >
-          <TText
-            className="text-xs px-2 py-1 rounded"
-            style={{
-              backgroundColor: themeColors.surfaceTertiary,
-              color: themeColors.textSecondary,
-            }}
-          >
-            {strategyInfo.name}
-          </TText>
-        </TouchableOpacity>
-      )}
 
       {/* Loading Indicator */}
       {isLoading && (

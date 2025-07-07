@@ -60,19 +60,5 @@ export function initializeSearchRegistry(): void {
   registerSearchStrategy(simpleSubstringStrategy);
   registerSearchStrategy(keywordStrategy);
 }
-
-/**
- * Get strategy information for UI display
- */
-export function getStrategyInfo(type: SearchStrategyType): { name: string; description: string } | null {
-  const strategy = getSearchStrategy(type);
-  if (!strategy) return null;
-
-  return {
-    name: strategy.name,
-    description: strategy.description
-  };
-}
-
 // Initialize the registry when this module is loaded
 initializeSearchRegistry(); 
