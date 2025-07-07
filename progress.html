@@ -471,6 +471,17 @@
               <li>Quality threshold formula: `Math.max(2.0, Math.min(5.0, queryWords.length * 1.5))`</li>
             </ul>
           </li>
+          <li>[x] Fixed search strategy change functionality and default strategy
+            <ul>
+              <li>File: `apps/word-for-word/src/hooks/useBibleSearch.ts`</li>
+              <li>File: `apps/word-for-word/src/components/search/bible-search-input.tsx`</li>
+              <li>Feature: Changed default search strategy from SIMPLE_SUBSTRING to KEYWORD</li>
+              <li>Feature: Fixed strategy change to automatically redo search with current query</li>
+              <li>Feature: Updated strategy cycling order to prioritize keyword search</li>
+              <li>Fix: Removed dependency on selectedStrategy in performSearch to prevent stale closures</li>
+              <li>Improvement: Strategy changes now immediately trigger new search with existing query</li>
+            </ul>
+          </li>
         </ul>
       </section>
       

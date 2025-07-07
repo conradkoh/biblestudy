@@ -32,7 +32,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [selectedStrategy, setSelectedStrategy] = useState<SearchStrategyType>(SearchStrategyType.SIMPLE_SUBSTRING);
+    const [selectedStrategy, setSelectedStrategy] = useState<SearchStrategyType>(SearchStrategyType.KEYWORD);
     const [totalCount, setTotalCount] = useState(0);
     const [hasMore, setHasMore] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
             setIsLoading(false);
             isSearching.current = false;
         }
-    }, [searchQuery, selectedStrategy, currentCursor, createSearchContext]);
+    }, [searchQuery, currentCursor, createSearchContext]);
 
     // Load more results
     const loadMore = useCallback(async () => {
@@ -147,11 +147,11 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
     // Set strategy
     const setStrategy = useCallback((strategy: SearchStrategyType) => {
         setSelectedStrategy(strategy);
-        // Optionally perform search with new strategy if there's a current query
-        if (searchQuery.trim() && lastQuery) {
+        // Redo search with new strategy if there's a current query
+        if (searchQuery.trim()) {
             performSearch(searchQuery, strategy);
         }
-    }, [searchQuery, lastQuery, performSearch]);
+    }, [searchQuery, performSearch]);
 
     // Set query
     const setQuery = useCallback((query: string) => {

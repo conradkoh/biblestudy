@@ -114,10 +114,10 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
                     onPress={() => {
                         // Cycle through available strategies
                         const strategies: SearchStrategyType[] = [
-                            "simple_substring" as SearchStrategyType,
                             "keyword" as SearchStrategyType,
+                            "simple_substring" as SearchStrategyType,
                         ];
-                        const currentIndex = strategies.indexOf(strategyType || SearchStrategyType.SIMPLE_SUBSTRING);
+                        const currentIndex = strategies.indexOf(strategyType || SearchStrategyType.KEYWORD);
                         const nextIndex = (currentIndex + 1) % strategies.length;
                         const nextStrategy = strategies[nextIndex];
                         if (nextStrategy) {
