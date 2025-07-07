@@ -1,0 +1,3 @@
+[submodule "apps/word-for-word/src/libraries/strongs"]
+	path = apps/word-for-word/src/libraries/strongs
+	url = https://github.com/openscriptures/strongs.git
