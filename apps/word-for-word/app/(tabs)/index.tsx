@@ -202,7 +202,7 @@ export default function ReadScreen() {
           >
             <TouchableOpacity
               className="flex flex-row items-center justify-center flex-1 mx-2"
-              onPress={() => setIsSearchVisible(true)}
+              onPress={() => setIsChapterVerseSelectorVisible(true)}
             >
               <TText className="font-bold text-[18px]">
                 {mapBookIdsToName[cursorHandler.cursor.bookId]} Chapter{" "}
