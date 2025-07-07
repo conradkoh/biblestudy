@@ -3,6 +3,7 @@ import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
+import { AnimatedLoader } from "@/src/components/core/AnimatedLoader";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import type { SearchResultItem } from "@/src/types/search";
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
@@ -18,8 +19,6 @@ interface BibleSearchResultsProps {
   emptyStateMessage?: string;
   className?: string;
 }
-
-
 
 export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   results,
@@ -46,38 +45,55 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
     }
   }, [hasMore, onLoadMore, isLoading]);
 
-  const renderEmptyState = useCallback(() => (
-    <TView className="flex-1 items-center justify-center py-4">
-      <Ionicons
-        name="search"
-        size={32}
-        style={{ color: themeColors.textTertiary, marginBottom: 12 }}
-      />
-      <TText
-        className="font-semibold text-center"
-        style={{ color: themeColors.textSecondary }}
-      >
-        {emptyStateMessage}
-      </TText>
-    </TView>
-  ), [emptyStateMessage, themeColors]);
+  const renderEmptyState = useCallback(() => {
+    if (isLoading) {
+      return (
+        <TView className="flex-1 items-center justify-center py-16 h-full">
+          <AnimatedLoader
+            size={32}
+            color={themeColors.textTertiary}
+            iconName="search"
+            animationType="bounce"
+            duration={1200}
+            style={{ marginBottom: 12 }}
+          />
+          <TText
+            className="font-semibold text-center"
+            style={{ color: themeColors.textSecondary }}
+          >
+            Searching...
+          </TText>
+        </TView>
+      );
+    }
+
+    return (
+      <TView className="flex-1 items-center justify-center py-4">
+        <Ionicons
+          name="search"
+          size={32}
+          style={{ color: themeColors.textTertiary, marginBottom: 12 }}
+        />
+        <TText
+          className="font-semibold text-center"
+          style={{ color: themeColors.textSecondary }}
+        >
+          {emptyStateMessage}
+        </TText>
+      </TView>
+    );
+  }, [isLoading, emptyStateMessage, themeColors]);
 
   const renderFooter = useCallback(() => {
-    if (!hasMore) return null;
+    if (!hasMore || isLoading) return null;
 
     return (
       <TView className="py-2 items-center">
-        {isLoading ? (
-          <TText style={{ color: themeColors.textTertiary }}>
-            Loading...
+        <TouchableOpacity onPress={handleLoadMore}>
+          <TText style={{ color: themeColors.textHighlight }}>
+            Load More
           </TText>
-        ) : (
-          <TouchableOpacity onPress={handleLoadMore}>
-            <TText style={{ color: themeColors.textHighlight }}>
-              Load More
-            </TText>
-          </TouchableOpacity>
-        )}
+        </TouchableOpacity>
       </TView>
     );
   }, [hasMore, isLoading, handleLoadMore, themeColors]);
@@ -85,7 +101,7 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   return (
     <TView className={twMerge(`flex-1`, className)}>
       <BottomSheetFlatList
-        data={results}
+        data={isLoading ? [] : results}
         renderItem={renderItem}
         keyExtractor={(item) => `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`}
         contentContainerStyle={{ padding: 2 }}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TText } from "@/src/components/core/TText";
@@ -32,6 +32,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   const themeColors = useThemeColors();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const renderBackdrop = useBottomSheetBackdrop({ opacity: 0.3 });
+  const [isDebouncing, setIsDebouncing] = useState(false);
 
   // Snap points for the bottom sheet
   const snapPoints = useMemo(() => ["90%"], []);
@@ -83,11 +84,17 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       clearResults();
     }
   }, [performSearch, selectedStrategy, clearResults]);
+
   // Handle clear
   const handleClear = useCallback(() => {
     clearResults();
     setQuery("");
   }, [clearResults, setQuery]);
+
+  // Handle debounce state change
+  const handleDebounceStateChange = useCallback((isDebouncing: boolean) => {
+    setIsDebouncing(isDebouncing);
+  }, []);
 
   // Show/hide bottom sheet based on visibility prop
   useEffect(() => {
@@ -148,11 +155,12 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             onClear={handleClear}
             placeholder="Search for words, phrases, or topics..."
             isLoading={isLoading}
+            onDebounceStateChange={handleDebounceStateChange}
           />
         </TView>
 
         {/* Results Count */}
-        {totalCount > 0 && (
+        {!(isLoading || isDebouncing) && totalCount > 0 && (
           <TView className="mb-3">
             <TText
               className="text-sm"
@@ -180,7 +188,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
           <BibleSearchResults
             results={searchResults}
             onResultPress={handleResultPress}
-            isLoading={isLoading}
+            isLoading={isLoading || isDebouncing}
             hasMore={hasMore}
             onLoadMore={loadMore}
             emptyStateMessage={

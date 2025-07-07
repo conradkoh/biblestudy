@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TView } from "@/src/components/core/TView";
+import { AnimatedLoader } from "@/src/components/core/AnimatedLoader";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import { SearchStrategyType } from "@/src/types/search";
@@ -16,6 +17,7 @@ interface BibleSearchInputProps {
   strategyType?: SearchStrategyType;
   onStrategyChange?: (strategy: SearchStrategyType) => void;
   isLoading?: boolean;
+  onDebounceStateChange?: (isDebouncing: boolean) => void;
   className?: string;
 }
 
@@ -26,11 +28,13 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
   placeholder = "Search Bible...",
   debounceMs = 300,
   isLoading = false,
+  onDebounceStateChange,
   className = ""
 }) => {
   const themeColors = useThemeColors();
   const [inputValue, setInputValue] = useState(value);
   const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isDebouncing, setIsDebouncing] = useState(false);
 
   // Update input value when prop changes
   useEffect(() => {
@@ -43,12 +47,19 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
       clearTimeout(debounceTimeout);
     }
 
+    // Set debouncing state to true when starting a new debounced search
+    setIsDebouncing(true);
+    onDebounceStateChange?.(true);
+
     const timeout = setTimeout(() => {
       onSearch(query);
+      // Set debouncing state to false when search is executed
+      setIsDebouncing(false);
+      onDebounceStateChange?.(false);
     }, debounceMs);
 
     setDebounceTimeout(timeout);
-  }, [onSearch, debounceMs, debounceTimeout]);
+  }, [onSearch, debounceMs, debounceTimeout, onDebounceStateChange]);
 
   // Handle input change
   const handleInputChange = useCallback((text: string) => {
@@ -63,7 +74,20 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
-  }, [onClear, debounceTimeout]);
+    // Clear debouncing state when clearing
+    setIsDebouncing(false);
+    onDebounceStateChange?.(false);
+  }, [onClear, debounceTimeout, onDebounceStateChange]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+    };
+  }, [debounceTimeout]);
+
   return (
     <TView
       className={`flex-row items-center px-3 py-2 rounded-lg ${className}`}
@@ -78,7 +102,7 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
         name="search"
         size={20}
         style={{
-          color: isLoading ? themeColors.textTertiary : themeColors.textSecondary,
+          color: (isLoading || isDebouncing) ? themeColors.textTertiary : themeColors.textSecondary,
           marginRight: 8
         }}
       />
@@ -102,19 +126,8 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
         clearButtonMode="never"
       />
 
-      {/* Loading Indicator */}
-      {isLoading && (
-        <View style={{ marginRight: 8 }}>
-          <Ionicons
-            name="ellipsis-horizontal"
-            size={20}
-            style={{ color: themeColors.textTertiary }}
-          />
-        </View>
-      )}
-
       {/* Clear Button */}
-      {inputValue.length > 0 && !isLoading && (
+      {inputValue.length > 0 && !isLoading && !isDebouncing && (
         <TouchableOpacity
           onPress={handleClear}
           hitSlop={HITSLOP_DEFAULT}
