@@ -116,28 +116,6 @@ export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
         <TView>
           {renderHighlightedText(item.text, item.matches)}
         </TView>
-
-        {/* Context (simplified) */}
-        {item.context && (item.context.previousVerse || item.context.nextVerse) && (
-          <TView className="mt-1 pt-1" style={{ borderTopColor: themeColors.border, borderTopWidth: 0.5 }}>
-            {item.context.previousVerse && (
-              <TText
-                className="text-xs"
-                style={{ color: themeColors.textSecondary }}
-              >
-                ...{item.context.previousVerse}
-              </TText>
-            )}
-            {item.context.nextVerse && (
-              <TText
-                className="text-xs"
-                style={{ color: themeColors.textSecondary }}
-              >
-                {item.context.nextVerse}...
-              </TText>
-            )}
-          </TView>
-        )}
       </TView>
     </TouchableOpacity>
   );

@@ -371,31 +371,3 @@ export function highlightMatches(text: string, matches: Array<{ startIndex: numb
 
   return result;
 }
-
-/**
- * Gets context around a match (previous and next words)
- * 
- * @example
- * getMatchContext("The wages of sin is death", 4, 10, 2)
- * // Returns: { before: "The", after: "of sin is" }
- * 
- * @example
- * getMatchContext("For God so loved the world", 4, 7, 1)
- * // Returns: { before: "so", after: "the" }
- */
-export function getMatchContext(text: string, matchStartIndex: number, matchEndIndex: number, contextWords: number = 3): {
-  before: string;
-  after: string;
-} {
-  const words = text.split(/\s+/);
-  const matchStart = text.substring(0, matchStartIndex).split(/\s+/).length - 1;
-  const matchEnd = text.substring(0, matchEndIndex).split(/\s+/).length - 1;
-
-  const beforeStart = Math.max(0, matchStart - contextWords);
-  const afterEnd = Math.min(words.length, matchEnd + contextWords + 1);
-
-  return {
-    before: words.slice(beforeStart, matchStart).join(' '),
-    after: words.slice(matchEnd + 1, afterEnd).join(' ')
-  };
-} 

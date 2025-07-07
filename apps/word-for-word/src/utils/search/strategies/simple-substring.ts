@@ -1,6 +1,6 @@
 import type { SearchQuery, SearchContext, SearchResult, SearchResultItem, SearchMatch } from "@/src/types/search";
 import { SearchStrategyType } from "@/src/types/search";
-import { findMatches, calculateRelevanceScore, getMatchContext } from "../text-processor";
+import { findMatches, calculateRelevanceScore } from "../text-processor";
 import type { BookId } from "@common/utils/bible-data-utils";
 import { bookIds } from "@common/utils/bible-data-utils";
 
@@ -67,9 +67,6 @@ export const simpleSubstringSearch = async (
             bestMatch.endIndex
           );
 
-          // Get context around the first match
-          const context = getMatchContext(verseText, bestMatch.startIndex, bestMatch.endIndex);
-
           const resultItem: SearchResultItem = {
             bookId,
             chapter: chapterNumber,
@@ -77,11 +74,7 @@ export const simpleSubstringSearch = async (
             version,
             text: verseText,
             matches: searchMatches,
-            relevanceScore,
-            context: {
-              previousVerse: context.before,
-              nextVerse: context.after
-            }
+            relevanceScore
           };
 
           results.push(resultItem);

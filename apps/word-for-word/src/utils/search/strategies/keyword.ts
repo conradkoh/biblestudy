@@ -7,7 +7,6 @@ import {
   calculateRelevanceScore,
   calculateImprovedRelevanceScore,
   findOrderedSequenceMatch,
-  getMatchContext,
   normalizeText
 } from "../text-processor";
 import type { BookId } from "@common/utils/bible-data-utils";
@@ -111,27 +110,17 @@ export const keywordSearch = async (
             }).filter((match: SearchMatch | null): match is SearchMatch => match !== null);
 
             if (searchMatches.length > 0) {
-              // Get context around the first match
-              const firstMatch = searchMatches[0];
-              if (firstMatch) {
-                const context = getMatchContext(verseText, firstMatch.startIndex, firstMatch.endIndex);
+              const resultItem: SearchResultItem = {
+                bookId,
+                chapter: chapterNumber,
+                verse: verseNumber,
+                version,
+                text: verseText,
+                matches: searchMatches,
+                relevanceScore
+              };
 
-                const resultItem: SearchResultItem = {
-                  bookId,
-                  chapter: chapterNumber,
-                  verse: verseNumber,
-                  version,
-                  text: verseText,
-                  matches: searchMatches,
-                  relevanceScore,
-                  context: {
-                    previousVerse: context.before,
-                    nextVerse: context.after
-                  }
-                };
-
-                allResults.push(resultItem);
-              }
+              allResults.push(resultItem);
             }
           }
         }
