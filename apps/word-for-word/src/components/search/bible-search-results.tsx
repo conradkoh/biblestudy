@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
@@ -18,6 +18,7 @@ interface BibleSearchResultsProps {
   onLoadMore?: () => void;
   emptyStateMessage?: string;
   className?: string;
+  isTyping?: boolean;
 }
 
 export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
@@ -27,9 +28,12 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   hasMore = false,
   onLoadMore,
   emptyStateMessage = "No results found",
-  className = ""
+  className = "",
+  isTyping = false
 }) => {
   const themeColors = useThemeColors();
+
+  console.log(isTyping);
 
   const renderItem = useCallback(({ item }: { item: SearchResultItem }) => (
     <SearchResultItemComponent
@@ -40,49 +44,15 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   ), [onResultPress, themeColors]);
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore && onLoadMore && !isLoading) {
+    if (hasMore && onLoadMore && !isLoading && !isTyping) {
       onLoadMore();
     }
-  }, [hasMore, onLoadMore, isLoading]);
+  }, [hasMore, onLoadMore, isLoading, isTyping]);
 
-  const renderEmptyState = useCallback(() => {
-    if (isLoading) {
-      return (
-        <TView className="flex-1 items-center justify-center py-16 h-full">
-          <AnimatedLoader
-            size={32}
-            color={themeColors.textTertiary}
-            iconName="search"
-            animationType="bounce"
-            duration={1200}
-            style={{ marginBottom: 12 }}
-          />
-          <TText
-            className="font-semibold text-center"
-            style={{ color: themeColors.textSecondary }}
-          >
-            Searching...
-          </TText>
-        </TView>
-      );
-    }
-
-    return (
-      <TView className="flex-1 items-center justify-center py-4">
-        <Ionicons
-          name="search"
-          size={32}
-          style={{ color: themeColors.textTertiary, marginBottom: 12 }}
-        />
-        <TText
-          className="font-semibold text-center"
-          style={{ color: themeColors.textSecondary }}
-        >
-          {emptyStateMessage}
-        </TText>
-      </TView>
-    );
-  }, [isLoading, emptyStateMessage, themeColors]);
+  const keyExtractor = useCallback((item: SearchResultItem) =>
+    `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`,
+    []
+  );
 
   const renderFooter = useCallback(() => {
     if (!hasMore || isLoading) return null;
@@ -101,12 +71,11 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   return (
     <TView className={twMerge(`flex-1`, className)}>
       <BottomSheetFlatList
-        data={isLoading ? [] : results}
+        data={results}
         renderItem={renderItem}
-        keyExtractor={(item) => `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`}
+        keyExtractor={keyExtractor}
         contentContainerStyle={{ padding: 2 }}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyState}
         ListFooterComponent={renderFooter}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}
@@ -115,7 +84,36 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
         windowSize={15}
         initialNumToRender={10}
         getItemLayout={undefined}
+        style={{ opacity: isTyping || isLoading || results.length === 0 ? 0 : 1 }}
       />
+
+      {/* Loading overlay while typing */}
+      {(isTyping || isLoading || results.length === 0) && (
+        <View
+          className="absolute h-full w-full items-center justify-center"
+        >
+          <View className="rounded-lg p-4 items-center">
+            {isTyping || isLoading ? <AnimatedLoader
+              size={32}
+              color={themeColors.textTertiary}
+              iconName="search"
+              animationType="bounce"
+              duration={1200}
+              style={{ marginBottom: 12 }}
+            /> : <Ionicons
+              name="search"
+              size={32}
+              style={{ color: themeColors.textTertiary, marginBottom: 12 }}
+            />}
+            <TText
+              className="font-semibold text-center"
+              style={{ color: themeColors.textSecondary }}
+            >
+              {isTyping || isLoading ? 'Searching...' : emptyStateMessage}
+            </TText>
+          </View>
+        </View>
+      )}
     </TView>
   );
 }; 

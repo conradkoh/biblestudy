@@ -46,6 +46,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     totalCount,
     hasMore,
     error,
+    isInitialLoading,
     performSearch,
     clearResults,
     loadMore,
@@ -55,9 +56,10 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   // Handle bottom sheet changes
   const handleSheetChanges = useCallback((index: number) => {
     if (index === -1) {
+      clearResults();
       onClose();
     }
-  }, [onClose]);
+  }, [onClose, clearResults]);
 
   // Handle result selection
   const handleResultPress = useCallback((result: SearchResultItem) => {
@@ -160,7 +162,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
         </TView>
 
         {/* Results Count */}
-        {!(isLoading || isDebouncing) && totalCount > 0 && (
+        {!isInitialLoading && totalCount > 0 && (
           <TView className="mb-3">
             <TText
               className="text-sm"
@@ -188,7 +190,8 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
           <BibleSearchResults
             results={searchResults}
             onResultPress={handleResultPress}
-            isLoading={isLoading || isDebouncing}
+            isLoading={isLoading}
+            isTyping={isDebouncing}
             hasMore={hasMore}
             onLoadMore={loadMore}
             emptyStateMessage={
