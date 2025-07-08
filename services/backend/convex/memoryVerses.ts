@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 import { isBefore, startOfDay, subDays, subWeeks } from "date-fns";
 import { getVerseNameFormatted, isBookId } from "../../../common/utils/bible-data-utils";
+import { calculateExpirationInfo } from "../../../common/utils/memory-verse-utils";
 import { api, internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { internalAction, internalQuery, mutation, query } from "./_generated/server";
@@ -221,72 +222,81 @@ export const sendMemoryVerseReminders = internalAction({
 
     // Send a notification to each user
     for (const [userId, verses] of Object.entries(versesByUser)) {
+      const now = new Date();
 
-      // Scenarios for push notifications:
-      // 1. Verses that were added in the last 3 days, and have no memory entry for the day
-      // 2. Verses that have have spanned > 2 weeks but the last memory entry was > 1 week ago
-      // We only need to send a notification for one of the verses
-
-      const threeDaysAgo = subDays(startOfDay(new Date()), 3);
-      const oneDayAgo = subDays(startOfDay(new Date()), 1);
-      const startOfToday = startOfDay(new Date());
-
-      // 1. Verses that were added in the last 3 days, and have no memory entry for the day
-      const recentVerses = verses.filter(verse => {
-        const verseCreatedDay = startOfDay(new Date(verse.createdAt));
-        let lastEntryDay = new Date(0);
-        if (verse.memoryEntries.length) {
-          const lastEntry = verse.memoryEntries.sort((a, b) => a.createdAt - b.createdAt)[verse.memoryEntries.length - 1];
-          lastEntryDay = startOfDay(new Date(lastEntry.createdAt));
-        }
-        return isBefore(threeDaysAgo, verseCreatedDay) && isBefore(lastEntryDay, startOfToday);
+      const versesExpiringToday = verses.filter(verse => {
+        const expirationInfo = calculateExpirationInfo(verse.memoryEntries, now);
+        return expirationInfo.daysUntilExpiration === 0;
       });
 
-      if (recentVerses.length) {
-        // randomly pick a verse
-        const randomIndex = Math.floor(Math.random() * recentVerses.length);
-        const randomVerse = recentVerses[randomIndex];
-        if (!isBookId(randomVerse.bookId)) throw new Error(`Invalid bookId: ${randomVerse.bookId}`);
-        const verseName = getVerseNameFormatted({
-          version: randomVerse.version,
-          bookId: randomVerse.bookId,
-          chapter: randomVerse.chapter,
-          verse: randomVerse.verse,
-        });
-
+      if (versesExpiringToday.length > 0) {
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `${verseName}: keep it fresh!`,
-          body: randomVerse.text,
+          title: `${versesExpiringToday.length} verses expiring today!`,
+          body: `You have ${versesExpiringToday.length} verses expiring today!`,
           data: {
             url: "memory-verses-screen",
           },
         });
-
         return;
       }
 
-      // 2. Verses that were memorised > 4 weeks ago, the last memory entry was > 1 week ago
-      const staleVerses = verses.filter(verse => {
-        if (!verse.memoryEntries.length) return false; // Only considered stale if there are memory entries
-        const entries = verse.memoryEntries.sort((a, b) => a.createdAt - b.createdAt);
-
-        const oldestEntry = entries[0];
-        const oldestEntryDay = startOfDay(new Date(oldestEntry?.createdAt ?? 0));
-        const newestEntry = entries[entries.length - 1];
-        const newestEntryDay = startOfDay(new Date(newestEntry?.createdAt ?? 0));
-        const twoWeeksAgo = subWeeks(startOfToday, 2);
-        const oneWeekAgo = subDays(startOfToday, 7);
-        return isBefore(oldestEntryDay, twoWeeksAgo) && isBefore(newestEntryDay, oneWeekAgo);
+      const versesExpiringSoon = verses.filter(verse => {
+        const expirationInfo = calculateExpirationInfo(verse.memoryEntries, now);
+        return expirationInfo.daysUntilExpiration <= 1;
       });
 
+      if (versesExpiringSoon.length > 0) {
+        // send a push notification
+        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+          to: userId as Id<"users">,
+          title: `${versesExpiringSoon.length} verses expiring soon!`,
+          body: `You have ${versesExpiringSoon.length} verses expiring soon!`,
+          data: {
+            url: "memory-verses-screen",
+          },
+        });
+        return;
+      }
 
-      if (staleVerses.length) {
-        // randomly pick a verse
-        const randomIndex = Math.floor(Math.random() * staleVerses.length);
-        const randomVerse = staleVerses[randomIndex];
+      const versesExpired = verses.filter(verse => {
+        const expirationInfo = calculateExpirationInfo(verse.memoryEntries, now);
+        return expirationInfo.isExpired && !verse.memoryEntries.length;
+      });
+
+      if (versesExpired.length > 0) {
+        // send a push notification
+        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+          to: userId as Id<"users">,
+          title: `Refresh your expired verses!`,
+          body: `You have ${versesExpired.length} waiting to be refreshed!`,
+          data: {
+            url: "memory-verses-screen",
+          },
+        });
+        return;
+      }
+
+      const unattemptedVerses = verses.filter(verse => {
+        return !verse.memoryEntries.length;
+      });
+
+      if (unattemptedVerses.length > 0) {
+        // send a push notification
+        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+          to: userId as Id<"users">,
+          title: `Memorize ${unattemptedVerses.length} verses!`,
+          body: `You have ${unattemptedVerses.length} verses waiting to be memorized!`,
+        });
+      }
+
+      if (verses.length > 0) {
+        // Randomly pick a low streak verse
+        const randomIndex = Math.floor(Math.random() * verses.length);
+        const randomVerse = verses[randomIndex];
         if (!isBookId(randomVerse.bookId)) throw new Error(`Invalid bookId: ${randomVerse.bookId}`);
+
         const verseName = getVerseNameFormatted({
           version: randomVerse.version,
           bookId: randomVerse.bookId,
@@ -297,7 +307,7 @@ export const sendMemoryVerseReminders = internalAction({
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `${verseName}: refresh now!`,
+          title: `Memorize ${verseName}!`,
           body: randomVerse.text,
           data: {
             url: "memory-verses-screen",

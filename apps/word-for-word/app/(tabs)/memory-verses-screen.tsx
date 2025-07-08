@@ -1,34 +1,28 @@
+import { Button } from "@/src/components/core/Button";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import React, { type FC, useCallback, useRef } from "react";
-import { FlatList, TouchableOpacity, View, Animated, Alert } from "react-native";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@backend/convex/_generated/api";
-import { useBibleStore } from "@/src/stores/bible-store";
-import { getVerseNameFormatted, isBookId, mapBookIdsToName, type BookId } from "@common/utils/bible-data-utils";
-import { Ionicons } from "@expo/vector-icons";
-import type { Doc, Id } from "@backend/convex/_generated/dataModel";
-import { useRouter } from "expo-router";
-import {
-  startOfDay,
-  isSameDay,
-  isYesterday,
-  isToday,
-  differenceInDays,
-  formatDistanceToNow,
-} from "date-fns";
-import { Swipeable } from "react-native-gesture-handler";
-import * as Haptics from "expo-haptics";
-import { isDefined } from "@common/utils/typecheck";
-import { Button } from "@/src/components/core/Button";
 import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
-
-type StreakInfo = {
-  lastEntryDate: Date;
-  numStreakDays: number;
-};
+import { useThemeColors } from "@/src/hooks/useThemeColors";
+import { useBibleStore } from "@/src/stores/bible-store";
+import { api } from "@backend/convex/_generated/api";
+import type { Doc, Id } from "@backend/convex/_generated/dataModel";
+import { getVerseNameFormatted, isBookId } from "@common/utils/bible-data-utils";
+import {
+  calculateExpirationInfo,
+  getExpirationStatus
+} from "@common/utils/memory-verse-utils";
+import { isDefined } from "@common/utils/typecheck";
+import { Ionicons } from "@expo/vector-icons";
+import { useMutation, useQuery } from "convex/react";
+import {
+  startOfDay
+} from "date-fns";
+import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
+import React, { useCallback, useRef, type FC } from "react";
+import { Alert, FlatList, TouchableOpacity, View } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
@@ -168,8 +162,9 @@ const MemorizeScreen: FC = () => {
       } : undefined;
 
       const verseName = getVerseNameFormatted(cursorStart, cursorEnd);
-      const streakInfo = getStreakInfo(item.memoryEntries);
+      const expirationInfo = calculateExpirationInfo(item.memoryEntries);
       const verseText = getVersesText(cursorStart, cursorEnd);
+      const expirationStatus = getExpirationStatus(expirationInfo.daysUntilExpiration, item.memoryEntries.length);
 
       const setSwipeableRef = (ref: Swipeable | null) => {
         swipeableRefs.current[item._id] = ref;
@@ -190,13 +185,34 @@ const MemorizeScreen: FC = () => {
             onPress={() => handleVersePress(item)}
           >
             <TView className="flex-row justify-between items-start mb-2">
-              <TText
-                className="font-bold text-lg"
-                style={{ color: themeColors.text }}
-              >
-                {verseName}
-              </TText>
-              {streakInfo && streakInfo.numStreakDays > 0 && (
+              <View className="flex-row items-center justify-between w-full">
+                <TText
+                  className="font-bold text-lg"
+                  style={{ color: themeColors.text }}
+                >
+                  {verseName}
+                </TText>
+
+
+                <TView className="flex-row items-center">
+                  <Ionicons
+                    name={expirationStatus.icon}
+                    size={14}
+                    style={{ color: expirationStatus.color }}
+                  />
+                  <TText
+                    className="ml-1 text-xs"
+                    style={{ color: expirationStatus.color }}
+                  >
+                    {expirationInfo.isExpired
+                      ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
+                      : expirationInfo.daysUntilExpiration === 0
+                        ? "Expires today"
+                        : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
+                  </TText>
+                </TView>
+              </View>
+              {expirationInfo.currentStreak > 0 && (
                 <TView className="flex-row items-center bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full">
                   <Ionicons
                     name="flame"
@@ -207,8 +223,8 @@ const MemorizeScreen: FC = () => {
                     className="ml-1 text-sm"
                     style={{ color: themeColors.warning }}
                   >
-                    {streakInfo.numStreakDays} day
-                    {streakInfo.numStreakDays > 1 ? "s" : ""} streak
+                    {expirationInfo.currentStreak} day
+                    {expirationInfo.currentStreak > 1 ? "s" : ""} streak
                   </TText>
                 </TView>
               )}
@@ -221,30 +237,6 @@ const MemorizeScreen: FC = () => {
             >
               {verseText}
             </TText>
-
-            <TView className="flex-row items-center">
-              <Ionicons
-                name="time-outline"
-                size={14}
-                color={
-                  streakInfo?.lastEntryDate
-                    ? themeColors.success
-                    : themeColors.textTertiary
-                }
-              />
-              <TText
-                className="ml-1 text-xs"
-                style={{
-                  color: streakInfo?.lastEntryDate
-                    ? themeColors.success
-                    : themeColors.textTertiary,
-                }}
-              >
-                {!streakInfo
-                  ? "Not memorized"
-                  : `Last memorized ${formatDistanceToNow(new Date(streakInfo.lastEntryDate), { addSuffix: true })}`}
-              </TText>
-            </TView>
           </TouchableOpacity>
         </Swipeable>
       );
@@ -303,65 +295,3 @@ const MemorizeScreen: FC = () => {
 };
 
 export default MemorizeScreen;
-
-const getStreakInfo = (
-  memoryEntries: { createdAt: number }[],
-): StreakInfo | null => {
-  if (memoryEntries.length === 0) return null;
-
-  // Sort entries by date in descending order
-  const sortedEntries = [...memoryEntries].sort(
-    (a, b) => b.createdAt - a.createdAt,
-  );
-  const lastEntry = sortedEntries[0];
-  if (!lastEntry) return null;
-
-  const lastEntryDate = new Date(lastEntry.createdAt);
-  const lastEntryStartOfDay = startOfDay(lastEntryDate);
-
-  // If the last entry was not today or yesterday, there's no streak
-  if (!isToday(lastEntryDate) && !isYesterday(lastEntryDate)) {
-    return {
-      lastEntryDate,
-      numStreakDays: 0,
-    };
-  }
-
-  // Count consecutive days
-  let numStreakDays = 1;
-  let currentDate = lastEntryStartOfDay;
-
-  const dates = new Set<number>();
-  for (const entry of sortedEntries) {
-    dates.add(startOfDay(new Date(entry.createdAt)).valueOf());
-  }
-
-  const sortedDates = Array.from(dates).sort((a, b) => a - b);
-
-  if (sortedDates.length <= 1) {
-    return {
-      lastEntryDate,
-      numStreakDays: 0,
-    };
-  }
-
-  for (let i = 0; i < sortedDates.length; i++) {
-    const date = sortedDates[i];
-    if (!date) continue;
-
-    const entryDate = startOfDay(new Date(date));
-    const daysDiff = differenceInDays(currentDate, entryDate);
-
-    // If there's a gap in days, break the streak
-    if (daysDiff > 1) break;
-    currentDate = entryDate;
-
-    if (daysDiff === 0) continue;
-    numStreakDays++;
-  }
-
-  return {
-    lastEntryDate,
-    numStreakDays,
-  };
-};
