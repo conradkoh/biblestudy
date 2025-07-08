@@ -27,7 +27,7 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
   onSearch,
   onClear,
   placeholder = "Search Bible...",
-  debounceMs = 300,
+  debounceMs = 700,
   isLoading = false,
   onDebounceStateChange,
   onFocusChange,

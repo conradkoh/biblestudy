@@ -21,7 +21,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useRef, type FC } from "react";
-import { Alert, FlatList, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, TouchableOpacity } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
 const MemorizeScreen: FC = () => {
@@ -185,47 +185,25 @@ const MemorizeScreen: FC = () => {
             onPress={() => handleVersePress(item)}
           >
             <TView className="flex-row justify-between items-start mb-2">
-              <View className="flex-row items-center justify-between w-full">
-                <TText
-                  className="font-bold text-lg"
-                  style={{ color: themeColors.text }}
-                >
-                  {verseName}
-                </TText>
-
-
-                <TView className="flex-row items-center">
-                  <Ionicons
-                    name={expirationStatus.icon}
-                    size={14}
-                    style={{ color: expirationStatus.color }}
-                  />
-                  <TText
-                    className="ml-1 text-xs"
-                    style={{ color: expirationStatus.color }}
-                  >
-                    {expirationInfo.isExpired
-                      ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
-                      : expirationInfo.daysUntilExpiration === 0
-                        ? "Expires today"
-                        : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
-                  </TText>
-                </TView>
-              </View>
+              <TText
+                className="font-bold text-lg"
+                style={{ color: themeColors.text }}
+              >
+                {verseName}
+              </TText>
               {expirationInfo.currentStreak > 0 && (
                 <TView className="flex-row items-center bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full">
+                  <TText
+                    className="mr-1 text-sm"
+                    style={{ color: themeColors.warning }}
+                  >
+                    {expirationInfo.currentStreak}
+                  </TText>
                   <Ionicons
                     name="flame"
                     size={16}
                     color={themeColors.warning}
                   />
-                  <TText
-                    className="ml-1 text-sm"
-                    style={{ color: themeColors.warning }}
-                  >
-                    {expirationInfo.currentStreak} day
-                    {expirationInfo.currentStreak > 1 ? "s" : ""} streak
-                  </TText>
                 </TView>
               )}
             </TView>
@@ -237,6 +215,23 @@ const MemorizeScreen: FC = () => {
             >
               {verseText}
             </TText>
+            <TView className="flex-row items-center ml-auto mt-1">
+              <TText
+                className="mr-1 text-xs"
+                style={{ color: expirationStatus.color }}
+              >
+                {expirationInfo.isExpired
+                  ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
+                  : expirationInfo.daysUntilExpiration === 0
+                    ? "Expires today"
+                    : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
+              </TText>
+              <Ionicons
+                name={expirationStatus.icon}
+                size={14}
+                style={{ color: expirationStatus.color }}
+              />
+            </TView>
           </TouchableOpacity>
         </Swipeable>
       );

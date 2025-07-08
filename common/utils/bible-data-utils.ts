@@ -249,7 +249,5 @@ export function getVersesFromRange(cursor: BibleCursor, cursorRangeEnd: BibleCur
     verses.push(verse);
   }
 
-  console.log("verses", verses);
-
   return verses;
 }

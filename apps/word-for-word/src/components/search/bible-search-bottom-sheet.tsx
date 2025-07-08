@@ -36,7 +36,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   // Snap points for the bottom sheet
-  const snapPoints = useMemo(() => ["90%"], []);
+  const snapPoints = useMemo(() => ["95%"], []);
 
   // Search hook
   const {
@@ -136,25 +136,6 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       safeAreaViewEdges={isFocused ? [] : undefined}
     >
       <TView className="flex-1 px-4">
-        {/* Header */}
-        <TView className="flex-row items-center justify-between py-4">
-          <TText
-            className="text-xl font-bold"
-            style={{ color: themeColors.text }}
-          >
-            Search Bible
-          </TText>
-          <TouchableOpacity
-            onPress={onClose}
-            hitSlop={HITSLOP_DEFAULT}
-          >
-            <Ionicons
-              name="close"
-              size={24}
-              style={{ color: themeColors.text }}
-            />
-          </TouchableOpacity>
-        </TView>
 
         {/* Search Input */}
         <TView className="mb-4">

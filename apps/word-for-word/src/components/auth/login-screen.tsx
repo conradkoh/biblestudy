@@ -9,6 +9,7 @@ import { TView } from "@/src/components/core/TView";
 import { getExpoPushToken } from "@/src/services/push-notifications";
 import { makeRedirectUri } from "expo-auth-session";
 import React, { type FC } from "react";
+import { TText } from "@/src/components/core/TText";
 
 type LoginScreenProps = unknown;
 
