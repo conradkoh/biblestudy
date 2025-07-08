@@ -8,11 +8,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: "./assets/images/icon.png",
   scheme: "biblestudy",
   userInterfaceStyle: "automatic",
-  splash: {
-    image: "./assets/images/splash.png",
-    resizeMode: "contain",
-    backgroundColor: "#ffffff",
-  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.moosedev.biblestudy",
@@ -25,8 +20,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
-    package: "com.moosedev.biblestudy",
-    googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+    package: "com.moosedev.biblestudy"
   },
   web: {
     bundler: "metro",
@@ -56,6 +50,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           "./assets/lexicon/hebrew.jsonc",
           "./assets/lexicon/greek.jsonc",
         ],
+      },
+    ],
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#ffffff",
+        resizeMode: "contain",
+        image: "./assets/images/splash-icon-light.png",
+        dark: {
+          image: "./assets/images/splash-icon-dark.png",
+          resizeMode: "contain",
+          backgroundColor: "#151718",
+        },
+        imageWidth: 128,
       },
     ],
   ],
