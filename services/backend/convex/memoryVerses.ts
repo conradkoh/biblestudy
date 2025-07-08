@@ -233,8 +233,8 @@ export const sendMemoryVerseReminders = internalAction({
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `${versesExpiringToday.length} verses expiring today!`,
-          body: `You have ${versesExpiringToday.length} verses expiring today!`,
+          title: `${versesExpiringToday.length} ${versesExpiringToday.length === 1 ? "verse" : "verses"} expiring today!`,
+          body: `Refresh your memory before it expires!`,
           data: {
             url: "memory-verses-screen",
           },
@@ -251,8 +251,8 @@ export const sendMemoryVerseReminders = internalAction({
         // send a push notification
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
-          title: `${versesExpiringSoon.length} verses expiring soon!`,
-          body: `You have ${versesExpiringSoon.length} verses expiring soon!`,
+          title: `${versesExpiringSoon.length} ${versesExpiringSoon.length === 1 ? "verse" : "verses"} expiring soon!`,
+          body: `Refresh your memory before it expires!`,
           data: {
             url: "memory-verses-screen",
           },
@@ -287,7 +287,7 @@ export const sendMemoryVerseReminders = internalAction({
         await ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `Memorize ${unattemptedVerses.length} verses!`,
-          body: `You have ${unattemptedVerses.length} verses waiting to be memorized!`,
+          body: `You have ${unattemptedVerses.length} ${unattemptedVerses.length === 1 ? "verse" : "verses"} waiting to be memorized!`,
         });
       }
 
