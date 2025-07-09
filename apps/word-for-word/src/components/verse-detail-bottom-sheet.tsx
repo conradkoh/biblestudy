@@ -1,3 +1,4 @@
+import { CustomBottomSheetBackdrop } from "@/src/components/core/CustomBottomSheetBackdrop";
 import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import VerseActions from "@/src/components/verse-actions";
@@ -25,11 +26,6 @@ import React, {
   useState,
 } from "react";
 import { TouchableOpacity, View } from "react-native";
-import Animated, {
-  Extrapolate,
-  interpolate,
-  useAnimatedStyle,
-} from "react-native-reanimated";
 
 type VerseDetailBottomSheetProps = {
   isOpen: boolean;
@@ -120,7 +116,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
         backgroundStyle={{
           backgroundColor: themeColors.surface,
         }}
-        backdropComponent={CustomBackdrop}
+        backdropComponent={CustomBottomSheetBackdrop}
         enableScrollView
         animatedPosition={bottomSheetAnimatedValue}
       >
@@ -269,31 +265,3 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
 };
 
 export default VerseDetailBottomSheet;
-
-const CustomBackdrop = ({ animatedIndex, style }: BottomSheetBackdropProps) => {
-  const themeColors = useThemeColors();
-
-  // animated variables
-  const containerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      animatedIndex.value,
-      [0, 0.4],
-      [0, 0.4],
-      Extrapolate.CLAMP,
-    ),
-  }));
-
-  // styles
-  const containerStyle = useMemo(
-    () => [
-      style,
-      {
-        backgroundColor: themeColors.overlay,
-      },
-      containerAnimatedStyle,
-    ],
-    [style, containerAnimatedStyle, themeColors.overlay],
-  );
-
-  return <Animated.View style={containerStyle} pointerEvents="none" />;
-};

@@ -98,7 +98,6 @@ export default function ReadScreen() {
   }, []);
 
   function onPressVerse(verse: number) {
-
     // Reset ranges
     setShowFocusVerseRange(false);
     cursorHandler.setCursorRangeEnd(null);
@@ -112,6 +111,9 @@ export default function ReadScreen() {
 
 
   const handleLongPressVerse = (longPressVerse: number) => {
+
+    if (!showFocusVerseSingle && !showFocusVerseRange) return;
+
     setShowFocusVerseSingle(false);
 
     if (focusCursorHandler.cursor.verse === undefined) return;

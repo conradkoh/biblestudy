@@ -1,3 +1,4 @@
+import { CustomBottomSheetBackdrop } from "@/src/components/core/CustomBottomSheetBackdrop";
 import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import VerseActions from "@/src/components/verse-actions";
@@ -28,7 +29,6 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
 }) => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const themeColors = useThemeColors();
-  const renderBackdrop = useBottomSheetBackdrop({ opacity: 0 });
 
   // callbacks
   const handleSheetChanges = useCallback(
@@ -55,7 +55,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
       backgroundStyle={{
         backgroundColor: themeColors.surface,
       }}
-      backdropComponent={renderBackdrop}
+      backdropComponent={CustomBottomSheetBackdrop}
       enableScrollView
     >
       <View className="flex-1 px-3 py-1">
