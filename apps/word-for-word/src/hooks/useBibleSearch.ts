@@ -18,21 +18,22 @@ export interface UseBibleSearchState {
 }
 
 export interface UseBibleSearchActions {
-  performSearch: (query?: string, strategy?: SearchStrategyType) => Promise<void>;
+  performSearch: (query: string, strategy: SearchStrategyType, limit: number) => Promise<void>;
   clearResults: () => void;
   setStrategy: (strategy: SearchStrategyType) => void;
   loadMore: () => Promise<void>;
   setQuery: (query: string) => void;
 }
 
-export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState & UseBibleSearchActions {
+export function useBibleSearch(currentCursor?: BibleCursor) {
   const bibleStore = useBibleStore();
 
   // State
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStrategy, setSelectedStrategy] = useState<SearchStrategyType>(SearchStrategyType.KEYWORD);
+  // Search Results
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedStrategy, setSelectedStrategy] = useState<SearchStrategyType>(SearchStrategyType.KEYWORD);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +51,9 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
 
   // Perform search
   const performSearch = useCallback(async (
-    query?: string,
-    strategy?: SearchStrategyType
+    query: string,
+    strategy: SearchStrategyType,
+    limit: number,
   ) => {
     const searchText = query ?? searchQuery;
     const searchStrategy = strategy ?? selectedStrategy;
@@ -80,10 +82,11 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
         text: searchText,
         strategyType: searchStrategy,
         version: currentCursor?.version,
-        limit: 50,
+        limit,
         offset: 0
       };
 
+      await new Promise(resolve => setTimeout(resolve)); // Allow for state to enter loader 
       const result = await executeSearchWithFallback(searchQuery, searchContext);
 
       setSearchResults(result.items);
@@ -151,11 +154,8 @@ export function useBibleSearch(currentCursor?: BibleCursor): UseBibleSearchState
   // Set strategy
   const setStrategy = useCallback((strategy: SearchStrategyType) => {
     setSelectedStrategy(strategy);
-    // Redo search with new strategy if there's a current query
-    if (searchQuery.trim()) {
-      performSearch(searchQuery, strategy);
-    }
-  }, [searchQuery, performSearch]);
+    clearResults();
+  }, [clearResults]);
 
   // Set query
   const setQuery = useCallback((query: string) => {

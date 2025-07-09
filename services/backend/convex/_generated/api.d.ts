@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as aiSearch from "../aiSearch.js";
 import type * as auth from "../auth.js";
 import type * as bible from "../bible.js";
 import type * as crons from "../crons.js";
@@ -44,6 +45,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  aiSearch: typeof aiSearch;
   auth: typeof auth;
   bible: typeof bible;
   crons: typeof crons;

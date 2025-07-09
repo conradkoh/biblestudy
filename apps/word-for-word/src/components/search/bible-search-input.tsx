@@ -1,73 +1,68 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { TextInput, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import { AnimatedLoader } from "@/src/components/core/AnimatedLoader";
-import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
+import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { SearchStrategyType } from "@/src/types/search";
+import { getSearchStrategy } from "@/src/utils/search/search-registry";
+import { Ionicons } from "@expo/vector-icons";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
+import React, { useCallback, useEffect, useState, useImperativeHandle, forwardRef } from "react";
+import { Keyboard, TouchableOpacity } from "react-native";
 
 interface BibleSearchInputProps {
   value: string;
   onSearch: (query: string) => void;
   onClear?: () => void;
   placeholder?: string;
-  debounceMs?: number;
   strategyType?: SearchStrategyType;
   onStrategyChange?: (strategy: SearchStrategyType) => void;
   isLoading?: boolean;
-  onDebounceStateChange?: (isDebouncing: boolean) => void;
   onFocusChange?: (isFocused: boolean) => void;
   className?: string;
 }
 
-export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
+export interface BibleSearchInputRef {
+  focus: () => void;
+}
+
+export const BibleSearchInput = forwardRef<BibleSearchInputRef, BibleSearchInputProps>(({
   value,
   onSearch,
   onClear,
   placeholder = "Search Bible...",
-  debounceMs = 700,
+  strategyType = SearchStrategyType.KEYWORD,
+  onStrategyChange,
   isLoading = false,
-  onDebounceStateChange,
   onFocusChange,
   className = ""
-}) => {
+}, ref) => {
   const themeColors = useThemeColors();
   const [inputValue, setInputValue] = useState(value);
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [isDebouncing, setIsDebouncing] = useState(false);
+  const inputRef = React.useRef<any>(null);
+
+  // Expose focus method to parent component
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    }
+  }), []);
 
   // Update input value when prop changes
   useEffect(() => {
     setInputValue(value);
   }, [value]);
 
-  // Debounced search
-  const debouncedSearch = useCallback((query: string) => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-
-    // Set debouncing state to true when starting a new debounced search
-    setIsDebouncing(true);
-    onDebounceStateChange?.(true);
-
-    const timeout = setTimeout(() => {
-      onSearch(query);
-      // Set debouncing state to false when search is executed
-      setIsDebouncing(false);
-      onDebounceStateChange?.(false);
-    }, debounceMs);
-
-    setDebounceTimeout(timeout);
-  }, [onSearch, debounceMs, debounceTimeout, onDebounceStateChange]);
-
-  // Handle input change
+  // Handle input change (no debouncing)
   const handleInputChange = useCallback((text: string) => {
     setInputValue(text);
-    debouncedSearch(text);
-  }, [debouncedSearch]);
+  }, []);
+
+  // Handle search submission (when user presses return)
+  const handleSubmitEditing = useCallback(() => {
+    if (inputValue.trim()) {
+      onSearch(inputValue.trim());
+    }
+  }, [inputValue, onSearch]);
 
   // Handle focus change
   const handleFocus = useCallback(() => {
@@ -82,26 +77,18 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
   const handleClear = useCallback(() => {
     setInputValue("");
     onClear?.();
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    // Clear debouncing state when clearing
-    setIsDebouncing(false);
-    onDebounceStateChange?.(false);
-  }, [onClear, debounceTimeout, onDebounceStateChange]);
+  }, [onClear]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeout) {
-        clearTimeout(debounceTimeout);
-      }
-    };
-  }, [debounceTimeout]);
+  // Handle strategy button press
+  const handleStrategyPress = useCallback(() => {
+    // This will be handled by the parent component to show the option selector
+    onStrategyChange?.(strategyType);
+    Keyboard.dismiss();
+  }, [onStrategyChange, strategyType]);
 
   return (
     <TView
-      className={`flex-row items-center px-3 py-2 rounded-lg ${className}`}
+      className={`flex-row items-center pl-3 pr-2 py-2 rounded-lg ${className}`}
       style={{
         backgroundColor: themeColors.surfaceSecondary,
         borderColor: themeColors.border,
@@ -113,15 +100,17 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
         name="search"
         size={20}
         style={{
-          color: (isLoading || isDebouncing) ? themeColors.textTertiary : themeColors.textSecondary,
+          color: isLoading ? themeColors.textTertiary : themeColors.textSecondary,
           marginRight: 8
         }}
       />
 
       {/* Search Input */}
       <BottomSheetTextInput
+        ref={inputRef}
         value={inputValue}
         onChangeText={handleInputChange}
+        onSubmitEditing={handleSubmitEditing}
         onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder={placeholder}
@@ -137,13 +126,15 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
         autoCapitalize="none"
         returnKeyType="search"
         clearButtonMode="never"
+        blurOnSubmit={false}
       />
 
       {/* Clear Button */}
-      {inputValue.length > 0 && !isLoading && !isDebouncing && (
+      {inputValue.length > 0 && !isLoading && (
         <TouchableOpacity
           onPress={handleClear}
           hitSlop={HITSLOP_DEFAULT}
+          className="ml-1"
         >
           <Ionicons
             name="close-circle"
@@ -152,6 +143,27 @@ export const BibleSearchInput: React.FC<BibleSearchInputProps> = ({
           />
         </TouchableOpacity>
       )}
+
+      {/* Strategy Selector Button */}
+      <TouchableOpacity
+        onPress={() => {
+          handleStrategyPress();
+        }}
+        hitSlop={HITSLOP_DEFAULT}
+        style={{ gap: 4, backgroundColor: themeColors.overlay }}
+        className="flex-row items-center ml-1 px-2 py-0.5 rounded-md"
+      >
+        <TText className="text-xs text-textSecondary">
+          {getSearchStrategy(strategyType)?.name}
+        </TText>
+        <Ionicons
+          name="chevron-down"
+          size={12}
+          style={{
+            color: themeColors.textSecondary
+          }}
+        />
+      </TouchableOpacity>
     </TView>
   );
-}; 
+}); 

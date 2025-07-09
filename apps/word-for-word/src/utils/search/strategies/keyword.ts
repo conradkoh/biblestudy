@@ -159,7 +159,7 @@ export const keywordSearch = async (
  */
 export const keywordStrategy = {
   type: SearchStrategyType.KEYWORD,
-  name: "Keyword Search",
-  description: "Search for individual words and phrases with smart relevance scoring",
+  name: "Keyword",
+  description: "Search for individual words and phrases scored by relevance",
   search: keywordSearch
 }; 

@@ -205,6 +205,9 @@ export function cursorToIdxCursor(cursor: BibleCursor): BibleIdxCursor {
   };
 }
 
+export const bibleVersions = ["niv", "kjv"] as const;
+export type BibleVersion = (typeof bibleVersions)[number];
+
 export type BibleCursor = {
   version: "niv" | "kjv";
   bookId: BookId;
@@ -250,4 +253,16 @@ export function getVersesFromRange(cursor: BibleCursor, cursorRangeEnd: BibleCur
   }
 
   return verses;
+}
+
+export function isValidBookId(bookId: string): bookId is BookId {
+  return bookIds.includes(bookId as BookId);
+}
+
+export function isValidChapter(bookId: BookId, chapter: number): boolean {
+  return chapter > 0 && chapter <= mapBookIdsToChapterCounts[bookId];
+}
+
+export function isValidVerse(bookId: BookId, chapter: number, verse: number): boolean {
+  return isValidChapter(bookId, chapter); // && verse > 0 && verse <= mapBookIdsToChapterCounts[bookId];
 }

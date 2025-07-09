@@ -1,3 +1,13 @@
+# Setup
+### 2. Environment Configuration
+
+Create a `.env.local` file here in `services/backend/.env.local`
+
+```bash
+GOOGLE_GENERATIVE_AI_API_KEY=<insert google gemini key>
+```
+
+
 # Welcome to your Convex functions directory!
 
 Write your Convex functions here.

@@ -1,6 +1,7 @@
 import type { SearchStrategy, SearchRegistry, SearchStrategyType } from "@/src/types/search";
 import { simpleSubstringStrategy } from "./strategies/simple-substring";
 import { keywordStrategy } from "./strategies/keyword";
+import { aiAssistantStrategy } from "./strategies/ai-assistant";
 
 /**
  * Global search registry that holds all available search strategies
@@ -59,6 +60,7 @@ export function initializeSearchRegistry(): void {
   // Register default strategies
   registerSearchStrategy(simpleSubstringStrategy);
   registerSearchStrategy(keywordStrategy);
+  registerSearchStrategy(aiAssistantStrategy);
 }
 // Initialize the registry when this module is loaded
 initializeSearchRegistry(); 

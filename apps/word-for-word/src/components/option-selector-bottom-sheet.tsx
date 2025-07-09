@@ -11,7 +11,7 @@ import { TouchableOpacity, View } from "react-native";
 
 export type OptionSelectorConfig = {
   title: string;
-  options: { id: string; label: string; onSelect: () => void }[];
+  options: { id: string; label: string; description?: string; icon?: React.ReactNode; onSelect: () => void }[];
   snapPoint?: number | string;
 };
 
@@ -33,16 +33,24 @@ export const OptionSelectorBottomSheet: FC<OptionSelectorBottomSheetProps> = () 
       <TouchableOpacity
         onPress={() => {
           item.onSelect();
-          bottomSheetModalRef.current?.dismiss();
+          bottomSheetModalRef.current?.close();
         }}
         className="p-4 border-b"
         style={{
           borderBottomColor: themeColors.border,
         }}
       >
-        <TText>
-          {item.label}
-        </TText>
+        <View className="flex-row items-center">
+          {item.icon}
+          <TText>
+            {item.label}
+          </TText>
+        </View>
+        {item.description && (
+          <TText type="paragraph" className="text-sm mt-1" style={{ color: themeColors.textSecondary }}>
+            {item.description}
+          </TText>
+        )}
       </TouchableOpacity>
     ),
     [themeColors],

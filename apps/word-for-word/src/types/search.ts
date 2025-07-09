@@ -63,4 +63,4 @@ export interface SearchComposerOptions {
   strategies: SearchStrategyType[];
   weights?: Record<SearchStrategyType, number>;
   mergeResults?: boolean;
-} 
+}

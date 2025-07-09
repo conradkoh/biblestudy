@@ -117,7 +117,7 @@ export const simpleSubstringSearch = async (
  */
 export const simpleSubstringStrategy = {
   type: SearchStrategyType.SIMPLE_SUBSTRING,
-  name: "Simple Search",
+  name: "Exact Match",
   description: "Find exact text matches in Bible verses (case-insensitive)",
   search: simpleSubstringSearch
 }; 

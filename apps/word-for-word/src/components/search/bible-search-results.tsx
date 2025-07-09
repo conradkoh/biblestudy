@@ -18,7 +18,6 @@ interface BibleSearchResultsProps {
   onLoadMore?: () => void;
   emptyStateMessage?: string;
   className?: string;
-  isTyping?: boolean;
 }
 
 export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
@@ -28,8 +27,7 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   hasMore = false,
   onLoadMore,
   emptyStateMessage = "No results found",
-  className = "",
-  isTyping = false
+  className = ""
 }) => {
   const themeColors = useThemeColors();
 
@@ -42,10 +40,10 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   ), [onResultPress, themeColors]);
 
   const handleLoadMore = useCallback(() => {
-    if (hasMore && onLoadMore && !isLoading && !isTyping) {
+    if (hasMore && onLoadMore && !isLoading) {
       onLoadMore();
     }
-  }, [hasMore, onLoadMore, isLoading, isTyping]);
+  }, [hasMore, onLoadMore, isLoading]);
 
   const keyExtractor = useCallback((item: SearchResultItem) =>
     `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`,
@@ -82,16 +80,16 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
         windowSize={15}
         initialNumToRender={10}
         getItemLayout={undefined}
-        style={{ opacity: isTyping || isLoading || results.length === 0 ? 0 : 1 }}
+        style={{ opacity: isLoading || results.length === 0 ? 0 : 1 }}
       />
 
-      {/* Loading overlay while typing */}
-      {(isTyping || isLoading || results.length === 0) && (
+      {/* Loading overlay */}
+      {(isLoading || results.length === 0) && (
         <View
           className="absolute h-full w-full items-center justify-center"
         >
           <View className="rounded-lg p-4 items-center">
-            {isTyping || isLoading ? <AnimatedLoader
+            {isLoading ? <AnimatedLoader
               size={32}
               color={themeColors.textTertiary}
               iconName="search"
@@ -107,7 +105,7 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
               className="font-semibold text-center"
               style={{ color: themeColors.textSecondary }}
             >
-              {isTyping || isLoading ? 'Searching...' : emptyStateMessage}
+              {isLoading ? 'Searching...' : emptyStateMessage}
             </TText>
           </View>
         </View>
