@@ -121,7 +121,6 @@ export const BibleSearchInput = forwardRef<BibleSearchInputRef, BibleSearchInput
           fontSize: 16,
           fontFamily: "System",
         }}
-        autoCorrect={false}
         autoFocus
         autoCapitalize="none"
         returnKeyType="search"

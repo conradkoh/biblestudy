@@ -39,7 +39,7 @@ const TBottomSheetModal = React.forwardRef<BottomSheetModal, TBottomSheetModalPr
   function withScrollView(children: React.ReactNode) {
     if (enableScrollView) {
       return (
-        <BottomSheetScrollView>
+        <BottomSheetScrollView keyboardShouldPersistTaps="handled">
           {withSafeAreaView(children)}
         </BottomSheetScrollView>
       );

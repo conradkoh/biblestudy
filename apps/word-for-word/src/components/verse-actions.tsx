@@ -186,7 +186,7 @@ const VerseActions: FC<VerseActionsProps> = ({
                   <Ionicons
                     name="close"
                     size={16}
-                    style={{ color: themeColors.permanentWhite }}
+                    style={{ color: themeColors.text }}
                   />
                 ) : null}
               </TouchableOpacity>

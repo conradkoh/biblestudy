@@ -81,6 +81,7 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
         initialNumToRender={10}
         getItemLayout={undefined}
         style={{ opacity: isLoading || results.length === 0 ? 0 : 1 }}
+        keyboardShouldPersistTaps="handled"
       />
 
       {/* Loading overlay */}
