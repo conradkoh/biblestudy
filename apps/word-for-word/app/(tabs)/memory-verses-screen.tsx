@@ -164,7 +164,7 @@ const MemorizeScreen: FC = () => {
       const verseName = getVerseNameFormatted(cursorStart, cursorEnd);
       const expirationInfo = calculateExpirationInfo(item.memoryEntries);
       const verseText = getVersesText(cursorStart, cursorEnd);
-      const expirationStatus = getExpirationStatus(expirationInfo.daysUntilExpiration, item.memoryEntries.length);
+      const expirationStatus = getExpirationStatus(expirationInfo.daysUntilExpiration, item.memoryEntries.length, item.memoryEntries);
 
       const setSwipeableRef = (ref: Swipeable | null) => {
         swipeableRefs.current[item._id] = ref;
@@ -220,11 +220,13 @@ const MemorizeScreen: FC = () => {
                 className="mr-1 text-xs"
                 style={{ color: expirationStatus.color }}
               >
-                {expirationInfo.isExpired
-                  ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
-                  : expirationInfo.daysUntilExpiration === 0
-                    ? "Expires today"
-                    : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
+                {expirationStatus.status === 'completed'
+                  ? "Done"
+                  : expirationInfo.isExpired
+                    ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
+                    : expirationInfo.daysUntilExpiration === 0
+                      ? "Expires today"
+                      : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
               </TText>
               <Ionicons
                 name={expirationStatus.icon}

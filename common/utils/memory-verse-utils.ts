@@ -11,6 +11,25 @@ export interface ExpirationInfo {
 }
 
 /**
+ * Check if a verse was recited today
+ * @param entries Array of memory entries
+ * @param referenceDate Reference date (defaults to current date)
+ * @returns True if the verse was recited today
+ */
+export function wasRecitedToday(
+  entries: MemoryEntry[],
+  referenceDate: Date = new Date()
+): boolean {
+  if (entries.length === 0) return false;
+
+  const today = startOfDay(referenceDate);
+  return entries.some(entry => {
+    const entryDate = startOfDay(new Date(entry.createdAt));
+    return isEqual(entryDate, today);
+  });
+}
+
+/**
  * Get the number of days until expiration based on current streak
  * @param streak Current streak count
  * @returns Number of days until expiration
@@ -145,11 +164,25 @@ export function calculateExpirationInfo(
 /**
  * Get expiration status for UI display
  * @param daysUntilExpiration Number of days until expiration
+ * @param numOfEntries Number of memory entries
+ * @param entries Array of memory entries (for checking if recited today)
  * @returns Status object with color and icon information
  */
-export function getExpirationStatus(daysUntilExpiration: number, numOfEntries: number) {
-  if (daysUntilExpiration <= 0) {
+export function getExpirationStatus(
+  daysUntilExpiration: number,
+  numOfEntries: number,
+  entries: MemoryEntry[] = []
+) {
+  // Check if recited today first
+  if (wasRecitedToday(entries)) {
+    return {
+      status: 'completed' as const,
+      color: '#10b981',
+      icon: 'checkmark-circle' as const,
+    };
+  }
 
+  if (daysUntilExpiration <= 0) {
     if (numOfEntries === 0) {
       return {
         status: 'unattempted' as const,
