@@ -166,6 +166,15 @@ const MemorizeScreen: FC = () => {
       const verseText = getVersesText(cursorStart, cursorEnd);
       const expirationStatus = getExpirationStatus(expirationInfo.daysUntilExpiration, item.memoryEntries.length, item.memoryEntries);
 
+      // Map status to theme colors
+      const statusColorMap = {
+        completed: themeColors.success,
+        safe: themeColors.success,
+        warning: themeColors.warning,
+        expired: themeColors.error,
+        unattempted: themeColors.textTertiary,
+      } as const;
+
       const setSwipeableRef = (ref: Swipeable | null) => {
         swipeableRefs.current[item._id] = ref;
       };
@@ -218,10 +227,10 @@ const MemorizeScreen: FC = () => {
             <TView className="flex-row items-center ml-auto mt-1">
               <TText
                 className="mr-1 text-xs"
-                style={{ color: expirationStatus.color }}
+                style={{ color: statusColorMap[expirationStatus.status] }}
               >
                 {expirationStatus.status === 'completed'
-                  ? "Done"
+                  ? "Completed today"
                   : expirationInfo.isExpired
                     ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
                     : expirationInfo.daysUntilExpiration === 0
@@ -231,7 +240,7 @@ const MemorizeScreen: FC = () => {
               <Ionicons
                 name={expirationStatus.icon}
                 size={14}
-                style={{ color: expirationStatus.color }}
+                style={{ color: statusColorMap[expirationStatus.status] }}
               />
             </TView>
           </TouchableOpacity>

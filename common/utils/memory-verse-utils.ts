@@ -166,7 +166,7 @@ export function calculateExpirationInfo(
  * @param daysUntilExpiration Number of days until expiration
  * @param numOfEntries Number of memory entries
  * @param entries Array of memory entries (for checking if recited today)
- * @returns Status object with color and icon information
+ * @returns Status object with icon information (colors should be mapped in component)
  */
 export function getExpirationStatus(
   daysUntilExpiration: number,
@@ -177,7 +177,6 @@ export function getExpirationStatus(
   if (wasRecitedToday(entries)) {
     return {
       status: 'completed' as const,
-      color: '#10b981',
       icon: 'checkmark-circle' as const,
     };
   }
@@ -186,27 +185,23 @@ export function getExpirationStatus(
     if (numOfEntries === 0) {
       return {
         status: 'unattempted' as const,
-        color: '#6b7280',
         icon: 'play-circle-outline' as const,
       };
     }
 
     return {
       status: 'expired' as const,
-      color: '#ef4444',
       icon: 'alert-circle' as const,
     };
   }
   else if (daysUntilExpiration <= 3) {
     return {
       status: 'warning' as const,
-      color: '#f59e0b',
       icon: 'warning' as const,
     };
   } else {
     return {
       status: 'safe' as const,
-      color: '#10b981',
       icon: 'checkmark-circle' as const,
     };
   }
