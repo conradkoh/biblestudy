@@ -67,6 +67,15 @@ export const ThemeColors = {
     border: "#e2e8f0",
     divider: "#e2e8f0",
     overlay: "rgba(0, 0, 0, 0.5)",
+
+    // Highlighter (literally) colors
+    highlighterBlue: "#cce7ff",
+    highlighterGreen: "#d1fae5",
+    highlighterYellow: "#fff9c4",
+    highlighterRed: "#ffd6d6",
+    highlighterPurple: "#ede9fe",
+    highlighterOrange: "#ffe5b4",
+    highlighterPink: "#ffe4ef",
   },
   dark: {
     // Surface colors
@@ -100,5 +109,14 @@ export const ThemeColors = {
     border: "#1e293b",
     divider: "#1e293b",
     overlay: "rgba(0, 0, 0, 0.7)",
+
+    // Highlighter (literally) colors
+    highlighterBlue: "#2563eb55",
+    highlighterGreen: "#34d39955",
+    highlighterYellow: "#ffe06699",
+    highlighterRed: "#f8717155",
+    highlighterPurple: "#a78bfa55",
+    highlighterOrange: "#fdba7455",
+    highlighterPink: "#f472b655",
   },
 };

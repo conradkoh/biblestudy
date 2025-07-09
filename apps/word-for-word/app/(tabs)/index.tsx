@@ -21,14 +21,15 @@ import {
   getVersesFromRange,
   mapBookIdsToName,
 } from "@common/utils/bible-data-utils";
-import { isDefined } from "@common/utils/typecheck";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ChapterVerseSelector from "@/src/components/chapter-verse-selector";
+import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
+import { api } from "@backend/convex/_generated/api";
+import { useQuery } from "convex/react";
 
 const BIBLE_CHAPTER_CONTROLS_HEIGHT = 40;
 
@@ -77,6 +78,16 @@ export default function ReadScreen() {
   const [showFocusVerseRange, setShowFocusVerseRange] = useState(false);
   const [isSelectingRange, setIsSelectingRange] = useState(false)
   const focusCursorHandler = useBibleCursorHandler();
+
+
+  const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
+  const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
+  const memoryVersesNumbersInCurrentChapter = useMemo(() => {
+    return cachedOrActualVerses?.filter(verse =>
+      verse.bookId === cursorHandler.cursor.bookId &&
+      verse.chapter === cursorHandler.cursor.chapter
+    ).map(verse => verse.verse);
+  }, [cachedOrActualVerses, cursorHandler.cursor.chapter]);
 
   useSessionLogger();
 
@@ -183,12 +194,13 @@ export default function ReadScreen() {
               cursorHandler={cursorHandler}
               onPressVerse={onPressVerse}
               onLongPressVerse={handleLongPressVerse}
-              highlightedVerses={
+              selectedVerses={
                 (showFocusVerseRange && focusCursorHandler.cursorRangeEnd?.verse !== undefined) ? getVersesFromRange(focusCursorHandler.cursor, focusCursorHandler.cursorRangeEnd) :
                   (showFocusVerseSingle && focusCursorHandler.cursor.verse !== undefined)
                     ? [focusCursorHandler.cursor.verse]
                     : undefined
               }
+              highlightedVerses={memoryVersesNumbersInCurrentChapter}
               marginBottom={chapterViewMarginBottom}
             />
           </SwipeableContainer>
