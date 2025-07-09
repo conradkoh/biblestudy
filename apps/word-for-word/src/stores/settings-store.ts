@@ -36,7 +36,7 @@ const initialState: SettingsState = {
   fontWeight: "400",
   fontFamily: "Inter",
   paragraphFontFamily: "Sahitya-Regular",
-  memoryVerseMode: 'full_word',
+  memoryVerseMode: 'first_letter',
 };
 
 export const useSettingsStore = create<SettingsStore>()(
