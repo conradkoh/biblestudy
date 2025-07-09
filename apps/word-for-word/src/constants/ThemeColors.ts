@@ -78,6 +78,9 @@ export const ThemeColors = {
     highlighterPurple: "#ede9fe",
     highlighterOrange: "#ffe5b4",
     highlighterPink: "#ffe4ef",
+
+    permanentWhite: "#ffffff",
+    permanentBlack: "#000000",
   },
   dark: {
     // Surface colors
@@ -121,5 +124,8 @@ export const ThemeColors = {
     highlighterPurple: "#a78bfa55",
     highlighterOrange: "#fdba7455",
     highlighterPink: "#f472b655",
+
+    permanentWhite: "#ffffff",
+    permanentBlack: "#000000",
   },
 };
