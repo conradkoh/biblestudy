@@ -45,8 +45,8 @@ export default function TabLayout() {
   if (!fontsLoaded || !isBibleLoaded) return <TSafeAreaView>
     <StatusBar style="auto" backgroundColor={themeColors.surface} />
     <TView className="h-full justify-center items-center">
-      <ActivityIndicator size="large" color={themeColors.primary} />
-      <TText className="mt-4 text-sm" style={{ color: themeColors.primary }} >Loading...</TText>
+      <ActivityIndicator size="large" color={themeColors.text} />
+      <TText className="mt-4 text-sm" style={{ color: themeColors.text }} >Loading...</TText>
     </TView>
   </TSafeAreaView>
 

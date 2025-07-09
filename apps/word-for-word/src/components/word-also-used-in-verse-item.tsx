@@ -111,7 +111,7 @@ const WordAlsoUsedInVerseItem: FC<WordAlsoUsedInVerseItemProps> = ({ bible, curs
               color:
                 content.strongsNumber ===
                   currentStrongsWord.strongs
-                  ? themeColors.success
+                  ? themeColors.selected
                   : themeColors.text,
             }}
           >

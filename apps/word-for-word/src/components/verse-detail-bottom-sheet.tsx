@@ -170,7 +170,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                         className={classNames("text-xs")}
                         style={{
                           color: isCurrentStrongsWord
-                            ? themeColors.success
+                            ? themeColors.selected
                             : themeColors.textHighlight,
                         }}
                       >
@@ -180,7 +180,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
                         className={classNames("text-xs")}
                         style={{
                           color: isCurrentStrongsWord
-                            ? themeColors.success
+                            ? themeColors.selected
                             : themeColors.textHighlight,
                         }}
                       >
@@ -197,14 +197,14 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
               <View className="flex flex-col" style={{ gap: 8 }}>
                 <TText
                   className="text-xs font-semibold "
-                  style={{ color: themeColors.success }}
+                  style={{ color: themeColors.selected }}
                 >
                   Strongs: {currentStrongsWord.strongs}
                 </TText>
                 {/* Hebrew / Greek + Translit */}
                 <TText
                   type="subtitle"
-                  style={{ color: themeColors.success, textAlign: "left" }}
+                  style={{ color: themeColors.selected, textAlign: "left" }}
                 >
                   {currentStrongsWord.originalWord} -{" "}
                   {currentStrongsWord.transliteration}

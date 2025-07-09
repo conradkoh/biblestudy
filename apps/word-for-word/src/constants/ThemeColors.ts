@@ -21,6 +21,7 @@
  * - primaryHover: Hover state for primary elements
  * - secondary: Secondary brand color
  * - secondaryHover: Hover state for secondary elements
+ * - selected: Selected state color (complements textHighlight)
  * 
  * Status colors:
  * - success: Success states
@@ -49,13 +50,14 @@ export const ThemeColors = {
     textSecondary: "#475569",
     textTertiary: "#94a3b8",
     textContrast: "#ffffff",
-    textHighlight: "#0284c7",
+    textHighlight: "#3b82f6",
 
     // Interactive colors
-    primary: "#0284c7",
-    primaryHover: "#0369a1",
+    primary: "#3b82f6",
+    primaryHover: "#2563eb",
     secondary: "#6366f1",
     secondaryHover: "#4f46e5",
+    selected: "#059669",
 
     // Status colors
     success: "#22c55e",
@@ -91,13 +93,14 @@ export const ThemeColors = {
     textSecondary: "#cbd5e1",
     textTertiary: "#64748b",
     textContrast: "#151718",
-    textHighlight: "#38bdf8",
+    textHighlight: "#60a5fa",
 
     // Interactive colors
-    primary: "#38bdf8",
-    primaryHover: "#7dd3fc",
+    primary: "#60a5fa",
+    primaryHover: "#93c5fd",
     secondary: "#818cf8",
     secondaryHover: "#a5b4fc",
+    selected: "#10b981",
 
     // Status colors
     success: "#4ade80",
