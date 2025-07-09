@@ -50,6 +50,17 @@ export default defineSchema({
       createdAt: v.number(),
     })),
   })),
+  verseHighlights: defineTable(v.object({
+    userId: v.id("users"),
+    version: v.union(v.literal('niv'), v.literal('kjv')),
+    bookId: v.string(),
+    chapter: v.number(),
+    verses: v.record(v.string(), v.object({
+      color: v.union(v.literal('highlighterBlue'), v.literal('highlighterGreen'), v.literal('highlighterYellow'), v.literal('highlighterRed'), v.literal('highlighterPurple'), v.literal('highlighterOrange'), v.literal('highlighterPink')),
+      createdAt: v.number(),
+    })),
+  }))
+    .index("by_user_version_book_chapter", ["userId", "version", "bookId", "chapter"]),
   messages: defineTable(v.object({
     senderId: v.id("users"),
     receiverId: v.union(v.id("users"), v.id("userGroups")),

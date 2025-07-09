@@ -12,15 +12,17 @@ import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } 
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View, DimensionValue, useWindowDimensions } from "react-native";
 import Reanimated, { useDerivedValue } from "react-native-reanimated";
 import { SharedValue } from "react-native-reanimated";
+import type { HighlightColor } from "@/src/types/highlight";
 
 type BibleChapterView = {
   cursorHandler: BibleCursorHandler;
   onPressVerse: (verse: number) => void;
   onLongPressVerse: (verse: number) => void;
-  highlightedVerses?: number[];
+  memorisedVerses?: number[];
   selectedVerses?: number[];
   onScrollBegin?: () => void;
   marginBottom?: SharedValue<number>;
+  verseHighlightsMap?: Map<number, string>;
 };
 
 export type BibleChapterViewRef = {
@@ -30,7 +32,7 @@ export type BibleChapterViewRef = {
 const BibleChapterView = React.forwardRef<
   BibleChapterViewRef,
   BibleChapterView
->(({ cursorHandler, onPressVerse, onLongPressVerse, highlightedVerses, selectedVerses, onScrollBegin, marginBottom }, forwardRef) => {
+>(({ cursorHandler, onPressVerse, onLongPressVerse, memorisedVerses, selectedVerses, onScrollBegin, marginBottom, verseHighlightsMap }, forwardRef) => {
   const scrollViewRef = useRef<Reanimated.ScrollView>(null);
   const bible = useBibleStore();
   const settings = useSettingsStore();
@@ -139,9 +141,11 @@ const BibleChapterView = React.forwardRef<
           }}>
           {verses.map((verse, i) => {
             // Combine external highlighting with internal search result highlighting
-            const isHighlighted = highlightedVerses?.includes(i + 1);
+            const isMemorised = memorisedVerses?.includes(i + 1);
             const isSearchResultHighlight = searchResultHighlight?.verse === i + 1;
             const isSelected = selectedVerses?.includes(i + 1);
+            const highlightColor = verseHighlightsMap?.get(i + 1);
+
             return (
               <React.Fragment key={verse.name}>
                 <TText
@@ -153,7 +157,8 @@ const BibleChapterView = React.forwardRef<
                     style={{
                       // since this component comes first, line height determined here
                       lineHeight: settings.lineHeight,
-                      ...isHighlighted && { backgroundColor: themeColors.surfaceHighlight },
+                      ...isMemorised && { backgroundColor: themeColors.surfaceHighlight },
+                      ...highlightColor && { backgroundColor: highlightColor },
                     }}
                   >
                     {` ${toSuperscript(verse.verse)} `}
@@ -164,9 +169,10 @@ const BibleChapterView = React.forwardRef<
                       fontSize: settings.textSize,
                       fontWeight: settings.fontWeight,
                       fontFamily: settings.paragraphFontFamily,
-                      ...isHighlighted && { backgroundColor: themeColors.surfaceHighlight },
+                      ...isMemorised && { backgroundColor: themeColors.surfaceHighlight },
                       ...isSearchResultHighlight && { backgroundColor: themeColors.highlighterBlue },
-                      ...isSelected && { textDecorationLine: 'underline', textDecorationStyle: 'dotted' }
+                      ...isSelected && { textDecorationLine: 'underline', textDecorationStyle: 'dotted' },
+                      ...highlightColor && { backgroundColor: highlightColor },
                     }}
                   >
                     {verse.text}

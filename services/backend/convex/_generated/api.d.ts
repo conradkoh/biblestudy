@@ -27,6 +27,7 @@ import type * as system from "../system.js";
 import type * as telegram from "../telegram.js";
 import type * as userNotifications from "../userNotifications.js";
 import type * as users from "../users.js";
+import type * as verseHighlights from "../verseHighlights.js";
 
 import type {
   ApiFromModules,
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   telegram: typeof telegram;
   userNotifications: typeof userNotifications;
   users: typeof users;
+  verseHighlights: typeof verseHighlights;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

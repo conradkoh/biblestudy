@@ -40,6 +40,7 @@ export default function ReadScreen() {
   const bibleChapterViewRef = useRef<BibleChapterViewRef | null>(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const tabBarHeight = useBottomTabBarHeight();
+  const themeColors = useThemeColors();
 
   const bottomSheetAnimatedValue = useSharedValue(0);
 
@@ -72,7 +73,6 @@ export default function ReadScreen() {
   const cursorHandler = useBibleCursorHandler(onCursorChange);
 
   useBibleBookmark(bible, cursorHandler);
-  const themeColors = useThemeColors();
   const [isChapterVerseSelectorVisible, setIsChapterVerseSelectorVisible] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [showFocusVerseSingle, setShowFocusVerseSingle] = useState(false);
@@ -80,7 +80,7 @@ export default function ReadScreen() {
   const [isSelectingRange, setIsSelectingRange] = useState(false)
   const focusCursorHandler = useBibleCursorHandler();
 
-
+  // Fetch memory verses
   const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
   const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
   const memoryVersesNumbersInCurrentChapter = useMemo(() => {
@@ -89,6 +89,32 @@ export default function ReadScreen() {
       verse.chapter === cursorHandler.cursor.chapter
     ).map(verse => verse.verse);
   }, [cachedOrActualVerses, cursorHandler.cursor.chapter]);
+
+  // Fetch verse highlights for the current chapter
+  const chapterHighlights = useQuery(
+    api.verseHighlights.getChapterHighlights,
+    {
+      version: cursorHandler.cursor.version,
+      bookId: cursorHandler.cursor.bookId,
+      chapter: cursorHandler.cursor.chapter,
+    }
+  );
+
+  // Create a map of verse numbers to highlight colors
+  const verseHighlightsMap = useMemo(() => {
+    if (!chapterHighlights) return new Map();
+
+    const highlightsMap = new Map<number, string>();
+
+    Object.entries(chapterHighlights).forEach(([verseNumber, highlight]) => {
+      const verse = parseInt(verseNumber, 10);
+      if (!isNaN(verse)) {
+        highlightsMap.set(verse, themeColors[highlight.color]);
+      }
+    });
+
+    return highlightsMap;
+  }, [chapterHighlights, themeColors]);
 
   useSessionLogger();
 
@@ -203,7 +229,8 @@ export default function ReadScreen() {
                     ? [focusCursorHandler.cursor.verse]
                     : undefined
               }
-              highlightedVerses={memoryVersesNumbersInCurrentChapter}
+              memorisedVerses={memoryVersesNumbersInCurrentChapter}
+              verseHighlightsMap={verseHighlightsMap}
               marginBottom={chapterViewMarginBottom}
             />
           </SwipeableContainer>
