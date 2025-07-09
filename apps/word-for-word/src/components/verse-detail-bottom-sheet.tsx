@@ -120,8 +120,8 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
         enableScrollView
         animatedPosition={bottomSheetAnimatedValue}
       >
-        <View className="flex-1 px-3 py-1">
-          <View className="flex-row justify-between items-center">
+        <View className="flex-1 py-1">
+          <View className="flex-row justify-between items-center px-3">
             <View className="flex flex-row items-center" style={{ gap: 8 }}>
               <Ionicons
                 size={20}
@@ -147,7 +147,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
               version={cursorHandler.cursor.version}
             />
           )}
-          <View className="flex flex-row flex-wrap" style={{ gap: 8 }}>
+          <View className="flex flex-row flex-wrap px-3" style={{ gap: 8 }}>
             {bible
               .getInterlinearVerse(cursorHandler.cursor)
               ?.contents.map((content, i) => {
@@ -194,35 +194,37 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
 
           {cursorHandler && currentStrongsWord && (
             <View className="mt-6">
-              <View className="flex flex-col" style={{ gap: 8 }}>
-                <TText
-                  className="text-xs font-semibold "
-                  style={{ color: themeColors.selected }}
-                >
-                  Strongs: {currentStrongsWord.strongs}
-                </TText>
-                {/* Hebrew / Greek + Translit */}
-                <TText
-                  type="subtitle"
-                  style={{ color: themeColors.selected, textAlign: "left" }}
-                >
-                  {currentStrongsWord.originalWord} -{" "}
-                  {currentStrongsWord.transliteration}
-                </TText>
-                {/* Pronunciation */}
-                {currentStrongsWord.pronounciation && (
-                  <TText className="italic text-xs">
-                    {currentStrongsWord.pronounciation}
+              <View className="flex flex-col">
+                <View className="flex flex-col px-3" style={{ gap: 8 }}>
+                  <TText
+                    className="text-xs font-semibold "
+                    style={{ color: themeColors.selected }}
+                  >
+                    Strongs: {currentStrongsWord.strongs}
                   </TText>
-                )}
-                {/* English Word */}
-                <TText>{currentStrongsWord.word}</TText>
-                <TText className="mt-3" type="subtitle">
-                  Short Definition:
-                </TText>
-                <TText>{currentStrongsWord.data.def?.short}</TText>
+                  {/* Hebrew / Greek + Translit */}
+                  <TText
+                    type="subtitle"
+                    style={{ color: themeColors.selected, textAlign: "left" }}
+                  >
+                    {currentStrongsWord.originalWord} -{" "}
+                    {currentStrongsWord.transliteration}
+                  </TText>
+                  {/* Pronunciation */}
+                  {currentStrongsWord.pronounciation && (
+                    <TText className="italic text-xs">
+                      {currentStrongsWord.pronounciation}
+                    </TText>
+                  )}
+                  {/* English Word */}
+                  <TText>{currentStrongsWord.word}</TText>
+                  <TText className="mt-3" type="subtitle">
+                    Short Definition:
+                  </TText>
+                  <TText>{currentStrongsWord.data.def?.short}</TText>
+                </View>
                 {/* Used in... section */}
-                <TText className="mt-6" type="subtitle">
+                <TText className="mt-6 mb-3 mx-3" type="subtitle">
                   Also used in...
                 </TText>
                 <View className="flex flex-col mb-2" style={{ gap: 12 }}>

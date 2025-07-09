@@ -22,37 +22,41 @@ import {
 import {
   useFonts as useInter,
   Inter_400Regular as InterRegular,
+  Inter_600SemiBold as InterSemiBold,
+  Inter_700Bold as InterBold,
 } from '@expo-google-fonts/inter';
 
 export function useFontLoader() {
   const [sahityaLoaded] = useFonts({
     'Sahitya-Regular': require('../../assets/fonts/Sahitya-Regular.ttf'),
   });
-  
+
   const [merriweatherLoaded] = useMerriweather({
     'Merriweather-Regular': MerriweatherRegular,
   });
-  
+
   const [loraLoaded] = useLora({
     'Lora-Regular': LoraRegular,
   });
-  
+
   const [sourceSerifLoaded] = useSourceSerifPro({
     'SourceSerifPro-Regular': SourceSerifProRegular,
   });
-  
+
   const [sourceSansLoaded] = useSourceSansPro({
     'SourceSansPro-Regular': SourceSansProRegular,
   });
-  
+
   const [openSansLoaded] = useOpenSans({
     'OpenSans-Regular': OpenSansRegular,
   });
-  
+
   const [interLoaded] = useInter({
     'Inter-Regular': InterRegular,
+    'Inter-SemiBold': InterSemiBold,
+    'Inter-Bold': InterBold,
   });
 
-  return sahityaLoaded && merriweatherLoaded && loraLoaded && 
+  return sahityaLoaded && merriweatherLoaded && loraLoaded &&
     sourceSerifLoaded && sourceSansLoaded && openSansLoaded && interLoaded;
 }

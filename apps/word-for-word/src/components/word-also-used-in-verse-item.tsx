@@ -28,25 +28,20 @@ const WordAlsoUsedInVerseItem: FC<WordAlsoUsedInVerseItemProps> = ({ bible, curs
   return (
     <TouchableOpacity
       className="flex flex-col"
-      style={{ gap: 4 }}
+      style={{ gap: 4, backgroundColor: themeColors.surface, borderBottomColor: themeColors.border, borderBottomWidth: 1, paddingBottom: 12 }}
       onPress={() => {
         onPress();
       }}
     >
-      <View className="flex-row" style={{ gap: 4 }}>
-        <TText className="text-xs font-semibold">
+      <View className="flex-row px-3" style={{ gap: 4 }}>
+        <TText className="font-bold">
           {mapBookIdsToName[item.bookId]} {item.chapter}
           :{item.verse}
-        </TText>
-        <TText className="text-xs font-semibold">
-          {bible
-            .getTranslation(cursorHandler.cursor.version)
-            .abbreviation.toUpperCase()}
         </TText>
       </View>
 
       {/* Original version's text */}
-      <View className="flex flex-row flex-wrap">
+      <View className="flex flex-row flex-wrap px-3">
         <View
           className="rounded-md items-center justify-center px-1 mr-1"
           style={{
@@ -82,7 +77,7 @@ const WordAlsoUsedInVerseItem: FC<WordAlsoUsedInVerseItemProps> = ({ bible, curs
       </View>
 
       {/* Interlinear's English text */}
-      <View className="flex flex-row flex-wrap">
+      <View className="flex flex-row flex-wrap px-3">
         <View
           className="rounded-md items-center justify-center px-1 mr-1"
           style={{
@@ -98,26 +93,22 @@ const WordAlsoUsedInVerseItem: FC<WordAlsoUsedInVerseItemProps> = ({ bible, curs
             Interlinear (KJV)
           </TText>
         </View>
-        {item.contents.map((content, wordIdx) => (
-          <TText
+        {item.contents.map((content, wordIdx) => {
+          const isCurrentStrongsWord = content.strongsNumber === currentStrongsWord.strongs;
+          return <TText
             // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
             key={wordIdx}
             className={classNames("mr-1 text-sm", {
-              "font-semibold":
-                content.strongsNumber ===
-                currentStrongsWord.strongs,
+              "font-semibold": isCurrentStrongsWord,
             })}
             style={{
-              color:
-                content.strongsNumber ===
-                  currentStrongsWord.strongs
-                  ? themeColors.selected
-                  : themeColors.text,
+              color: themeColors.text,
+              ...isCurrentStrongsWord && { color: themeColors.selected, backgroundColor: themeColors.surfaceHighlight },
             }}
           >
             {content.text}
-          </TText>
-        ))}
+          </TText>;
+        })}
       </View>
       {/* Original language text */}
       {/* <View className="flex flex-row flex-wrap">
