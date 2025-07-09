@@ -169,7 +169,7 @@ export function bookIdFromName(bookName: string): BookId | null {
   normalizedBookName = normalizedBookName.replaceAll(/\s+/g, "_");
 
   if (!isBookId(normalizedBookName)) {
-    console.error(`Invalid book name found: ${bookName}`);
+    console.warn(`Invalid book name found: ${bookName}`);
     return null;
   }
 
