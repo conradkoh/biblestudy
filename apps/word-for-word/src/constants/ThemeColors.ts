@@ -70,18 +70,18 @@ export const ThemeColors = {
   },
   dark: {
     // Surface colors
-    surface: "#0f172a",
-    surfaceSecondary: "#1e293b",
-    surfaceTertiary: "#334155",
-    surfaceHighlight: "#1e3a4a",
-    surfaceMuted: "#1e293b",
-    surfacePressed: "#334155",
+    surface: "#151718",
+    surfaceSecondary: "#1a1d1e",
+    surfaceTertiary: "#2a2d2e",
+    surfaceHighlight: "#1e2a2e",
+    surfaceMuted: "#1a1d1e",
+    surfacePressed: "#2a2d2e",
 
     // Text colors
     text: "#f8fafc",
     textSecondary: "#cbd5e1",
     textTertiary: "#64748b",
-    textContrast: "#0f172a",
+    textContrast: "#151718",
     textHighlight: "#38bdf8",
 
     // Interactive colors
