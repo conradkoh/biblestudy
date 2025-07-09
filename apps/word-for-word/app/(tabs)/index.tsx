@@ -30,6 +30,7 @@ import ChapterVerseSelector from "@/src/components/chapter-verse-selector";
 import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
 import { api } from "@backend/convex/_generated/api";
 import { useQuery } from "convex/react";
+import { CommonEvents } from "@/src/hooks/useEvents";
 
 const BIBLE_CHAPTER_CONTROLS_HEIGHT = 40;
 
@@ -93,8 +94,8 @@ export default function ReadScreen() {
 
   // Handle search result selection to trigger highlighting
   const handleSearchResultSelect = useCallback((result: SearchResultItem) => {
-    // Trigger highlighting in BibleChapterView
-    bibleChapterViewRef.current?.highlightSearchResult(result.verse);
+    const cursor: BibleCursor = { bookId: result.bookId, chapter: result.chapter, verse: result.verse, version: result.version };
+    CommonEvents.emit('HIGHLIGHT_VERSE', cursor);
   }, []);
 
   function onPressVerse(verse: number) {

@@ -4,6 +4,7 @@ import { TView } from "@/src/components/core/TView";
 import { HITSLOP_DEFAULT, HITSLOP_LARGE } from "@/src/consts/hitslop";
 import { SHADOW_SMALL } from "@/src/consts/shadow";
 import type { useBibleCursorHandler } from "@/src/hooks/useBibleCursor";
+import { CommonEvents } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import {
@@ -26,7 +27,7 @@ import {
   View,
 } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
-import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const NUM_BUTTONS_PER_ROW = 5;
 const KEYBOARD_TOOLBAR_HEIGHT = 42;
@@ -146,7 +147,8 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
       console.warn("Invalid cursor values", delta);
       return;
     }
-    cursorHandler.updateCursor(delta);
+    const updatedCursor = cursorHandler.updateCursor(delta);
+    CommonEvents.emit('HIGHLIGHT_VERSE', updatedCursor);
     setIsVisible(false);
   }
 

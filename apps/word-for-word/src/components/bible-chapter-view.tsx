@@ -1,12 +1,12 @@
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
-import { CommonEvents } from "@/src/hooks/useEvents";
+import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { sessionLogger } from "@/src/hooks/useSessionLogger";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { toSuperscript, useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
-import { mapBookIdsToName } from "@common/utils/bible-data-utils";
+import { BibleCursor, mapBookIdsToName } from "@common/utils/bible-data-utils";
 import { isDefined } from "@common/utils/typecheck";
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { NativeSyntheticEvent, NativeScrollEvent, ScrollView, TouchableOpacity, View, DimensionValue, useWindowDimensions } from "react-native";
@@ -25,7 +25,6 @@ type BibleChapterView = {
 
 export type BibleChapterViewRef = {
   scrollToVerse: (verse: number) => void;
-  highlightSearchResult: (verse: number) => void;
 };
 
 const BibleChapterView = React.forwardRef<
@@ -41,20 +40,14 @@ const BibleChapterView = React.forwardRef<
   const scrollViewHeightRef = useRef(0);
 
   // Search result highlighting state
-  const [searchResultHighlight, setSearchResultHighlight] = useState<{
-    verses: number[];
-    timestamp: number;
-  } | null>(null);
+  const [searchResultHighlight, setSearchResultHighlight] = useState<BibleCursor | null>(null);
 
-  // Auto-clear search result highlighting after 3 seconds
-  useEffect(() => {
-    if (searchResultHighlight) {
-      const timer = setTimeout(() => {
-        setSearchResultHighlight(null);
-      }, 1800);
-      return () => clearTimeout(timer);
-    }
-  }, [searchResultHighlight]);
+  useEvent(CommonEvents, 'HIGHLIGHT_VERSE', (cursor, duration) => {
+    setSearchResultHighlight(cursor);
+    setTimeout(() => {
+      setSearchResultHighlight(null);
+    }, duration ?? 1500);
+  })
 
   useEffect(() => {
     const unmount = sessionLogger.mountBibleChapterView(cursorHandler, verseYCoordsRef, scrollYRef, scrollViewHeightRef);
@@ -78,13 +71,7 @@ const BibleChapterView = React.forwardRef<
         }
 
         scrollViewRef.current?.scrollTo({ y: verseY, animated: false });
-      },
-      highlightSearchResult: (verse: number) => {
-        setSearchResultHighlight({
-          verses: [verse],
-          timestamp: Date.now()
-        });
-      },
+      }
     }),
     [],
   );
@@ -152,8 +139,8 @@ const BibleChapterView = React.forwardRef<
           }}>
           {verses.map((verse, i) => {
             // Combine external highlighting with internal search result highlighting
-            const isHighlighted = highlightedVerses?.includes(i + 1) ||
-              searchResultHighlight?.verses.includes(i + 1);
+            const isHighlighted = highlightedVerses?.includes(i + 1);
+            const isSearchResultHighlight = searchResultHighlight?.verse === i + 1;
             const isSelected = selectedVerses?.includes(i + 1);
             return (
               <React.Fragment key={verse.name}>
@@ -178,6 +165,7 @@ const BibleChapterView = React.forwardRef<
                       fontWeight: settings.fontWeight,
                       fontFamily: settings.paragraphFontFamily,
                       ...isHighlighted && { backgroundColor: themeColors.surfaceHighlight },
+                      ...isSearchResultHighlight && { backgroundColor: themeColors.highlighterBlue },
                       ...isSelected && { textDecorationLine: 'underline', textDecorationStyle: 'dotted' }
                     }}
                   >

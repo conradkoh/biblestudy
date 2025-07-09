@@ -85,6 +85,7 @@ export function useBibleCursorHandler(
     const updatedCursor = { ...cursor, ...delta };
     setCursor(updatedCursor);
     onCursorChange?.(delta);
+    return updatedCursor;
   }
 }
 
