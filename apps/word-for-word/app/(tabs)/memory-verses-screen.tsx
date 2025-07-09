@@ -2,7 +2,7 @@ import { Button } from "@/src/components/core/Button";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
-import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
+import { usePersistedQuery } from "@/src/hooks/usePersistedQuery";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { api } from "@backend/convex/_generated/api";
@@ -27,11 +27,14 @@ import { Swipeable } from "react-native-gesture-handler";
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
   const getVersesText = useBibleStore(s => s.getVersesText);
-  const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
   const router = useRouter();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
 
-  const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
+  const memoryVerses = usePersistedQuery(
+    api.memoryVerses.getMemoryVerses,
+    [{}],
+    { storageKey: 'CACHE_MEMORY_VERSES' }
+  );
 
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
 
@@ -74,7 +77,7 @@ const MemorizeScreen: FC = () => {
   );
 
   const handleStartDailyTest = () => {
-    if (!cachedOrActualVerses || cachedOrActualVerses.length === 0) {
+    if (!memoryVerses || memoryVerses.length === 0) {
       Alert.alert(
         "No Verses Available",
         "You need to add some memory verses before starting a daily test.",
@@ -91,7 +94,7 @@ const MemorizeScreen: FC = () => {
     const today = startOfDay(new Date());
 
     // Filter out verses that have been recited today
-    const versesNotRecitedToday = cachedOrActualVerses.filter(verse => {
+    const versesNotRecitedToday = memoryVerses.filter(verse => {
       const todayEntries = verse.memoryEntries.filter(entry => {
         const entryDate = startOfDay(new Date(entry.createdAt));
         return entryDate.valueOf() === today.valueOf();
@@ -100,7 +103,7 @@ const MemorizeScreen: FC = () => {
     });
 
     // If we don't have enough verses, use all verses
-    const availableVerses = versesNotRecitedToday.length < 5 ? cachedOrActualVerses : versesNotRecitedToday;
+    const availableVerses = versesNotRecitedToday.length < 5 ? memoryVerses : versesNotRecitedToday;
 
     // Randomly select 5 verses
     const selectedVerses = [];
@@ -250,7 +253,7 @@ const MemorizeScreen: FC = () => {
     [themeColors, handleVersePress, renderRightActions, getVersesText],
   );
 
-  if (!cachedOrActualVerses) {
+  if (!memoryVerses) {
     return (
       <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TText>Loading...</TText>
@@ -258,7 +261,7 @@ const MemorizeScreen: FC = () => {
     );
   }
 
-  if (cachedOrActualVerses.length === 0) {
+  if (memoryVerses.length === 0) {
     return (
       <TSafeAreaView className="items-center justify-center" edges={['top']}>
         <TView className="items-center">
@@ -281,7 +284,7 @@ const MemorizeScreen: FC = () => {
   return (
     <TSafeAreaView edges={['top']}>
       <FlatList
-        data={cachedOrActualVerses}
+        data={memoryVerses}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
@@ -290,7 +293,7 @@ const MemorizeScreen: FC = () => {
         className="w-full py-3 items-center justify-center"
         style={{ backgroundColor: themeColors.primary }}
         onPress={handleStartDailyTest}
-        disabled={!cachedOrActualVerses.length}
+        disabled={!memoryVerses.length}
       >
         {props => {
           return <TText {...props} className="font-bold">Start Daily Test</TText>

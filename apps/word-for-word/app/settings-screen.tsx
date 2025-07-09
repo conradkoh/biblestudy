@@ -15,6 +15,7 @@ import { api } from "@backend/convex/_generated/api";
 import { useQuery } from "convex/react";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { getVersionString } from "@/src/use-cases/mobile-versioning";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const SAMPLE_VERSE =
   "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life. - John 3:16";
 
@@ -86,7 +87,10 @@ export default function SettingsScreen() {
               @{currentUser?.username}
             </TText>
           </View>
-          <TouchableOpacity className="mx-2" onPress={signOut}>
+          <TouchableOpacity className="mx-2" onPress={() => {
+            signOut();
+            AsyncStorage.clear();
+          }}>
             <TText className="font-bold" style={{ color: themeColors.error }} >Logout</TText>
           </TouchableOpacity>
         </View>

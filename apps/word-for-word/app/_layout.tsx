@@ -12,7 +12,6 @@ import { convex } from "@/src/services/convex";
 import { useBibleStore } from "@/src/stores/bible-store";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
 import { Stack } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { StatusBar } from "expo-status-bar";
@@ -21,6 +20,9 @@ import { ActivityIndicator } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 const secureStorage = {
   getItem: SecureStore.getItemAsync,
@@ -37,6 +39,7 @@ export default function TabLayout() {
   const [isBibleLoaded, setIsBibleLoaded] = useState(false);
 
   useEffect(() => {
+    SplashScreen.hideAsync();
     loadBibleStore().then(() => {
       setIsBibleLoaded(true);
     });

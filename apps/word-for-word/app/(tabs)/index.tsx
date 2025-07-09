@@ -27,10 +27,9 @@ import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import ChapterVerseSelector from "@/src/components/chapter-verse-selector";
-import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
 import { api } from "@backend/convex/_generated/api";
-import { useQuery } from "convex/react";
 import { CommonEvents } from "@/src/hooks/useEvents";
+import { usePersistedQuery } from "@/src/hooks/usePersistedQuery";
 
 const BIBLE_CHAPTER_CONTROLS_HEIGHT = 40;
 
@@ -80,24 +79,29 @@ export default function ReadScreen() {
   const [isSelectingRange, setIsSelectingRange] = useState(false)
   const focusCursorHandler = useBibleCursorHandler();
 
-  // Fetch memory verses
-  const memoryVerses = useQuery(api.memoryVerses.getMemoryVerses);
-  const cachedOrActualVerses = useCachedMemoryVerses(memoryVerses);
+  // Fetch memory verses with caching
+  const memoryVerses = usePersistedQuery(
+    api.memoryVerses.getMemoryVerses,
+    [{}],
+    { storageKey: 'CACHE_MEMORY_VERSES' }
+  );
+
   const memoryVersesNumbersInCurrentChapter = useMemo(() => {
-    return cachedOrActualVerses?.filter(verse =>
+    return memoryVerses?.filter(verse =>
       verse.bookId === cursorHandler.cursor.bookId &&
       verse.chapter === cursorHandler.cursor.chapter
     ).map(verse => verse.verse);
-  }, [cachedOrActualVerses, cursorHandler.cursor.chapter]);
+  }, [memoryVerses, cursorHandler.cursor.chapter]);
 
-  // Fetch verse highlights for the current chapter
-  const chapterHighlights = useQuery(
+  // Fetch verse highlights for the current chapter with caching
+  const chapterHighlights = usePersistedQuery(
     api.verseHighlights.getChapterHighlights,
-    {
+    [{
       version: cursorHandler.cursor.version,
       bookId: cursorHandler.cursor.bookId,
       chapter: cursorHandler.cursor.chapter,
-    }
+    }],
+    { storageKey: `CHAPTER_HIGHLIGHTS_${cursorHandler.cursor.version}_${cursorHandler.cursor.bookId}_${cursorHandler.cursor.chapter}` }
   );
 
   // Create a map of verse numbers to highlight colors
@@ -108,8 +112,11 @@ export default function ReadScreen() {
 
     Object.entries(chapterHighlights).forEach(([verseNumber, highlight]) => {
       const verse = parseInt(verseNumber, 10);
-      if (!isNaN(verse)) {
-        highlightsMap.set(verse, themeColors[highlight.color]);
+      if (!isNaN(verse) && highlight && typeof highlight === 'object' && 'color' in highlight) {
+        const color = (highlight as any).color;
+        if (color && color in themeColors) {
+          highlightsMap.set(verse, themeColors[color as keyof typeof themeColors]);
+        }
       }
     });
 

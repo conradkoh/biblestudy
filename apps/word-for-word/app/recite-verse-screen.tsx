@@ -8,7 +8,6 @@ import {
   type BibleCursorRangeEnd,
   getVerseNameFormatted,
   isBookId,
-  mapBookIdsToName,
   type BibleCursor,
   type BookId,
 } from "@common/utils/bible-data-utils";
@@ -30,7 +29,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { isDefined } from "@common/utils/typecheck";
 import { useSettingsStore } from "@/src/stores/settings-store";
-import { useCachedMemoryVerses } from "@/src/hooks/useCachedMemoryVerses";
+import { usePersistedQuery } from "@/src/hooks/usePersistedQuery";
 
 function memoryVerseToCursor(
   memoryVerse: Doc<"memoryVerses"> | null | undefined,
@@ -73,7 +72,12 @@ export default function MemoryVersePracticeScreen() {
   const totalVerseCount = verseIds?.length;
   const isMultiVerse = totalVerseCount && totalVerseCount > 1;
 
-  const cachedMemoryVerses = useCachedMemoryVerses(void 0);
+  const cachedMemoryVerses = usePersistedQuery(
+    api.memoryVerses.getMemoryVerses,
+    [{}],
+    { storageKey: 'CACHE_MEMORY_VERSES' }
+  );
+
   const cachedOrActualVerse = isDefined(memoryVerse) ? memoryVerse : cachedMemoryVerses?.find(v => v._id === verseId);
   const isOffline = !isDefined(memoryVerse);
   const [showIsOffline, setShowIsOffline] = useState(false);
