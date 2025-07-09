@@ -47,7 +47,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
     <TBottomSheetModal
       ref={bottomSheetRef}
       onChange={handleSheetChanges}
-      snapPoints={[150]}
+      enableDynamicSizing
       enablePanDownToClose
       handleIndicatorStyle={{
         backgroundColor: themeColors.text,
@@ -56,7 +56,6 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
         backgroundColor: themeColors.surface,
       }}
       backdropComponent={CustomBottomSheetBackdrop}
-      enableScrollView
     >
       <View className="flex-1 px-3 py-1">
         <View className="flex flex-row items-center" style={{ gap: 8 }}>

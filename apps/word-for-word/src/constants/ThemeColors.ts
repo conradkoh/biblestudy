@@ -106,8 +106,8 @@ export const ThemeColors = {
     info: "#60a5fa",
 
     // Utility colors
-    border: "#1e293b",
-    divider: "#1e293b",
+    border: "#232627",
+    divider: "#232627",
     overlay: "rgba(0, 0, 0, 0.7)",
 
     // Highlighter (literally) colors
