@@ -1,3 +1,4 @@
+import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { HITSLOP_DEFAULT, HITSLOP_LARGE } from "@/src/consts/hitslop";
@@ -25,6 +26,7 @@ import {
   View,
 } from "react-native";
 import { KeyboardStickyView } from "react-native-keyboard-controller";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const NUM_BUTTONS_PER_ROW = 5;
 const KEYBOARD_TOOLBAR_HEIGHT = 42;
@@ -168,241 +170,243 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
       onRequestClose={() => setIsVisible(false)}
       presentationStyle="overFullScreen"
     >
-      <SafeAreaView>
-        <KeyboardAvoidingView behavior="padding" className="h-full">
-          <TView
-            style={{
-              backgroundColor: themeColors.surface,
-              borderColor: themeColors.surfaceSecondary,
-              borderWidth: 1,
-              marginBottom: KEYBOARD_TOOLBAR_HEIGHT,
-            }}
-            className="pt-3 pb-1 rounded-sm flex-1"
-          >
-            <View className="flex flex-row items-center gap-2 px-4 my-2">
-              <TextInput
-                autoFocus
-                selectTextOnFocus
-                value={bookNameSearch}
-                onChangeText={(text) => {
-                  setBookNameSearch(text);
-                  setVerseSearch("1");
-                  setIsPristine(false);
-                }}
-                className="font-bold text-[18px] rounded-md p-2"
-                style={{
-                  color: themeColors.text,
-                  backgroundColor: themeColors.surfaceSecondary,
-                }}
-                // on return key, focus next
-                autoComplete="off"
-                autoCorrect={false}
-                onSubmitEditing={onSubmitBook}
-                onFocus={() => setCurrentFocus("book")}
-                onBlur={() => setCurrentFocus(null)}
-              />
-              <TextInput
-                ref={chapterTextInputRef}
-                selectTextOnFocus
-                value={`${chapterSearch}`}
-                onChangeText={(text) => {
-                  const cleanText = text.replace(/[^0-9]/g, "");
-                  setChapterSearch(cleanText);
-                  setVerseSearch("1");
-                }}
-                className="font-bold text-[18px] rounded-md p-2"
-                style={{
-                  color: isValidChapterSearch
-                    ? themeColors.text
-                    : themeColors.error,
-                  backgroundColor: themeColors.surfaceSecondary,
-                }}
-                keyboardType="numeric"
-                onSubmitEditing={onSubmitChapter}
-                onFocus={() => setCurrentFocus("chapter")}
-                onBlur={() => setCurrentFocus(null)}
-              />
-              <TText>:</TText>
-              <TextInput
-                ref={verseTextInputRef}
-                selectTextOnFocus
-                value={`${verseSearch}`}
-                onChangeText={(text) => {
-                  const cleanText = text.replace(/[^0-9]/g, "");
-                  setVerseSearch(cleanText);
-                }}
-                className="font-bold text-[18px] rounded-md p-2"
-                style={{
-                  color: isValidVerseSearch
-                    ? themeColors.text
-                    : themeColors.error,
-                  backgroundColor: themeColors.surfaceSecondary,
-                }}
-                keyboardType="numeric"
-                onSubmitEditing={() => bookId && onSubmit()}
-                onFocus={() => setCurrentFocus("verse")}
-                onBlur={() => setCurrentFocus(null)}
-              />
-              <View className="flex-1" />
-              <TouchableOpacity
-                className="rounded-md items-center justify-center p-2"
-                style={{
-                  backgroundColor: themeColors.surfaceSecondary,
-                  opacity: canSubmit ? 1 : 0.5,
-                }}
-                disabled={!canSubmit}
-                onPress={() => onSubmit()}
-                hitSlop={HITSLOP_DEFAULT}
-              >
-                <Ionicons
-                  size={20}
-                  name="arrow-forward"
-                  style={{ color: themeColors.text }}
-                />
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              ref={scrollViewRef}
-              className="mt-2 flex-1"
-              keyboardShouldPersistTaps="always"
+      <SafeAreaProvider>
+        <TSafeAreaView>
+          <KeyboardAvoidingView behavior="padding" className="h-full">
+            <TView
+              style={{
+                backgroundColor: themeColors.surface,
+                borderColor: themeColors.surfaceSecondary,
+                borderWidth: 1,
+                marginBottom: KEYBOARD_TOOLBAR_HEIGHT,
+              }}
+              className="pt-3 pb-1 rounded-sm flex-1"
             >
-              {currentFocus === "book" &&
-                filteredOptions.map((book, i) => {
-                  // When search first opens, we show all books in order. In that case, the current
-                  // option is the one that matches the search string.
-                  const isCurrent = isPristine ? book.toLowerCase() === bookNameSearch.toLowerCase() : i === 0;
-                  return (
-                    <TouchableOpacity
-                      key={book}
-                      style={{
-                        backgroundColor: isCurrent
-                          ? themeColors.surfaceSecondary
-                          : themeColors.surface,
-                        height: SEARCH_BOOK_ITEM_HEIGHT,
-                      }}
-                      className="px-4 py-3 flex flex-row items-center"
-                      onPress={() => {
-                        setBookNameSearch(book);
-                        setVerseSearch("1");
-                        setTimeout(() => {
-                          chapterTextInputRef.current?.focus();
-                        }, 100);
-                      }}
-                    >
-                      <TText>{book}</TText>
-                      <View className="flex-1" />
-                      {isCurrent && (
-                        <View
-                          className="flex flex-row items-center py-1 px-2 rounded-md"
-                          style={{
-                            backgroundColor: themeColors.surfaceTertiary,
-                          }}
-                        >
-                          <Ionicons
-                            size={20}
-                            name="return-down-back-sharp"
-                            style={{ color: themeColors.text }}
-                          />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-
-              {(currentFocus === "chapter" || currentFocus === "verse") && (
-                <View className="flex flex-col px-3" style={{ gap: 12 }}>
-                  {Array.from({
-                    length: Math.ceil(maxButtonNumber / NUM_BUTTONS_PER_ROW),
-                  }).map((_, rowIdx) => {
+              <View className="flex flex-row items-center gap-2 px-4 my-2">
+                <TextInput
+                  autoFocus
+                  selectTextOnFocus
+                  value={bookNameSearch}
+                  onChangeText={(text) => {
+                    setBookNameSearch(text);
+                    setVerseSearch("1");
+                    setIsPristine(false);
+                  }}
+                  className="font-bold text-[18px] rounded-md p-2"
+                  style={{
+                    color: themeColors.text,
+                    backgroundColor: themeColors.surfaceSecondary,
+                  }}
+                  // on return key, focus next
+                  autoComplete="off"
+                  autoCorrect={false}
+                  onSubmitEditing={onSubmitBook}
+                  onFocus={() => setCurrentFocus("book")}
+                  onBlur={() => setCurrentFocus(null)}
+                />
+                <TextInput
+                  ref={chapterTextInputRef}
+                  selectTextOnFocus
+                  value={`${chapterSearch}`}
+                  onChangeText={(text) => {
+                    const cleanText = text.replace(/[^0-9]/g, "");
+                    setChapterSearch(cleanText);
+                    setVerseSearch("1");
+                  }}
+                  className="font-bold text-[18px] rounded-md p-2"
+                  style={{
+                    color: isValidChapterSearch
+                      ? themeColors.text
+                      : themeColors.error,
+                    backgroundColor: themeColors.surfaceSecondary,
+                  }}
+                  keyboardType="numeric"
+                  onSubmitEditing={onSubmitChapter}
+                  onFocus={() => setCurrentFocus("chapter")}
+                  onBlur={() => setCurrentFocus(null)}
+                />
+                <TText>:</TText>
+                <TextInput
+                  ref={verseTextInputRef}
+                  selectTextOnFocus
+                  value={`${verseSearch}`}
+                  onChangeText={(text) => {
+                    const cleanText = text.replace(/[^0-9]/g, "");
+                    setVerseSearch(cleanText);
+                  }}
+                  className="font-bold text-[18px] rounded-md p-2"
+                  style={{
+                    color: isValidVerseSearch
+                      ? themeColors.text
+                      : themeColors.error,
+                    backgroundColor: themeColors.surfaceSecondary,
+                  }}
+                  keyboardType="numeric"
+                  onSubmitEditing={() => bookId && onSubmit()}
+                  onFocus={() => setCurrentFocus("verse")}
+                  onBlur={() => setCurrentFocus(null)}
+                />
+                <View className="flex-1" />
+                <TouchableOpacity
+                  className="rounded-md items-center justify-center p-2"
+                  style={{
+                    backgroundColor: themeColors.surfaceSecondary,
+                    opacity: canSubmit ? 1 : 0.5,
+                  }}
+                  disabled={!canSubmit}
+                  onPress={() => onSubmit()}
+                  hitSlop={HITSLOP_DEFAULT}
+                >
+                  <Ionicons
+                    size={20}
+                    name="arrow-forward"
+                    style={{ color: themeColors.text }}
+                  />
+                </TouchableOpacity>
+              </View>
+              <ScrollView
+                ref={scrollViewRef}
+                className="mt-2 flex-1"
+                keyboardShouldPersistTaps="always"
+              >
+                {currentFocus === "book" &&
+                  filteredOptions.map((book, i) => {
+                    // When search first opens, we show all books in order. In that case, the current
+                    // option is the one that matches the search string.
+                    const isCurrent = isPristine ? book.toLowerCase() === bookNameSearch.toLowerCase() : i === 0;
                     return (
-                      <View
-                        // biome-ignore lint/suspicious/noArrayIndexKey: idx is valid
-                        key={rowIdx}
-                        className="justify-between flex-row w-full"
-                        style={{ gap: 12 }}
+                      <TouchableOpacity
+                        key={book}
+                        style={{
+                          backgroundColor: isCurrent
+                            ? themeColors.surfaceSecondary
+                            : themeColors.surface,
+                          height: SEARCH_BOOK_ITEM_HEIGHT,
+                        }}
+                        className="px-4 py-3 flex flex-row items-center"
+                        onPress={() => {
+                          setBookNameSearch(book);
+                          setVerseSearch("1");
+                          setTimeout(() => {
+                            chapterTextInputRef.current?.focus();
+                          }, 100);
+                        }}
                       >
-                        {Array.from({ length: NUM_BUTTONS_PER_ROW }).map(
-                          (_, colIdx) => {
-                            const number =
-                              rowIdx * NUM_BUTTONS_PER_ROW + colIdx + 1;
-                            if (number > maxButtonNumber) {
-                              return (
-                                <View
-                                  key={number}
-                                  className="flex-1 opacity-0"
-                                />
-                              );
-                            }
-                            return (
-                              <TouchableOpacity
-                                key={number}
-                                style={{
-                                  flex: 1,
-                                  backgroundColor: themeColors.surfaceSecondary,
-                                  aspectRatio: 1,
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                  borderRadius: 8,
-                                }}
-                                onPress={() => {
-                                  if (currentFocus === "chapter") {
-                                    setChapterSearch(`${number}`);
-                                    setTimeout(() => {
-                                      verseTextInputRef.current?.focus();
-                                    }, 100);
-                                    return;
-                                  }
-                                  setVerseSearch(`${number}`);
-                                  canSubmit &&
-                                    onSubmit({
-                                      bookId,
-                                      chapter: chapterSearchNum,
-                                      verse: number,
-                                    });
-                                }}
-                              >
-                                <TText>{number}</TText>
-                              </TouchableOpacity>
-                            );
-                          },
+                        <TText>{book}</TText>
+                        <View className="flex-1" />
+                        {isCurrent && (
+                          <View
+                            className="flex flex-row items-center py-1 px-2 rounded-md"
+                            style={{
+                              backgroundColor: themeColors.surfaceTertiary,
+                            }}
+                          >
+                            <Ionicons
+                              size={20}
+                              name="return-down-back-sharp"
+                              style={{ color: themeColors.text }}
+                            />
+                          </View>
                         )}
-                      </View>
+                      </TouchableOpacity>
                     );
                   })}
-                </View>
-              )}
-            </ScrollView>
-          </TView>
-        </KeyboardAvoidingView>
-        <KeyboardStickyView className="absolute bottom-0 w-screen">
-          <TView
-            className="w-full h-full flex flex-row items-center justify-between py-2 px-4"
-            style={{ ...SHADOW_SMALL, height: KEYBOARD_TOOLBAR_HEIGHT }}
-          >
-            <TouchableOpacity
-              onPress={() => setIsVisible(false)}
-              hitSlop={HITSLOP_LARGE}
-            >
-              <TText className="font-bold">Cancel</TText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSubmitAccessoryView}
-              hitSlop={HITSLOP_LARGE}
-              disabled={!canSubmit && currentFocus === "verse"}
-              style={{
-                opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
-              }}
-            >
-              <TText className="font-bold">
-                {currentFocus !== "verse"
-                  ? "Next"
-                  : `Go to ${bookNameSearch} ${chapterSearch}:${verseSearch}`}
-              </TText>
-            </TouchableOpacity>
-          </TView>
-        </KeyboardStickyView>
 
-      </SafeAreaView>
+                {(currentFocus === "chapter" || currentFocus === "verse") && (
+                  <View className="flex flex-col px-3" style={{ gap: 12 }}>
+                    {Array.from({
+                      length: Math.ceil(maxButtonNumber / NUM_BUTTONS_PER_ROW),
+                    }).map((_, rowIdx) => {
+                      return (
+                        <View
+                          // biome-ignore lint/suspicious/noArrayIndexKey: idx is valid
+                          key={rowIdx}
+                          className="justify-between flex-row w-full"
+                          style={{ gap: 12 }}
+                        >
+                          {Array.from({ length: NUM_BUTTONS_PER_ROW }).map(
+                            (_, colIdx) => {
+                              const number =
+                                rowIdx * NUM_BUTTONS_PER_ROW + colIdx + 1;
+                              if (number > maxButtonNumber) {
+                                return (
+                                  <View
+                                    key={number}
+                                    className="flex-1 opacity-0"
+                                  />
+                                );
+                              }
+                              return (
+                                <TouchableOpacity
+                                  key={number}
+                                  style={{
+                                    flex: 1,
+                                    backgroundColor: themeColors.surfaceSecondary,
+                                    aspectRatio: 1,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    borderRadius: 8,
+                                  }}
+                                  onPress={() => {
+                                    if (currentFocus === "chapter") {
+                                      setChapterSearch(`${number}`);
+                                      setTimeout(() => {
+                                        verseTextInputRef.current?.focus();
+                                      }, 100);
+                                      return;
+                                    }
+                                    setVerseSearch(`${number}`);
+                                    canSubmit &&
+                                      onSubmit({
+                                        bookId,
+                                        chapter: chapterSearchNum,
+                                        verse: number,
+                                      });
+                                  }}
+                                >
+                                  <TText>{number}</TText>
+                                </TouchableOpacity>
+                              );
+                            },
+                          )}
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </ScrollView>
+            </TView>
+          </KeyboardAvoidingView>
+          <KeyboardStickyView className="absolute bottom-0 w-screen">
+            <TView
+              className="w-full h-full flex flex-row items-center justify-between py-2 px-4"
+              style={{ ...SHADOW_SMALL, height: KEYBOARD_TOOLBAR_HEIGHT }}
+            >
+              <TouchableOpacity
+                onPress={() => setIsVisible(false)}
+                hitSlop={HITSLOP_LARGE}
+              >
+                <TText className="font-bold">Cancel</TText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onSubmitAccessoryView}
+                hitSlop={HITSLOP_LARGE}
+                disabled={!canSubmit && currentFocus === "verse"}
+                style={{
+                  opacity: !canSubmit && currentFocus === "verse" ? 0.5 : 1,
+                }}
+              >
+                <TText className="font-bold">
+                  {currentFocus !== "verse"
+                    ? "Next"
+                    : `Go to ${bookNameSearch} ${chapterSearch}:${verseSearch}`}
+                </TText>
+              </TouchableOpacity>
+            </TView>
+          </KeyboardStickyView>
+
+        </TSafeAreaView>
+      </SafeAreaProvider>
     </Modal>
   );
 };
