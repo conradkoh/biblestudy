@@ -1,4 +1,4 @@
-# Word for Word Bible App
+# Bible with Friends Bible App
 
 A React Native Bible study application built with Expo.
 
