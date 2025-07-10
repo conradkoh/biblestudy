@@ -9,7 +9,6 @@ import { TView } from "@/src/components/core/TView";
 import { getExpoPushToken } from "@/src/services/push-notifications";
 import { makeRedirectUri } from "expo-auth-session";
 import React, { type FC } from "react";
-import { TText } from "@/src/components/core/TText";
 
 type LoginScreenProps = unknown;
 
@@ -21,8 +20,8 @@ const LoginScreen: FC<LoginScreenProps> = () => {
     api.pushNotifications.insertUserNotificationToken,
   );
 
-  const handleSignIn = async () => {
-    const signInResponse = await signIn("google", { redirectTo });
+  const handleSignIn = async (provider: 'google' | 'apple') => {
+    const signInResponse = await signIn(provider, { redirectTo });
     const { redirect } = signInResponse;
     if (!redirect) throw new Error("No redirect found");
     const result = await openAuthSessionAsync(redirect.toString(), redirectTo);
@@ -40,10 +39,12 @@ const LoginScreen: FC<LoginScreenProps> = () => {
       insertUserNotificationToken({ token: expoNotificationsToken });
     }
   };
+
   return (
     <TSafeAreaView>
-      <TView className="h-screen justify-center items-center">
-        <Button onPress={handleSignIn} title="Sign in with Google" />
+      <TView className="h-screen justify-center items-center space-y-4">
+        <Button onPress={() => handleSignIn('google')} title="Sign in with Google" />
+        <Button onPress={() => handleSignIn('apple')} title="Sign in with Apple" />
       </TView>
     </TSafeAreaView>
   );

@@ -15,6 +15,12 @@ yarn dev
 
 Note the Convex URL from the generated `.env.local` file.
 
+For apple login, run:
+```bash
+npx convex env set AUTH_APPLE_ID com.moosedev.biblestudy-server
+npx convex env set AUTH_APPLE_ID <yoursecret> # get this secret from the convex env variables
+```
+
 ### 2. Environment Configuration
 
 Create a `.env` file in the app root:

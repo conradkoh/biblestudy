@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "1.2.22",
-    "@auth/core": "0.38.0",
+    "@auth/core": "0.40.0",
     "@convex-dev/auth": "0.0.80",
     "@convex-dev/expo-push-notifications": "0.1.4",
     "@types/luxon": "^3.4.2",
