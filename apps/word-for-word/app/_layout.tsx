@@ -69,12 +69,78 @@ export default function TabLayout() {
                     <Stack.Screen name="set-username-screen" options={{ headerShown: false, animation: 'fade_from_bottom' }} />
                     <Stack.Screen name="settings-screen" options={{
                       headerShown: true,
-                      headerTitle: '',
+                      headerTitle: 'Settings',
                       headerBackTitle: 'Back',
                       animation: 'default',
                       headerStyle: {
-                        backgroundColor: themeColors.surfaceSecondary
-                      }
+                        backgroundColor: themeColors.surface,
+                      },
+                      headerTitleStyle: {
+                        color: themeColors.text,
+                        fontSize: 18,
+                        fontWeight: '600',
+                      },
+                      headerTintColor: themeColors.text,
+                    }} />
+                    <Stack.Screen name="settings/typography" options={{
+                      headerShown: true,
+                      headerTitle: 'Typography',
+                      headerBackTitle: 'Back',
+                      animation: 'default',
+                      headerStyle: {
+                        backgroundColor: themeColors.surface,
+                      },
+                      headerTitleStyle: {
+                        color: themeColors.text,
+                        fontSize: 18,
+                        fontWeight: '600',
+                      },
+                      headerTintColor: themeColors.text,
+                    }} />
+                    <Stack.Screen name="settings/theme" options={{
+                      headerShown: true,
+                      headerTitle: 'Theme',
+                      headerBackTitle: 'Back',
+                      animation: 'default',
+                      headerStyle: {
+                        backgroundColor: themeColors.surface,
+                      },
+                      headerTitleStyle: {
+                        color: themeColors.text,
+                        fontSize: 18,
+                        fontWeight: '600',
+                      },
+                      headerTintColor: themeColors.text,
+                    }} />
+                    <Stack.Screen name="settings/notifications" options={{
+                      headerShown: true,
+                      headerTitle: 'Notifications',
+                      headerBackTitle: 'Back',
+                      animation: 'default',
+                      headerStyle: {
+                        backgroundColor: themeColors.surface,
+                      },
+                      headerTitleStyle: {
+                        color: themeColors.text,
+                        fontSize: 18,
+                        fontWeight: '600',
+                      },
+                      headerTintColor: themeColors.text,
+                    }} />
+                    <Stack.Screen name="settings/account" options={{
+                      headerShown: true,
+                      headerTitle: 'Account',
+                      headerBackTitle: 'Back',
+                      animation: 'default',
+                      headerStyle: {
+                        backgroundColor: themeColors.surface,
+                      },
+                      headerTitleStyle: {
+                        color: themeColors.text,
+                        fontSize: 18,
+                        fontWeight: '600',
+                      },
+                      headerTintColor: themeColors.text,
                     }} />
                   </Stack>
                   <OptionSelectorBottomSheet />

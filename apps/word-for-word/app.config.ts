@@ -11,8 +11,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: "com.moosedev.biblestudy",
-    infoPlist: {
-      ITSAppUsesNonExemptEncryption: false,
+    usesAppleSignIn: true,
+    config: {
+      // So that appstore builds don't give usesNonExemptEncryption error
+      usesNonExemptEncryption: false,
     },
   },
   android: {

@@ -23,6 +23,20 @@ export const insertUserNotificationToken = mutation({
   },
 });
 
+export const removeUserNotificationToken = mutation({
+  args: {},
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+
+    console.log("Removing user notification token", userId);
+    await pushNotifications.removeToken(ctx, { userId });
+  },
+});
+
 export const sendPushNotification = mutation({
   args: {
     to: v.id('users'),

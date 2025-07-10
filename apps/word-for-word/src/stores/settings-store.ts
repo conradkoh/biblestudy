@@ -1,4 +1,4 @@
-import { StyleProp, TextStyle } from "react-native";
+import { Appearance, TextStyle } from "react-native";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -21,11 +21,13 @@ interface SettingsState {
   fontFamily: string;
   paragraphFontFamily: keyof typeof PARAGRAPH_FONT_OPTIONS;
   memoryVerseMode: 'first_letter' | 'full_word';
+  theme: 'light' | 'dark' | undefined;
 }
 
 interface SettingsActions {
   setParagraphFontFamily: (font: keyof typeof PARAGRAPH_FONT_OPTIONS) => void;
   toggleMemoryVerseMode: () => void;
+  setTheme: (theme: 'light' | 'dark' | undefined) => void;
 }
 
 type SettingsStore = SettingsState & SettingsActions;
@@ -37,6 +39,7 @@ const initialState: SettingsState = {
   fontFamily: "Inter",
   paragraphFontFamily: "Sahitya-Regular",
   memoryVerseMode: 'first_letter',
+  theme: undefined,
 };
 
 export const useSettingsStore = create<SettingsStore>()(
@@ -44,11 +47,18 @@ export const useSettingsStore = create<SettingsStore>()(
     (set, get) => ({
       ...initialState,
       setParagraphFontFamily: (font) => set({ paragraphFontFamily: font }),
-      toggleMemoryVerseMode: () => set({ memoryVerseMode: get().memoryVerseMode === 'full_word' ? 'first_letter' : 'full_word' })
+      toggleMemoryVerseMode: () => set({ memoryVerseMode: get().memoryVerseMode === 'full_word' ? 'first_letter' : 'full_word' }),
+      setTheme: (theme) => {
+        Appearance.setColorScheme(theme)
+        set({ theme });
+      }
     }),
     {
       name: "settings",
       storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: () => (state) => {
+        if (state) Appearance.setColorScheme(state.theme)
+      }
     }
   )
 );

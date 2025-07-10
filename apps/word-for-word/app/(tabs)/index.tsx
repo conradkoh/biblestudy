@@ -113,7 +113,7 @@ export default function ReadScreen() {
     Object.entries(chapterHighlights).forEach(([verseNumber, highlight]) => {
       const verse = parseInt(verseNumber, 10);
       if (!isNaN(verse) && highlight && typeof highlight === 'object' && 'color' in highlight) {
-        const color = (highlight as any).color;
+        const color = highlight.color;
         if (color && color in themeColors) {
           highlightsMap.set(verse, themeColors[color as keyof typeof themeColors]);
         }

@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { TSafeAreaView } from "@/src/components/core/TSafeAreaView";
 import { TView } from "@/src/components/core/TView";
 import { TText } from "@/src/components/core/TText";
-import { getExpoPushToken } from "@/src/services/push-notifications";
+import { useNotificationPermissions } from "@/src/hooks/useNotificationPermissions";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 
 type LoginScreenProps = unknown;
@@ -88,6 +88,7 @@ const AppleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
 const LoginScreen: FC<LoginScreenProps> = () => {
   const { signIn } = useAuthActions();
   const themeColors = useThemeColors();
+  const { getExpoPushToken } = useNotificationPermissions();
   const insertUserNotificationToken = useMutation(
     api.pushNotifications.insertUserNotificationToken,
   );

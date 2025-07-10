@@ -67,7 +67,7 @@ export default function MemoryVersePracticeScreen() {
     id: verseId,
   });
 
-  const verseIds = verseIdsStr ? verseIdsStr.split(',').map(id => id as Id<"memoryVerses">) : undefined;
+  const verseIds = verseIdsStr ? verseIdsStr.split(',').map(id => id) : undefined;
   const currentVerseIndex = verseIds?.findIndex(id => id === verseId) ?? 0;
   const totalVerseCount = verseIds?.length;
   const isMultiVerse = totalVerseCount && totalVerseCount > 1;
