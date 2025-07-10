@@ -12,6 +12,7 @@ import { TView } from "@/src/components/core/TView";
 import { TText } from "@/src/components/core/TText";
 import { useNotificationPermissions } from "@/src/hooks/useNotificationPermissions";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
+import Google from '@/assets/images/google.svg';
 
 type LoginScreenProps = unknown;
 
@@ -26,7 +27,7 @@ const GoogleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
       style={[
         styles.googleButton,
         {
-          backgroundColor: themeColors.surface,
+          backgroundColor: themeColors.permanentWhite,
           borderColor: themeColors.border,
         }
       ]}
@@ -35,12 +36,12 @@ const GoogleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
     >
       <View style={styles.buttonContent}>
         <View style={styles.googleIcon}>
-          <Ionicons name="logo-google" size={20} color="#4285F4" />
+          <Google style={{ width: 20, height: 20 }} />
         </View>
         <TText
           style={[
             styles.buttonText,
-            { color: themeColors.text }
+            { color: themeColors.permanentBlack }
           ]}
           type="defaultSemiBold"
         >
@@ -60,8 +61,8 @@ const AppleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
       style={[
         styles.appleButton,
         {
-          backgroundColor: themeColors.text,
-          borderColor: themeColors.text,
+          backgroundColor: themeColors.permanentBlack,
+          borderColor: themeColors.permanentBlack,
         }
       ]}
       onPress={onPress}
@@ -69,12 +70,12 @@ const AppleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
     >
       <View style={styles.buttonContent}>
         <View style={styles.appleIcon}>
-          <Ionicons name="logo-apple" size={20} color={themeColors.surface} />
+          <Ionicons name="logo-apple" size={20} color={themeColors.permanentWhite} />
         </View>
         <TText
           style={[
             styles.buttonText,
-            { color: themeColors.surface }
+            { color: themeColors.permanentWhite }
           ]}
           type="defaultSemiBold"
         >
