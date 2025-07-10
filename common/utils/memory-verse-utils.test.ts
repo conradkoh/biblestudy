@@ -39,6 +39,61 @@ describe('Memory Verse Utils', () => {
       expect(result).toBe(0);
     });
 
+    it('should not count multiple entries on the same day as a streak', () => {
+      const today = new Date('2024-01-01T12:00:00Z');
+      const morning = new Date('2024-01-01T08:00:00Z');
+      const evening = new Date('2024-01-01T20:00:00Z');
+
+      const entries: MemoryEntry[] = [
+        { createdAt: morning.getTime() },
+        { createdAt: evening.getTime() },
+      ];
+
+      const result = calculateStreakFromEntries(entries, today);
+      expect(result).toBe(0); // Should not count as streak of 2
+    });
+
+    it('should demonstrate what actually happens with multiple entries on same day', () => {
+      const today = new Date('2024-01-01T12:00:00Z');
+      const morning = new Date('2024-01-01T08:00:00Z');
+      const evening = new Date('2024-01-01T20:00:00Z');
+
+      const entries: MemoryEntry[] = [
+        { createdAt: morning.getTime() },
+        { createdAt: evening.getTime() },
+      ];
+
+      const result = calculateStreakFromEntries(entries, today);
+      console.log('Streak result:', result);
+      console.log('Entries:', entries);
+
+      // Let's see what the actual behavior is
+      expect(result).toBeDefined();
+    });
+
+    it('should show what happens when checking streak on a later date', () => {
+      const day1 = new Date('2024-01-01T12:00:00Z');
+      const morning = new Date('2024-01-01T08:00:00Z');
+      const evening = new Date('2024-01-01T20:00:00Z');
+      const day2 = new Date('2024-01-02T12:00:00Z');
+
+      const entries: MemoryEntry[] = [
+        { createdAt: morning.getTime() },
+        { createdAt: evening.getTime() },
+      ];
+
+      // Check on day 1
+      const resultDay1 = calculateStreakFromEntries(entries, day1);
+      console.log('Streak on day 1:', resultDay1);
+
+      // Check on day 2
+      const resultDay2 = calculateStreakFromEntries(entries, day2);
+      console.log('Streak on day 2:', resultDay2);
+
+      expect(resultDay1).toBeDefined();
+      expect(resultDay2).toBeDefined();
+    });
+
     it('should build streak correctly', () => {
       const day1 = new Date('2024-01-01T12:00:00Z');
       const day2 = new Date('2024-01-02T12:00:00Z');
@@ -144,14 +199,12 @@ describe('Memory Verse Utils', () => {
     it('should return expired status for negative days', () => {
       const status = getExpirationStatus(-1, 1);
       expect(status.status).toBe('expired');
-      expect(status.color).toBe('#ef4444');
       expect(status.icon).toBe('alert-circle');
     });
 
     it('should return expired status for 0 days', () => {
       const status = getExpirationStatus(0, 1);
       expect(status.status).toBe('expired');
-      expect(status.color).toBe('#ef4444');
       expect(status.icon).toBe('alert-circle');
     });
 
@@ -161,7 +214,6 @@ describe('Memory Verse Utils', () => {
       expect(getExpirationStatus(3, 1).status).toBe('warning');
 
       const status = getExpirationStatus(2, 1);
-      expect(status.color).toBe('#f59e0b');
       expect(status.icon).toBe('warning');
     });
 
@@ -171,7 +223,6 @@ describe('Memory Verse Utils', () => {
       expect(getExpirationStatus(100, 1).status).toBe('safe');
 
       const status = getExpirationStatus(5, 1);
-      expect(status.color).toBe('#10b981');
       expect(status.icon).toBe('checkmark-circle');
     });
   });

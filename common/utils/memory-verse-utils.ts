@@ -1,4 +1,4 @@
-import { startOfDay, isBefore, isEqual, differenceInDays, addDays, endOfDay } from "date-fns";
+import { startOfDay, isBefore, isEqual, differenceInDays, addDays, endOfDay, isSameDay } from "date-fns";
 
 export interface MemoryEntry {
   createdAt: number;
@@ -73,6 +73,7 @@ export function getDaysUntilExpiration(
 /**
  * Calculate streak from memory entries
  * A streak is maintained when a user recites a verse before it expires
+ * Multiple entries on the same day only count as one day toward the streak
  * @param entries Array of memory entries
  * @param referenceDate Optional reference date (defaults to current date)
  * @returns Current streak count
@@ -97,10 +98,14 @@ export function calculateStreakFromEntries(
 
   for (let i = 1; i < sortedEntries.length; i++) {
     const entryDate = new Date(sortedEntries[i]!.createdAt);
+    // Skip if entry is on the same day as previous entry
+    if (isSameDay(entryDate, prevEntryDate)) {
+      continue;
+    }
     expirationDate = getExpirationDate(streak, prevEntryDate.getTime());
     if (entryDate.getTime() <= expirationDate) {
       if (streak === 0) {
-        streak = 2
+        streak = 2;
       } else {
         streak += 1;
       }
@@ -109,7 +114,6 @@ export function calculateStreakFromEntries(
       streak = 0;
       expirationDate = null;
     }
-
     prevEntryDate = entryDate;
   }
 
