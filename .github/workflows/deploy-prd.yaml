@@ -29,4 +29,4 @@ jobs:
         env:
           # Secrets can be configured at https://github.com/conradkoh/biblestudy/settings/environments/3827949176/edit
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-        run: yarn deploy
+        run: yarn workspace backend deploy
