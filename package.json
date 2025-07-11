@@ -9,11 +9,15 @@
   "scripts": {
     "dev": "yarn workspaces run dev",
     "deploy": "yarn workspaces run deploy",
-    "format": "yarn biome format --write ."
+    "format": "yarn biome format --write .",
+    "setup": "node scripts/setup.js"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
     "bun": "^1.1.26"
   },
-  "workspaces": ["apps/*", "services/*"]
+  "workspaces": [
+    "apps/*",
+    "services/*"
+  ]
 }
