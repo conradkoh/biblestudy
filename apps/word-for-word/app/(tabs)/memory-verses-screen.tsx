@@ -14,14 +14,18 @@ import {
 } from "@common/utils/memory-verse-utils";
 import { isDefined } from "@common/utils/typecheck";
 import { Ionicons } from "@expo/vector-icons";
+import classNames from "classnames";
 import { useMutation, useQuery } from "convex/react";
 import {
-  startOfDay
+  addDays,
+  isSameDay,
+  startOfDay,
+  startOfWeek
 } from "date-fns";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useRef, type FC } from "react";
-import { Alert, FlatList, TouchableOpacity } from "react-native";
+import { Alert, FlatList, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
 
 const MemorizeScreen: FC = () => {
@@ -283,6 +287,39 @@ const MemorizeScreen: FC = () => {
 
   return (
     <TSafeAreaView edges={['top']}>
+      <TView className="flex-row items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
+          
+          const weekStart = startOfWeek(new Date());
+          const dateForDay = addDays(weekStart, index);
+          
+          const hasMemoryVerseForDay = memoryVerses.some(verse => {
+            return verse.memoryEntries.some(entry => {
+              const entryDate = startOfDay(new Date(entry.createdAt));
+              return isSameDay(entryDate, dateForDay);
+            });
+          });
+          const isToday = isSameDay(dateForDay, new Date());
+
+          return (
+            <View className="flex-1 items-center justify-center" key={index}>
+              <TText className="font-bold" style={{ color: themeColors.textSecondary }}>{day}</TText>
+              <View className={classNames("p-2 rounded-full mt-2", {
+                "bg-orange-100 dark:bg-orange-900": hasMemoryVerseForDay,
+                "border-2 border-orange-500 dark:border-orange-500": isToday,
+              })} style={{ ...!hasMemoryVerseForDay && {
+                backgroundColor: themeColors.surfaceTertiary,
+              } }}>
+                <Ionicons
+                  name="flame"
+                  size={16}
+                  color={hasMemoryVerseForDay ? themeColors.warning : themeColors.textTertiary}
+                />
+              </View>
+            </View>
+          );
+        })}
+      </TView>
       <FlatList
         data={memoryVerses}
         renderItem={renderItem}
