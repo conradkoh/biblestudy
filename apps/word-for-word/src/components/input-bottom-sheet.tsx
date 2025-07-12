@@ -2,9 +2,13 @@ import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import { CommonEvents, useEvent } from "@/src/hooks/useEvents";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { BottomSheetTextInput, type BottomSheetModal } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetTextInput,
+  type BottomSheetModal,
+} from "@gorhom/bottom-sheet";
 import React, { type FC, useCallback, useMemo, useRef, useState } from "react";
 import { TextInput, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type InputBottomSheetConfig = {
   title: string;
@@ -23,12 +27,12 @@ export const InputBottomSheet: FC<InputBottomSheetProps> = () => {
     title: "",
     placeholder: "",
     multiline: true,
-    onSubmit: () => { },
+    onSubmit: () => {},
   });
   const [inputText, setInputText] = useState("");
   const snapPoints = useMemo(
     () => [config.snapPoint ?? "50%"],
-    [config.snapPoint],
+    [config.snapPoint]
   );
   const themeColors = useThemeColors();
 
@@ -43,20 +47,36 @@ export const InputBottomSheet: FC<InputBottomSheetProps> = () => {
     bottomSheetModalRef.current?.dismiss();
   }, [config, inputText]);
 
+  const safeAreaInsets = useSafeAreaInsets();
+
   return (
     <TBottomSheetModal
       ref={bottomSheetModalRef}
       index={0}
       snapPoints={snapPoints}
       enablePanDownToClose
+      safeAreaProps={false}
+      bottomSheetViewProps={false}
     >
-      <View style={{ flex: 1, padding: 16, paddingTop: 4 }}>
+      <View
+        style={{
+          padding: 16,
+          paddingTop: 4,
+          flex: 1,
+          paddingBottom: safeAreaInsets.bottom,
+        }}
+      >
         <TText type="title" className="text-lg font-bold mb-1">
           {config.title}
         </TText>
-        {!!config.subtitle && <TText className="text-sm mb-2" style={{ color: themeColors.textTertiary }}>
-          {config.subtitle}
-        </TText>}
+        {!!config.subtitle && (
+          <TText
+            className="text-sm mb-2"
+            style={{ color: themeColors.textTertiary }}
+          >
+            {config.subtitle}
+          </TText>
+        )}
         <BottomSheetTextInput
           onChangeText={setInputText}
           placeholder={config.placeholder}

@@ -10,8 +10,17 @@ import type { SearchResultItem } from "@/src/types/search";
 import { SearchStrategyType } from "@/src/types/search";
 import { getSearchStrategy } from "@/src/utils/search/search-registry";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BibleSearchInput, type BibleSearchInputRef } from "./bible-search-input";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  BibleSearchInput,
+  type BibleSearchInputRef,
+} from "./bible-search-input";
 import { BibleSearchResults } from "./bible-search-results";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
@@ -26,7 +35,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   isVisible,
   onClose,
   cursorHandler,
-  onSearchResultSelect
+  onSearchResultSelect,
 }) => {
   const themeColors = useThemeColors();
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -51,43 +60,53 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     clearResults,
     loadMore,
     setQuery,
-    setStrategy
+    setStrategy,
   } = useBibleSearch(cursorHandler.cursor);
 
   // Handle bottom sheet changes
-  const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
-      clearResults();
-      onClose();
-    }
-  }, [onClose, clearResults]);
+  const handleSheetChanges = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        clearResults();
+        onClose();
+      }
+    },
+    [onClose, clearResults]
+  );
 
   // Handle result selection
-  const handleResultPress = useCallback((result: SearchResultItem) => {
-    // Navigate to the selected verse
-    cursorHandler.updateCursor({
-      bookId: result.bookId,
-      chapter: result.chapter,
-      verse: result.verse,
-      version: result.version
-    });
+  const handleResultPress = useCallback(
+    (result: SearchResultItem) => {
+      // Navigate to the selected verse
+      cursorHandler.updateCursor({
+        bookId: result.bookId,
+        chapter: result.chapter,
+        verse: result.verse,
+        version: result.version,
+      });
 
-    // Trigger search result highlighting
-    onSearchResultSelect?.(result);
+      // Trigger search result highlighting
+      onSearchResultSelect?.(result);
 
-    // Close the search bottom sheet
-    onClose();
-  }, [cursorHandler, onClose, onSearchResultSelect]);
+      // Close the search bottom sheet
+      onClose();
+    },
+    [cursorHandler, onClose, onSearchResultSelect]
+  );
 
   // Handle search input
-  const handleSearch = useCallback((query: string) => {
-    if (query.trim()) {
-      const limit = selectedStrategy === SearchStrategyType.AI_ASSISTANT ? 15 : 50;
-      performSearch(query, selectedStrategy, limit);
-    } else {
-      clearResults();
-    }
-  }, [performSearch, selectedStrategy, clearResults]);
+  const handleSearch = useCallback(
+    (query: string) => {
+      if (query.trim()) {
+        const limit =
+          selectedStrategy === SearchStrategyType.AI_ASSISTANT ? 15 : 50;
+        performSearch(query, selectedStrategy, limit);
+      } else {
+        clearResults();
+      }
+    },
+    [performSearch, selectedStrategy, clearResults]
+  );
 
   // Handle clear
   const handleClear = useCallback(() => {
@@ -96,51 +115,64 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   }, [clearResults, setQuery]);
 
   // Handle strategy change
-  const handleStrategyChange = useCallback((currentStrategy: SearchStrategyType) => {
-    // Show option selector with available strategies
-    CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
-      title: "Search Strategy",
-      options: [
-        {
-          id: "simple_substring",
-          label: getSearchStrategy(SearchStrategyType.SIMPLE_SUBSTRING)?.name,
-          description: getSearchStrategy(SearchStrategyType.SIMPLE_SUBSTRING)?.description,
-          onSelect: () => {
-            setStrategy(SearchStrategyType.SIMPLE_SUBSTRING);
-            // Focus the input after strategy is set
-            setTimeout(() => {
-              searchInputRef.current?.focus();
-            }, 100);
-          }
-        },
-        {
-          id: "keyword",
-          label: getSearchStrategy(SearchStrategyType.KEYWORD)?.name,
-          description: getSearchStrategy(SearchStrategyType.KEYWORD)?.description,
-          onSelect: () => {
-            setStrategy(SearchStrategyType.KEYWORD);
-            // Focus the input after strategy is set
-            setTimeout(() => {
-              searchInputRef.current?.focus();
-            }, 100);
-          }
-        },
-        {
-          id: "ai_assistant",
-          icon: <Ionicons name="sparkles" size={12} color={themeColors.text} style={{ marginRight: 4 }} />,
-          label: getSearchStrategy(SearchStrategyType.AI_ASSISTANT)?.name,
-          description: getSearchStrategy(SearchStrategyType.AI_ASSISTANT)?.description,
-          onSelect: () => {
-            setStrategy(SearchStrategyType.AI_ASSISTANT);
-            // Focus the input after strategy is set
-            setTimeout(() => {
-              searchInputRef.current?.focus();
-            }, 100);
-          }
-        }
-      ]
-    });
-  }, [setStrategy]);
+  const handleStrategyChange = useCallback(
+    (currentStrategy: SearchStrategyType) => {
+      // Show option selector with available strategies
+      CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+        title: "Search Strategy",
+        options: [
+          {
+            id: "simple_substring",
+            label: getSearchStrategy(SearchStrategyType.SIMPLE_SUBSTRING)?.name,
+            description: getSearchStrategy(SearchStrategyType.SIMPLE_SUBSTRING)
+              ?.description,
+            onSelect: () => {
+              setStrategy(SearchStrategyType.SIMPLE_SUBSTRING);
+              // Focus the input after strategy is set
+              setTimeout(() => {
+                searchInputRef.current?.focus();
+              }, 100);
+            },
+          },
+          {
+            id: "keyword",
+            label: getSearchStrategy(SearchStrategyType.KEYWORD)?.name,
+            description: getSearchStrategy(SearchStrategyType.KEYWORD)
+              ?.description,
+            onSelect: () => {
+              setStrategy(SearchStrategyType.KEYWORD);
+              // Focus the input after strategy is set
+              setTimeout(() => {
+                searchInputRef.current?.focus();
+              }, 100);
+            },
+          },
+          {
+            id: "ai_assistant",
+            icon: (
+              <Ionicons
+                name="sparkles"
+                size={12}
+                color={themeColors.text}
+                style={{ marginRight: 4 }}
+              />
+            ),
+            label: getSearchStrategy(SearchStrategyType.AI_ASSISTANT)?.name,
+            description: getSearchStrategy(SearchStrategyType.AI_ASSISTANT)
+              ?.description,
+            onSelect: () => {
+              setStrategy(SearchStrategyType.AI_ASSISTANT);
+              // Focus the input after strategy is set
+              setTimeout(() => {
+                searchInputRef.current?.focus();
+              }, 100);
+            },
+          },
+        ],
+      });
+    },
+    [setStrategy]
+  );
 
   // Handle focus state change
   const handleFocusChange = useCallback((isFocused: boolean) => {
@@ -171,10 +203,12 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
         backgroundColor: themeColors.surface,
       }}
       backdropComponent={renderBackdrop}
-      safeAreaViewEdges={isFocused ? [] : undefined}
+      safeAreaProps={{
+        edges: isFocused ? [] : ["bottom"],
+        style: { height: "100%" },
+      }}
     >
       <TView className="flex-1 px-4">
-
         {/* Search Input */}
         <TView className="mb-4">
           <BibleSearchInput
@@ -197,18 +231,18 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
               className="text-sm"
               style={{ color: themeColors.textSecondary }}
             >
-              {totalCount} result{totalCount !== 1 ? 's' : ''} found
+              {totalCount} result{totalCount !== 1 ? "s" : ""} found
             </TText>
           </TView>
         )}
 
         {/* Error Message */}
         {error && (
-          <TView className="mb-3 p-3 rounded-lg" style={{ backgroundColor: themeColors.error + '20' }}>
-            <TText
-              className="text-sm"
-              style={{ color: themeColors.error }}
-            >
+          <TView
+            className="mb-3 p-3 rounded-lg"
+            style={{ backgroundColor: themeColors.error + "20" }}
+          >
+            <TText className="text-sm" style={{ color: themeColors.error }}>
               {error}
             </TText>
           </TView>
@@ -232,4 +266,4 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       </TView>
     </TBottomSheetModal>
   );
-}; 
+};

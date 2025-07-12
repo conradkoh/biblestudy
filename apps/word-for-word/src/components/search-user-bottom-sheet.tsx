@@ -31,7 +31,7 @@ export const SearchUserBottomSheet = React.forwardRef<
   const { results, status, loadMore } = usePaginatedQuery(
     api.users.searchUser,
     { username: searchText },
-    { initialNumItems: 10 },
+    { initialNumItems: 10 }
   );
 
   const handleSelectUser = useCallback(
@@ -39,7 +39,7 @@ export const SearchUserBottomSheet = React.forwardRef<
       onSelectUser?.(userId);
       (ref as React.RefObject<BottomSheetModal>).current?.dismiss();
     },
-    [onSelectUser, ref],
+    [onSelectUser, ref]
   );
 
   const renderItem = useCallback(
@@ -60,7 +60,7 @@ export const SearchUserBottomSheet = React.forwardRef<
         </TouchableOpacity>
       </TView>
     ),
-    [handleSelectUser, themeColors],
+    [handleSelectUser, themeColors]
   );
 
   const handleLoadMore = useCallback(() => {
@@ -74,7 +74,10 @@ export const SearchUserBottomSheet = React.forwardRef<
       ref={ref}
       index={0}
       snapPoints={snapPoints}
-      skipBottomSheetContainer
+      bottomSheetViewProps={undefined}
+      safeAreaProps={{
+        style: { height: "100%" },
+      }}
     >
       <TView className="px-4 pb-2">
         <TText className="text-lg font-bold mb-2">Search Users</TText>

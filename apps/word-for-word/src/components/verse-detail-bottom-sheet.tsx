@@ -61,7 +61,7 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
   useEffect(() => {
     if (isOpen) bottomSheetRef.current?.present();
     if (!isOpen) {
-      bottomSheetRef.current?.close();
+      bottomSheetRef.current?.dismiss(); // close all other bottom sheet modals too
       setShowAllUsedInBottomSheet(false);
     }
   }, [isOpen]);
@@ -117,8 +117,11 @@ const VerseDetailBottomSheet: FC<VerseDetailBottomSheetProps> = ({
           backgroundColor: themeColors.surface,
         }}
         backdropComponent={CustomBottomSheetBackdrop}
-        enableScrollView
+        scrollViewProps={{}}
         animatedPosition={bottomSheetAnimatedValue}
+        safeAreaProps={{
+          style: { height: '100%' },
+        }}
       >
         <View className="flex-1 py-1">
           <View className="flex-row justify-between items-center px-3">

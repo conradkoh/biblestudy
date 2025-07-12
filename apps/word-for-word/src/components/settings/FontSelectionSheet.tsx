@@ -32,7 +32,7 @@ export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
         ref.current.close();
       }
     },
-    [setParagraphFontFamily, ref],
+    [setParagraphFontFamily, ref]
   );
 
   return (
@@ -46,44 +46,45 @@ export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
       handleIndicatorStyle={{
         backgroundColor: themeColors.border,
       }}
-      enableScrollView
+      scrollViewProps={{}}
+      safeAreaProps={{
+        style: { height: "100%" },
+      }}
     >
       <TView style={{ padding: 16, gap: 16 }}>
         <TText type="title">Select Font</TText>
-        {Object.entries(PARAGRAPH_FONT_OPTIONS).map(
-          ([key, displayName]) => (
-            <TouchableOpacity
-              key={key}
-              onPress={() =>
-                handleFontSelect(key as keyof typeof PARAGRAPH_FONT_OPTIONS)
-              }
+        {Object.entries(PARAGRAPH_FONT_OPTIONS).map(([key, displayName]) => (
+          <TouchableOpacity
+            key={key}
+            onPress={() =>
+              handleFontSelect(key as keyof typeof PARAGRAPH_FONT_OPTIONS)
+            }
+            style={{
+              padding: 16,
+              borderRadius: 8,
+              backgroundColor: themeColors.surface,
+              borderWidth: 1,
+              borderColor:
+                paragraphFontFamily === key
+                  ? themeColors.text
+                  : themeColors.border,
+            }}
+          >
+            <TText style={{ marginBottom: 8, fontFamily: key }}>
+              {displayName}
+            </TText>
+            <TText
               style={{
-                padding: 16,
-                borderRadius: 8,
-                backgroundColor: themeColors.surface,
-                borderWidth: 1,
-                borderColor:
-                  paragraphFontFamily === key
-                    ? themeColors.text
-                    : themeColors.border,
+                fontFamily: key,
+                fontSize: 16,
+                lineHeight: 24,
+                color: themeColors.text,
               }}
             >
-              <TText style={{ marginBottom: 8, fontFamily: key }}>
-                {displayName}
-              </TText>
-              <TText
-                style={{
-                  fontFamily: key,
-                  fontSize: 16,
-                  lineHeight: 24,
-                  color: themeColors.text,
-                }}
-              >
-                {SAMPLE_VERSE}
-              </TText>
-            </TouchableOpacity>
-          ),
-        )}
+              {SAMPLE_VERSE}
+            </TText>
+          </TouchableOpacity>
+        ))}
       </TView>
     </TBottomSheetModal>
   );

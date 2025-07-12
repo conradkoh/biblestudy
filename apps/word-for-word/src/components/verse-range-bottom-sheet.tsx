@@ -3,16 +3,10 @@ import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
 import { TText } from "@/src/components/core/TText";
 import VerseActions from "@/src/components/verse-actions";
 import type { BibleCursorHandler } from "@/src/hooks/useBibleCursor";
-import useBottomSheetBackdrop from "@/src/hooks/useBottomSheetBackdrop";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import {
-  getVerseNameFormatted
-} from "@common/utils/bible-data-utils";
+import { getVerseNameFormatted } from "@common/utils/bible-data-utils";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  type BottomSheetModal,
-  BottomSheetScrollView
-} from "@gorhom/bottom-sheet";
+import { type BottomSheetModal } from "@gorhom/bottom-sheet";
 import React, { type FC, useCallback, useEffect, useRef } from "react";
 import { View } from "react-native";
 
@@ -35,7 +29,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
     (index: number) => {
       if (index === -1) setIsOpen(false);
     },
-    [setIsOpen],
+    [setIsOpen]
   );
 
   useEffect(() => {
@@ -57,17 +51,13 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
       }}
       backdropComponent={CustomBottomSheetBackdrop}
     >
-      <View className="flex-1 px-3 py-1">
+      <View className="px-3 py-1">
         <View className="flex flex-row items-center" style={{ gap: 8 }}>
-          <Ionicons
-            size={20}
-            name="book"
-            style={{ color: themeColors.text }}
-          />
+          <Ionicons size={20} name="book" style={{ color: themeColors.text }} />
           <TText className="text-[17px] font-bold">
             {getVerseNameFormatted(
               cursorHandler.cursor,
-              cursorHandler.cursorRangeEnd,
+              cursorHandler.cursorRangeEnd
             )}
           </TText>
         </View>
@@ -79,7 +69,7 @@ const VerseRangeBottomSheet: FC<VerseRangeBottomSheetProps> = ({
             }}
             verseName={getVerseNameFormatted(
               cursorHandler.cursor,
-              cursorHandler.cursorRangeEnd,
+              cursorHandler.cursorRangeEnd
             )}
             version={cursorHandler.cursor.version}
             cursorRangeEnd={cursorHandler.cursorRangeEnd}

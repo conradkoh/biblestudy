@@ -1,5 +1,9 @@
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import { SafeAreaView, SafeAreaViewProps } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  SafeAreaViewProps,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export type TSafeAreaViewProps = SafeAreaViewProps & {
   lightColor?: string;
@@ -13,5 +17,10 @@ export function TSafeAreaView({
   ...otherProps
 }: TSafeAreaViewProps) {
   const themeColors = useThemeColors();
-  return <SafeAreaView style={[{ backgroundColor: themeColors.surface, flex: 1 }, style]} {...otherProps} />;
+  return (
+    <SafeAreaView
+      style={[{ backgroundColor: themeColors.surface }, style]}
+      {...otherProps}
+    />
+  );
 }

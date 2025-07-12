@@ -52,6 +52,9 @@ const WordAlsoUsedInBottomSheet: FC<WordAlsoUsedInBottomSheetProps> = ({ cursorH
       index={0}
       snapPoints={snapPoints}
       enablePanDownToClose
+      safeAreaProps={{
+        style: { height: '100%' },
+      }}
     >
       <FlatList
         className='px-3'
