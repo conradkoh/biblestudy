@@ -14,6 +14,12 @@ export const PARAGRAPH_FONT_OPTIONS = {
   'OpenSans-Regular': 'Open Sans',
 } as const;
 
+export type MemoryVerseSortOption = 
+  | 'default' 
+  | 'date_increasing' 
+  | 'date_decreasing' 
+  | 'least_memorized';
+
 interface SettingsState {
   textSize: number;
   lineHeight: number;
@@ -21,12 +27,14 @@ interface SettingsState {
   fontFamily: string;
   paragraphFontFamily: keyof typeof PARAGRAPH_FONT_OPTIONS;
   memoryVerseMode: 'first_letter' | 'full_word';
+  memoryVerseSortOption: MemoryVerseSortOption;
   theme: 'light' | 'dark' | undefined;
 }
 
 interface SettingsActions {
   setParagraphFontFamily: (font: keyof typeof PARAGRAPH_FONT_OPTIONS) => void;
   toggleMemoryVerseMode: () => void;
+  setMemoryVerseSortOption: (option: MemoryVerseSortOption) => void;
   setTheme: (theme: 'light' | 'dark' | undefined) => void;
 }
 
@@ -39,6 +47,7 @@ const initialState: SettingsState = {
   fontFamily: "Inter",
   paragraphFontFamily: "Sahitya-Regular",
   memoryVerseMode: 'first_letter',
+  memoryVerseSortOption: 'default',
   theme: undefined,
 };
 
@@ -48,6 +57,7 @@ export const useSettingsStore = create<SettingsStore>()(
       ...initialState,
       setParagraphFontFamily: (font) => set({ paragraphFontFamily: font }),
       toggleMemoryVerseMode: () => set({ memoryVerseMode: get().memoryVerseMode === 'full_word' ? 'first_letter' : 'full_word' }),
+      setMemoryVerseSortOption: (option) => set({ memoryVerseSortOption: option }),
       setTheme: (theme) => {
         Appearance.setColorScheme(theme)
         set({ theme });

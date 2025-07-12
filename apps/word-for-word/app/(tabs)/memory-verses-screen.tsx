@@ -5,6 +5,7 @@ import { TView } from "@/src/components/core/TView";
 import { usePersistedQuery } from "@/src/hooks/usePersistedQuery";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
 import { useBibleStore } from "@/src/stores/bible-store";
+import { useSettingsStore } from "@/src/stores/settings-store";
 import { api } from "@backend/convex/_generated/api";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
 import { getVerseNameFormatted, isBookId } from "@common/utils/bible-data-utils";
@@ -27,12 +28,16 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useRef, type FC } from "react";
 import { Alert, FlatList, TouchableOpacity, View } from "react-native";
 import { Swipeable } from "react-native-gesture-handler";
+import { CommonEvents } from "@/src/hooks/useEvents";
+import { mapSortToInfo, sortMemoryVerses } from "@/src/utils/memory-verse-sort";
 
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
   const getVersesText = useBibleStore(s => s.getVersesText);
   const router = useRouter();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
+  const memoryVerseSortOption = useSettingsStore(s => s.memoryVerseSortOption);
+  const setMemoryVerseSortOption = useSettingsStore(s => s.setMemoryVerseSortOption);
 
   const memoryVerses = usePersistedQuery(
     api.memoryVerses.getMemoryVerses,
@@ -41,6 +46,12 @@ const MemorizeScreen: FC = () => {
   );
 
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
+
+  // Sort memory verses based on the selected option
+  const sortedMemoryVerses = React.useMemo(() => {
+    if (!memoryVerses) return [];
+    return sortMemoryVerses(memoryVerses, memoryVerseSortOption);
+  }, [memoryVerses, memoryVerseSortOption]);
 
   const handleVersePress = useCallback(
     (verse: Doc<"memoryVerses">) => {
@@ -79,6 +90,19 @@ const MemorizeScreen: FC = () => {
     },
     [handleDelete],
   );
+
+  const handleSortPress = useCallback(() => {
+
+    CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+      title: "Sort Memory Verses",
+      options: Object.values(mapSortToInfo).map(info => ({
+        id: info.id,
+        label: info.label,
+        description: info.description,
+        onSelect: () => setMemoryVerseSortOption(info.id)
+      })),
+    });
+  }, [setMemoryVerseSortOption]);
 
   const handleStartDailyTest = () => {
     if (!memoryVerses || memoryVerses.length === 0) {
@@ -320,8 +344,31 @@ const MemorizeScreen: FC = () => {
           );
         })}
       </TView>
+      
+      {/* Header with sort button */}
+      <TView className="flex-row items-center justify-between px-4 py-3 border-b" style={{ borderBottomColor: themeColors.border }}>
+        <TText className="text-lg font-bold" style={{ color: themeColors.text }}>
+          Memory Verses
+        </TText>
+        <TouchableOpacity
+          onPress={handleSortPress}
+          className="flex-row items-center px-3 py-2 rounded-full"
+          style={{ backgroundColor: themeColors.surfaceSecondary }}
+        >
+          <Ionicons
+            name={mapSortToInfo[memoryVerseSortOption].icon}
+            size={16}
+            color={themeColors.textSecondary}
+            style={{ marginRight: 4 }}
+          />
+          <TText className="text-sm" style={{ color: themeColors.textSecondary }}>
+            {mapSortToInfo[memoryVerseSortOption].label}
+          </TText>
+        </TouchableOpacity>
+      </TView>
+      
       <FlatList
-        data={memoryVerses}
+        data={sortedMemoryVerses}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
