@@ -167,7 +167,12 @@ export const BibleSearchInput = forwardRef<
             handleStrategyPress();
           }}
           hitSlop={HITSLOP_DEFAULT}
-          style={{ gap: 4, backgroundColor: themeColors.overlay }}
+          style={{
+            gap: 4,
+            backgroundColor: themeColors.surface,
+            borderWidth: 1,
+            borderColor: themeColors.border,
+          }}
           className="flex-row items-center ml-1 px-2 py-0.5 rounded-md"
         >
           <TText className="text-xs text-textSecondary">
