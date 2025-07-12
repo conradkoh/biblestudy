@@ -11,7 +11,7 @@ import { twMerge } from "tailwind-merge";
 import { SearchResultItemComponent } from "./search-result-item";
 
 interface BibleSearchResultsProps {
-  results: SearchResultItem[];
+  results: SearchResultItem[] | null;
   onResultPress: (result: SearchResultItem) => void;
   isLoading?: boolean;
   hasMore?: boolean;
@@ -27,17 +27,20 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
   hasMore = false,
   onLoadMore,
   emptyStateMessage = "No results found",
-  className = ""
+  className = "",
 }) => {
   const themeColors = useThemeColors();
 
-  const renderItem = useCallback(({ item }: { item: SearchResultItem }) => (
-    <SearchResultItemComponent
-      item={item}
-      onPress={onResultPress}
-      themeColors={themeColors}
-    />
-  ), [onResultPress, themeColors]);
+  const renderItem = useCallback(
+    ({ item }: { item: SearchResultItem }) => (
+      <SearchResultItemComponent
+        item={item}
+        onPress={onResultPress}
+        themeColors={themeColors}
+      />
+    ),
+    [onResultPress, themeColors]
+  );
 
   const handleLoadMore = useCallback(() => {
     if (hasMore && onLoadMore && !isLoading) {
@@ -45,8 +48,9 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
     }
   }, [hasMore, onLoadMore, isLoading]);
 
-  const keyExtractor = useCallback((item: SearchResultItem) =>
-    `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`,
+  const keyExtractor = useCallback(
+    (item: SearchResultItem) =>
+      `${item.bookId}-${item.chapter}-${item.verse}-${item.version}`,
     []
   );
 
@@ -56,9 +60,7 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
     return (
       <TView className="py-2 items-center">
         <TouchableOpacity onPress={handleLoadMore}>
-          <TText style={{ color: themeColors.textHighlight }}>
-            Load More
-          </TText>
+          <TText style={{ color: themeColors.textHighlight }}>Load More</TText>
         </TouchableOpacity>
       </TView>
     );
@@ -80,37 +82,39 @@ export const BibleSearchResults: React.FC<BibleSearchResultsProps> = ({
         windowSize={15}
         initialNumToRender={10}
         getItemLayout={undefined}
-        style={{ opacity: isLoading || results.length === 0 ? 0 : 1 }}
+        style={{ opacity: isLoading || (results?.length ?? 0) === 0 ? 0 : 1 }}
         keyboardShouldPersistTaps="handled"
       />
 
       {/* Loading overlay */}
-      {(isLoading || results.length === 0) && (
-        <View
-          className="absolute h-full w-full items-center justify-center"
-        >
+      {(isLoading || (results?.length ?? 0) === 0) && (
+        <View className="absolute h-full w-full items-center justify-center">
           <View className="rounded-lg p-4 items-center">
-            {isLoading ? <AnimatedLoader
-              size={32}
-              color={themeColors.textTertiary}
-              iconName="search"
-              animationType="bounce"
-              duration={1200}
-              style={{ marginBottom: 12 }}
-            /> : <Ionicons
-              name="search"
-              size={32}
-              style={{ color: themeColors.textTertiary, marginBottom: 12 }}
-            />}
+            {isLoading ? (
+              <AnimatedLoader
+                size={32}
+                color={themeColors.textTertiary}
+                iconName="search"
+                animationType="bounce"
+                duration={1200}
+                style={{ marginBottom: 12 }}
+              />
+            ) : (
+              <Ionicons
+                name="search"
+                size={32}
+                style={{ color: themeColors.textTertiary, marginBottom: 12 }}
+              />
+            )}
             <TText
               className="font-semibold text-center"
               style={{ color: themeColors.textSecondary }}
             >
-              {isLoading ? 'Searching...' : emptyStateMessage}
+              {isLoading ? "Searching..." : emptyStateMessage}
             </TText>
           </View>
         </View>
       )}
     </TView>
   );
-}; 
+};

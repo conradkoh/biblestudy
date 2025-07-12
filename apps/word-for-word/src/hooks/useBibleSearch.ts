@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useCallback, useRef, useMemo } from "react";
 import type { SearchQuery, SearchContext, SearchResult, SearchResultItem } from "@/src/types/search";
 import { SearchStrategyType } from "@/src/types/search";
 import { executeSearchWithFallback } from "@/src/utils/search/search-composer";
 import { useBibleStore } from "@/src/stores/bible-store";
+import { useSearchStore } from "@/src/stores/search-store";
 import type { BibleCursor } from "@common/utils/bible-data-utils";
 
 export interface UseBibleSearchState {
@@ -20,6 +21,7 @@ export interface UseBibleSearchState {
 export interface UseBibleSearchActions {
   performSearch: (query: string, strategy: SearchStrategyType, limit: number) => Promise<void>;
   clearResults: () => void;
+  clearAll: () => void;
   setStrategy: (strategy: SearchStrategyType) => void;
   loadMore: () => Promise<void>;
   setQuery: (query: string) => void;
@@ -27,18 +29,7 @@ export interface UseBibleSearchActions {
 
 export function useBibleSearch(currentCursor?: BibleCursor) {
   const bibleStore = useBibleStore();
-
-  // State
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStrategy, setSelectedStrategy] = useState<SearchStrategyType>(SearchStrategyType.KEYWORD);
-  // Search Results
-  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastQuery, setLastQuery] = useState<SearchQuery | null>(null);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const searchStore = useSearchStore();
 
   // Refs for pagination
   const isSearching = useRef(false);
@@ -55,16 +46,16 @@ export function useBibleSearch(currentCursor?: BibleCursor) {
     strategy: SearchStrategyType,
     limit: number,
   ) => {
-    const searchText = query ?? searchQuery;
-    const searchStrategy = strategy ?? selectedStrategy;
+    const searchText = query ?? searchStore.searchQuery;
+    const searchStrategy = strategy ?? searchStore.selectedStrategy;
 
     if (!searchText.trim()) {
-      setSearchResults([]);
-      setTotalCount(0);
-      setHasMore(false);
-      setError(null);
-      setLastQuery(null);
-      setIsInitialLoading(true);
+      searchStore.setSearchResults([]);
+      searchStore.setTotalCount(0);
+      searchStore.setHasMore(false);
+      searchStore.setError(null);
+      searchStore.setLastQuery(null);
+      searchStore.setIsInitialLoading(true);
       return;
     }
 
@@ -73,9 +64,9 @@ export function useBibleSearch(currentCursor?: BibleCursor) {
     }
 
     isSearching.current = true;
-    setIsLoading(true);
-    setIsInitialLoading(true); // This is an initial search
-    setError(null);
+    searchStore.setIsLoading(true);
+    searchStore.setIsInitialLoading(true); // This is an initial search
+    searchStore.setError(null);
 
     try {
       const searchQuery: SearchQuery = {
@@ -89,97 +80,98 @@ export function useBibleSearch(currentCursor?: BibleCursor) {
       await new Promise(resolve => setTimeout(resolve)); // Allow for state to enter loader 
       const result = await executeSearchWithFallback(searchQuery, searchContext);
 
-      setSearchResults(result.items);
-      setTotalCount(result.totalCount);
-      setHasMore(result.hasMore);
-      setLastQuery(searchQuery);
-      setIsInitialLoading(false);
+      searchStore.setSearchResults(result.items);
+      searchStore.setTotalCount(result.totalCount);
+      searchStore.setHasMore(result.hasMore);
+      searchStore.setLastQuery(searchQuery);
+      searchStore.setIsInitialLoading(false);
 
     } catch (err) {
       console.error("Search error:", err);
-      setError(err instanceof Error ? err.message : "Search failed");
-      setSearchResults([]);
-      setTotalCount(0);
-      setHasMore(false);
-      setIsInitialLoading(false);
+      searchStore.setError(err instanceof Error ? err.message : "Search failed");
+      searchStore.setSearchResults([]);
+      searchStore.setTotalCount(0);
+      searchStore.setHasMore(false);
+      searchStore.setIsInitialLoading(false);
     } finally {
-      setIsLoading(false);
+      searchStore.setIsLoading(false);
       isSearching.current = false;
     }
-  }, [searchQuery, selectedStrategy, currentCursor, searchContext]);
+  }, [searchStore.searchQuery, searchStore.selectedStrategy, currentCursor, searchContext, searchStore]);
 
   // Load more results
   const loadMore = useCallback(async () => {
-    if (!lastQuery || !hasMore || isSearching.current) {
+    if (!searchStore.lastQuery || !searchStore.hasMore || isSearching.current) {
       return;
     }
 
     isSearching.current = true;
-    setIsLoading(true);
-    setError(null);
+    searchStore.setIsLoading(true);
+    searchStore.setError(null);
     // Note: We don't set isInitialLoading to true here since this is loading more, not an initial search
 
     try {
       // Calculate the next offset based on current results count
-      const nextOffset = searchResults.length;
+      const nextOffset = searchStore.searchResults?.length ?? 0;
 
       const searchQuery: SearchQuery = {
-        ...lastQuery,
+        ...searchStore.lastQuery,
         offset: nextOffset
       };
 
       const result = await executeSearchWithFallback(searchQuery, searchContext);
 
-      setSearchResults(prev => [...prev, ...result.items]);
-      setHasMore(result.hasMore);
+      searchStore.setSearchResults([...searchStore.searchResults ?? [], ...result.items]);
+      searchStore.setHasMore(result.hasMore);
     } catch (err) {
       console.error("Load more error:", err);
-      setError(err instanceof Error ? err.message : "Failed to load more results");
+      searchStore.setError(err instanceof Error ? err.message : "Failed to load more results");
     } finally {
-      setIsLoading(false);
+      searchStore.setIsLoading(false);
       isSearching.current = false;
     }
-  }, [lastQuery, hasMore, searchResults.length, searchContext]);
+  }, [searchStore.lastQuery, searchStore.hasMore, searchStore.searchResults?.length, searchContext, searchStore]);
 
   // Clear results
   const clearResults = useCallback(() => {
-    setSearchResults([]);
-    setTotalCount(0);
-    setHasMore(false);
-    setError(null);
-    setLastQuery(null);
-    setIsInitialLoading(true);
-  }, []);
+    searchStore.clearResults();
+  }, [searchStore]);
+
+  // Clear all
+  const clearAll = useCallback(() => {
+    searchStore.clearAll();
+  }, [searchStore]);
 
   // Set strategy
   const setStrategy = useCallback((strategy: SearchStrategyType) => {
-    setSelectedStrategy(strategy);
-    clearResults();
-  }, [clearResults]);
+    searchStore.setSelectedStrategy(strategy);
+    searchStore.clearResults();
+  }, [searchStore]);
 
   // Set query
   const setQuery = useCallback((query: string) => {
-    setSearchQuery(query);
+    searchStore.setSearchQuery(query);
     if (!query.trim()) {
-      clearResults();
+      searchStore.clearResults();
     }
-  }, [clearResults]);
+  }, [searchStore]);
 
   return {
     // State
-    searchQuery,
-    searchResults,
-    isLoading,
-    selectedStrategy,
-    totalCount,
-    hasMore,
-    error,
-    lastQuery,
-    isInitialLoading,
+    searchQuery: searchStore.searchQuery,
+    searchResults: searchStore.searchResults,
+    isLoading: searchStore.isLoading,
+    selectedStrategy: searchStore.selectedStrategy,
+    totalCount: searchStore.totalCount,
+    hasMore: searchStore.hasMore,
+    error: searchStore.error,
+    lastQuery: searchStore.lastQuery,
+    isInitialLoading: searchStore.isInitialLoading,
 
     // Actions
     performSearch,
     clearResults,
+    clearAll,
     setStrategy,
     loadMore,
     setQuery

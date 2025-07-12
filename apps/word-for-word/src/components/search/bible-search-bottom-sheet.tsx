@@ -58,6 +58,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     isInitialLoading,
     performSearch,
     clearResults,
+    clearAll,
     loadMore,
     setQuery,
     setStrategy,
@@ -67,11 +68,10 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   const handleSheetChanges = useCallback(
     (index: number) => {
       if (index === -1) {
-        clearResults();
         onClose();
       }
     },
-    [onClose, clearResults]
+    [onClose]
   );
 
   // Handle result selection
@@ -108,11 +108,18 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     [performSearch, selectedStrategy, clearResults]
   );
 
+  // Handle input text change
+  const handleInputChange = useCallback(
+    (text: string) => {
+      setQuery(text);
+    },
+    [setQuery]
+  );
+
   // Handle clear
   const handleClear = useCallback(() => {
-    clearResults();
-    setQuery("");
-  }, [clearResults, setQuery]);
+    clearAll();
+  }, [clearAll]);
 
   // Handle strategy change
   const handleStrategyChange = useCallback(
@@ -221,6 +228,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             onStrategyChange={handleStrategyChange}
             isLoading={isLoading}
             onFocusChange={handleFocusChange}
+            onChangeText={handleInputChange}
           />
         </TView>
 
@@ -257,7 +265,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
             hasMore={hasMore}
             onLoadMore={loadMore}
             emptyStateMessage={
-              searchQuery.trim()
+              searchQuery.trim() && searchResults
                 ? "No results found for your search"
                 : "Press enter to search"
             }
