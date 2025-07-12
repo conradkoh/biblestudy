@@ -211,14 +211,14 @@ const MemorizeScreen: FC = () => {
                 <TView className="flex-row items-center bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full">
                   <TText
                     className="mr-1 text-sm"
-                    style={{ color: themeColors.warning }}
+                    style={{ color: themeColors.orange }}
                   >
                     {expirationInfo.currentStreak}
                   </TText>
                   <Ionicons
                     name="flame"
                     size={16}
-                    color={themeColors.warning}
+                    color={themeColors.orange}
                   />
                 </TView>
               )}
@@ -327,13 +327,13 @@ const MemorizeScreen: FC = () => {
         contentContainerStyle={{ paddingBottom: 16 }}
       />
       <Button
-        className="w-full py-3 items-center justify-center"
-        style={{ backgroundColor: themeColors.primary }}
+        className="py-3 m-3 mt-2 items-center justify-center rounded-full"
+        style={{ backgroundColor: themeColors.orange }}
         onPress={handleStartDailyTest}
         disabled={!memoryVerses.length}
       >
         {props => {
-          return <TText {...props} className="font-bold">Start Daily Test</TText>
+          return <TText {...props} style={[props.style, { color: themeColors.permanentWhite }]} className="font-bold">Start Daily Test</TText>
         }}
       </Button>
     </TSafeAreaView>

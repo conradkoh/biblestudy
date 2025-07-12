@@ -81,6 +81,9 @@ export const ThemeColors = {
 
     permanentWhite: "#ffffff",
     permanentBlack: "#000000",
+
+    // Accent colors
+    orange: "#f59e0b",
   },
   dark: {
     // Surface colors
@@ -127,5 +130,8 @@ export const ThemeColors = {
 
     permanentWhite: "#ffffff",
     permanentBlack: "#000000",
+
+    // Accent colors
+    orange: "#fbbf24",
   },
 };
