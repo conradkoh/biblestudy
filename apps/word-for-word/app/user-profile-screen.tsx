@@ -23,7 +23,7 @@ import {
   Alert,
   Image,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import SessionHistoryGraph from "@/src/components/session-history-graph";
 import { formatDate } from "date-fns";
@@ -33,9 +33,14 @@ interface UserProfileScreenProps {
   isTab?: boolean;
 }
 
-export default function UserProfileScreen({ userId: propUserId, isTab = false }: UserProfileScreenProps) {
+export default function UserProfileScreen({
+  userId: propUserId,
+  isTab = false,
+}: UserProfileScreenProps) {
   const themeColors = useThemeColors();
-  const { userId: paramUserId } = useLocalSearchParams<{ userId: Id<"users"> }>();
+  const { userId: paramUserId } = useLocalSearchParams<{
+    userId: Id<"users">;
+  }>();
   const router = useRouter();
 
   // Use prop userId if provided, otherwise use the one from params
@@ -46,7 +51,14 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
 
   const user = useQuery(api.users.getUserById, { userId });
   const currentUser = useQuery(api.users.getCurrentUser);
-  const sessionHistoryData = useQuery(api.sessionLogger.getSessionHistoryData, { userId, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
+  const sessionHistoryData = useQuery(api.sessionLogger.getSessionHistoryData, {
+    userId,
+    endDateStr: formatDate(new Date(), "yyyy-MM-dd"),
+    startDateStr: formatDate(
+      new Date(new Date().setDate(new Date().getDate() - 30)),
+      "yyyy-MM-dd"
+    ),
+  });
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,7 +85,7 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
 
         Alert.alert(
           "Success",
-          `Friend request sent to ${user.username || user.name}`,
+          `Friend request sent to ${user.username || user.name}`
         );
 
         // Close the bottom sheet
@@ -85,7 +97,7 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
         setIsLoading(false);
       }
     },
-    [sendFriendInvite, userId, user],
+    [sendFriendInvite, userId, user]
   );
 
   const handleAddFriend = useCallback(() => {
@@ -125,7 +137,7 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
       });
       Alert.alert(
         "Success",
-        `You are now friends with ${user.username || user.name}`,
+        `You are now friends with ${user.username || user.name}`
       );
     } catch (error) {
       Alert.alert("Error", "Failed to accept friend request");
@@ -198,13 +210,19 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
         );
       case "FRIEND":
         return (
-          <TouchableOpacity className="px-4 py-2 rounded-full" style={{ backgroundColor: themeColors.secondary }}>
+          <TouchableOpacity
+            className="px-4 py-2 rounded-full"
+            style={{ backgroundColor: themeColors.secondary }}
+          >
             <TText className="text-center">Friends</TText>
           </TouchableOpacity>
         );
       case "CLOSE_FRIEND":
         return (
-          <TouchableOpacity className="px-4 py-2 rounded-full" style={{ backgroundColor: themeColors.secondary }}>
+          <TouchableOpacity
+            className="px-4 py-2 rounded-full"
+            style={{ backgroundColor: themeColors.secondary }}
+          >
             <TText className="text-center">Close Friends</TText>
           </TouchableOpacity>
         );
@@ -255,7 +273,7 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
   }
 
   return (
-    <TSafeAreaView className="h-full" edges={isTab ? [] : ['top', 'bottom']}>
+    <TSafeAreaView className="h-full" edges={isTab ? [] : ["top", "bottom"]}>
       <TView className="h-full">
         {/* Header with back button */}
         {!isTab && (
@@ -270,7 +288,10 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
         {/* User Profile Content */}
         <View className="items-center px-4 pt-6">
           {/* Profile Image */}
-          <View className="w-24 h-24 rounded-full overflow-hidden justify-center items-center mb-4" style={{ backgroundColor: themeColors.surfaceTertiary }}>
+          <View
+            className="w-24 h-24 rounded-full overflow-hidden justify-center items-center mb-4"
+            style={{ backgroundColor: themeColors.surfaceTertiary }}
+          >
             {user.image ? (
               <Image
                 source={{ uri: user.image }}
@@ -297,7 +318,7 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
         </View>
 
         {/* Stats Section */}
-        <View className="flex-row justify-around mt-10 px-4 py-6 border-t border-b border-gray-200">
+        {/* <View className="flex-row justify-around mt-10 px-4 py-6 border-t border-b border-gray-200">
           <View className="items-center">
             <TText className="text-xl font-bold">0</TText>
             <TText className="text-gray-500">Friends</TText>
@@ -306,11 +327,13 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
             <TText className="text-xl font-bold">0</TText>
             <TText className="text-gray-500">Groups</TText>
           </View>
-        </View>
+        </View> */}
 
         {/* Session History Graph */}
         <View className="mt-6 px-4">
-          <TText className="text-lg font-semibold mb-4">Bible Reading History</TText>
+          <TText className="text-lg font-semibold mb-4">
+            Bible Reading History
+          </TText>
           {sessionHistoryData ? (
             <SessionHistoryGraph
               size={18}
@@ -319,7 +342,9 @@ export default function UserProfileScreen({ userId: propUserId, isTab = false }:
               data={sessionHistoryData}
             />
           ) : (
-            <TText className="text-center text-gray-500">No activity data available</TText>
+            <TText className="text-center text-gray-500">
+              No activity data available
+            </TText>
           )}
         </View>
       </TView>

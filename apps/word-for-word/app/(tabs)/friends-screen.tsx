@@ -9,11 +9,17 @@ import { useMutation, useQuery } from "convex/react";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import React, { type FC, useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  type FC,
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+} from "react";
 import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
 import { CommonEvents } from "@/src/hooks/useEvents";
 import SessionHistoryGraph from "@/src/components/session-history-graph";
-import { formatDate } from "date-fns";
+import { formatDate, startOfDay, subDays } from "date-fns";
 
 type FriendsScreenProps = unknown;
 
@@ -29,7 +35,7 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
   const searchUserBottomSheetRef = useRef<BottomSheetModal>(null);
 
   const friends = useQuery(api.users.getUserFriends);
-  const userGroups = useQuery(api.users.getUserGroups);
+  // const userGroups = useQuery(api.users.getUserGroups);
 
   const receivedPrayers = useQuery(api.messages.getReceivedPrayers);
   const sentPrayers = useQuery(api.messages.getSentPrayers);
@@ -45,59 +51,82 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
         params: { userId },
       });
     },
-    [router],
+    [router]
   );
 
-  const navigateToGroup = useCallback((group: UserGroup) => {
-    // Navigate to group details
-    console.log("Navigate to group:", group);
-    // In a real implementation, you would navigate to the group's details
-  }, []);
+  // const navigateToGroup = useCallback((group: UserGroup) => {
+  //   // Navigate to group details
+  //   console.log("Navigate to group:", group);
+  //   // In a real implementation, you would navigate to the group's details
+  // }, []);
 
   const renderFriendItem = useCallback(
     ({ item: user }: { item: Doc<"users"> }) => {
-      const receivedPrayer = receivedPrayers?.find(prayer => prayer.senderId === user._id);
-      const sentPrayer = sentPrayers?.find(prayer => prayer.receiverId === user._id);
+      const receivedPrayer = receivedPrayers?.find(
+        (prayer) => prayer.senderId === user._id
+      );
+      const sentPrayer = sentPrayers?.find(
+        (prayer) => prayer.receiverId === user._id
+      );
 
-      return <FriendUserItem
-        receivedPrayer={receivedPrayer}
-        sentPrayer={sentPrayer}
-        user={user}
-        navigateToUserProfile={navigateToUserProfile}
-      />;
+      return (
+        <FriendUserItem
+          receivedPrayer={receivedPrayer}
+          sentPrayer={sentPrayer}
+          user={user}
+          navigateToUserProfile={navigateToUserProfile}
+        />
+      );
     },
-    [navigateToUserProfile, receivedPrayers, sentPrayers],
+    [navigateToUserProfile, receivedPrayers, sentPrayers]
   );
 
-  const renderGroupItem = useCallback(
-    ({ item }: { item: UserGroup }) => (
-      <TouchableOpacity
-        onPress={() => navigateToGroup(item)}
-        style={{ borderBottomColor: themeColors.divider }}
-        className="p-3 flex-row items-center border-b"
-      >
-        <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
-          <Ionicons name="people" size={18} color={themeColors.text} />
-        </View>
-        <TText className="font-bold">{item.name}</TText>
-      </TouchableOpacity>
-    ),
-    [navigateToGroup, themeColors.text, themeColors.divider, themeColors.surfaceTertiary],
-  );
+  // const renderGroupItem = useCallback(
+  //   ({ item }: { item: UserGroup }) => (
+  //     <TouchableOpacity
+  //       onPress={() => navigateToGroup(item)}
+  //       style={{ borderBottomColor: themeColors.divider }}
+  //       className="p-3 flex-row items-center border-b"
+  //     >
+  //       <View
+  //         style={{ backgroundColor: themeColors.surfaceTertiary }}
+  //         className="w-10 h-10 rounded-full justify-center items-center mr-3"
+  //       >
+  //         <Ionicons name="people" size={18} color={themeColors.text} />
+  //       </View>
+  //       <TText className="font-bold">{item.name}</TText>
+  //     </TouchableOpacity>
+  //   ),
+  //   [
+  //     navigateToGroup,
+  //     themeColors.text,
+  //     themeColors.divider,
+  //     themeColors.surfaceTertiary,
+  //   ]
+  // );
 
   return (
-    <TSafeAreaView edges={['top']}>
+    <TSafeAreaView edges={["top"]}>
       <TView className="h-full">
         {/* Content */}
         <View className="flex-1">
           {/* Friends Section - Top Half */}
           <View className="flex-1">
-            <View style={{ backgroundColor: themeColors.surfaceMuted }} className="flex-row items-center justify-between px-4 py-2">
+            <View
+              style={{ backgroundColor: themeColors.surfaceMuted }}
+              className="flex-row items-center justify-between px-4 py-2"
+            >
               <TText className="font-bold">Friends</TText>
               <View className="flex-row items-center gap-2">
-                {friends && <TText className="text-sm">{friends.length} friends</TText>}
+                {friends && (
+                  <TText className="text-sm">{friends.length} friends</TText>
+                )}
                 <TouchableOpacity onPress={openAddFriendSheet}>
-                  <Ionicons name="person-add" size={24} color={themeColors.text} />
+                  <Ionicons
+                    name="person-add"
+                    size={24}
+                    color={themeColors.text}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -110,23 +139,25 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
               ListEmptyComponent={
                 <TView className="p-4 items-center justify-center h-full">
                   {friends === undefined && <TText>Loading...</TText>}
-                  {friends !== undefined && <>
-                    <TText>You don't have any friends yet.</TText>
-                    <TouchableOpacity
-                      onPress={openAddFriendSheet}
-                      style={{ backgroundColor: themeColors.surfacePressed }}
-                      className="mt-2 p-2 rounded-md"
-                    >
-                      <TText>Add Friends</TText>
-                    </TouchableOpacity>
-                  </>}
+                  {friends !== undefined && (
+                    <>
+                      <TText>You don't have any friends yet.</TText>
+                      <TouchableOpacity
+                        onPress={openAddFriendSheet}
+                        style={{ backgroundColor: themeColors.surfacePressed }}
+                        className="mt-2 p-2 rounded-md"
+                      >
+                        <TText>Add Friends</TText>
+                      </TouchableOpacity>
+                    </>
+                  )}
                 </TView>
               }
             />
           </View>
 
           {/* Groups Section - Bottom Half */}
-          <View className="flex-1">
+          {/* <View className="flex-1">
             <View style={{ backgroundColor: themeColors.surfaceMuted }} className="flex-row items-center justify-between px-4 py-2">
               <TText className="font-bold">Groups</TText>
               <View className="flex-row items-center gap-2">
@@ -149,7 +180,7 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
                 </TView>
               }
             />
-          </View>
+          </View> */}
         </View>
       </TView>
 
@@ -164,113 +195,211 @@ const FriendsScreen: FC<FriendsScreenProps> = () => {
 
 export default FriendsScreen;
 
-
 type FriendUserItemProps = {
   user: Doc<"users">;
   receivedPrayer: Doc<"messages"> | undefined;
   sentPrayer: Doc<"messages"> | undefined;
   navigateToUserProfile: (userId: Id<"users">) => void;
-}
-const FriendUserItem: FC<FriendUserItemProps> = ({ user, receivedPrayer, sentPrayer, navigateToUserProfile, }) => {
+};
+const FriendUserItem: FC<FriendUserItemProps> = ({
+  user,
+  receivedPrayer,
+  sentPrayer,
+  navigateToUserProfile,
+}) => {
   const [expandReceivedPrayer, setExpandReceivedPrayer] = useState(false);
   const [expandSentPrayer, setExpandSentPrayer] = useState(false);
-  const sessionGraphData = useQuery(api.sessionLogger.getSessionHistoryData, { userId: user._id, endDateStr: formatDate(new Date(), 'yyyy-MM-dd'), startDateStr: formatDate(new Date(new Date().setDate(new Date().getDate() - 30)), 'yyyy-MM-dd') });
+  const sessionGraphData = useQuery(api.sessionLogger.getSessionHistoryData, {
+    userId: user._id,
+    endDateStr: formatDate(new Date(), "yyyy-MM-dd"),
+    startDateStr: formatDate(
+      new Date(new Date().setDate(new Date().getDate() - 30)),
+      "yyyy-MM-dd"
+    ),
+  });
 
   const themeColors = useThemeColors();
   const removeFriend = useMutation(api.users.removeFriend);
   const sendMessage = useMutation(api.messages.sendMessage);
 
-  return <View className="flex-col px-3 py-2 border-b" style={{ borderBottomColor: themeColors.divider }}>
-    <TouchableOpacity
-      className="flex-row items-center"
-      onPress={() => {
-        CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
-          title: user.username,
-          options: [
-            {
-              id: "view_profile",
-              label: "View Profile",
-              onSelect: () => navigateToUserProfile(user._id),
-            },
-            {
-              id: "poke",
-              label: "Poke to read their bible",
-              onSelect: () => {
-                sendMessage({
-                  content: '',
-                  kind: 'POKE',
-                  receiverId: user._id,
-                })
-              },
-            },
-            {
-              id: "prayer",
-              label: "Leave a prayer",
-              onSelect: () => {
-                const prayerHints = [
-                  "Write your prayer here...",
-                  'What is the Lord saying?',
-                  "Leave an encouragement...",
-                ]
+  const sessionStreak = getSessionStreak(sessionGraphData ?? []);
 
-                CommonEvents.emit("SHOW_INPUT_BOTTOM_SHEET", {
-                  title: `Leave @${user.username} a prayer`,
-                  subtitle: `Your latest prayer for @${user.username} will show in the Friends tab for a week.`,
-                  placeholder: prayerHints[Math.floor(Math.random() * prayerHints.length)],
-                  onSubmit: (text: string) => {
-                    sendMessage({
-                      content: text,
-                      kind: 'PRAYER',
-                      receiverId: user._id,
-                    })
-                  },
-                })
-              },
-            },
-            {
-              id: "remove_friend",
-              label: "Remove Friend",
-              onSelect: () => {
-                Alert.alert("Remove Friend", "Are you sure you want to remove this friend?", [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Remove", style: "destructive", onPress: () => removeFriend({ otherUserId: user._id }) },
-                ]);
-              },
-            },
-          ],
-        });
-      }}
+  return (
+    <View
+      className="flex-col px-3 py-2 border-b"
+      style={{ borderBottomColor: themeColors.divider }}
     >
-      <View style={{ backgroundColor: themeColors.surfaceTertiary }} className="w-10 h-10 rounded-full justify-center items-center mr-3">
-        {user.image ? <Image source={{ uri: user.image }} className="w-10 h-10 rounded-full" /> : <TText className="text-lg font-bold">
-          {(user.name ?? user.username)?.charAt(0).toUpperCase()}
-        </TText>}
-      </View>
-      <TText className="font-bold mr-auto">@{user.username}</TText>
-      <SessionHistoryGraph
-        data={sessionGraphData ?? []}
-        legend={false}
-      />
-    </TouchableOpacity>
-    {receivedPrayer && <TouchableOpacity onPress={() => setExpandReceivedPrayer(!expandReceivedPrayer)}>
-      <View className="rounded-md p-2 mt-2" style={{ backgroundColor: themeColors.surfaceSecondary }}>
-        <TText className="text-xs font-bold" style={{ color: themeColors.textTertiary }}>Left a prayer for you:</TText>
-        <TText
-          className="text-sm"
-          style={{ color: themeColors.text }}
-          numberOfLines={expandReceivedPrayer ? undefined : 2}
-        >{receivedPrayer.content}</TText>
-      </View>
-    </TouchableOpacity>}
-    {sentPrayer && <TouchableOpacity onPress={() => setExpandSentPrayer(!expandSentPrayer)}>
-      <View className="rounded-md p-2 mt-2" style={{ backgroundColor: themeColors.surfaceSecondary }}>
-        <TText className="text-xs font-bold" style={{ color: themeColors.textTertiary }}>You left a prayer:</TText>
-        <TText
-          className="text-sm"
-          style={{ color: themeColors.text }}
-          numberOfLines={expandSentPrayer ? undefined : 2}
-        >{sentPrayer.content}</TText>
-      </View>
-    </TouchableOpacity>}
-  </View>;
+      <TouchableOpacity
+        className="flex-row items-center"
+        onPress={() => {
+          CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
+            title: user.username,
+            options: [
+              {
+                id: "view_profile",
+                label: "View Profile",
+                onSelect: () => navigateToUserProfile(user._id),
+              },
+              {
+                id: "poke",
+                label: "Poke to read their bible",
+                onSelect: () => {
+                  sendMessage({
+                    content: "",
+                    kind: "POKE",
+                    receiverId: user._id,
+                  });
+                },
+              },
+              {
+                id: "prayer",
+                label: "Leave a prayer",
+                onSelect: () => {
+                  const prayerHints = [
+                    "Write your prayer here...",
+                    "What is the Lord saying?",
+                    "Leave an encouragement...",
+                  ];
+
+                  CommonEvents.emit("SHOW_INPUT_BOTTOM_SHEET", {
+                    title: `Leave @${user.username} a prayer`,
+                    subtitle: `Your latest prayer for @${user.username} will show in the Friends tab for a week.`,
+                    placeholder:
+                      prayerHints[
+                        Math.floor(Math.random() * prayerHints.length)
+                      ],
+                    onSubmit: (text: string) => {
+                      sendMessage({
+                        content: text,
+                        kind: "PRAYER",
+                        receiverId: user._id,
+                      });
+                    },
+                  });
+                },
+              },
+              {
+                id: "remove_friend",
+                label: "Remove Friend",
+                onSelect: () => {
+                  Alert.alert(
+                    "Remove Friend",
+                    "Are you sure you want to remove this friend?",
+                    [
+                      { text: "Cancel", style: "cancel" },
+                      {
+                        text: "Remove",
+                        style: "destructive",
+                        onPress: () => removeFriend({ otherUserId: user._id }),
+                      },
+                    ]
+                  );
+                },
+              },
+            ],
+          });
+        }}
+      >
+        <View
+          style={{ backgroundColor: themeColors.surfaceTertiary }}
+          className="w-10 h-10 rounded-full justify-center items-center mr-3"
+        >
+          {user.image ? (
+            <Image
+              source={{ uri: user.image }}
+              className="w-10 h-10 rounded-full"
+            />
+          ) : (
+            <TText className="text-lg font-bold">
+              {(user.name ?? user.username)?.charAt(0).toUpperCase()}
+            </TText>
+          )}
+        </View>
+        <View className="flex-col flex-1" style={{ gap: 4 }}>
+          <TText className="font-semibold mr-auto">{user.username}</TText>
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Ionicons name="flame" size={16} color={themeColors.textTertiary} />
+            <TText
+              className="text-xs"
+              style={{ color: themeColors.textTertiary }}
+            >
+              {sessionStreak} streak
+            </TText>
+          </View>
+        </View>
+        <SessionHistoryGraph
+          data={sessionGraphData ?? []}
+          legend={false}
+          axisLabels={false}
+        />
+      </TouchableOpacity>
+      {receivedPrayer && (
+        <TouchableOpacity
+          onPress={() => setExpandReceivedPrayer(!expandReceivedPrayer)}
+        >
+          <View
+            className="rounded-md p-2 mt-2"
+            style={{ backgroundColor: themeColors.surfaceSecondary }}
+          >
+            <TText
+              className="text-xs font-bold"
+              style={{ color: themeColors.textTertiary }}
+            >
+              Left a prayer for you:
+            </TText>
+            <TText
+              className="text-sm"
+              style={{ color: themeColors.text }}
+              numberOfLines={expandReceivedPrayer ? undefined : 2}
+            >
+              {receivedPrayer.content}
+            </TText>
+          </View>
+        </TouchableOpacity>
+      )}
+      {sentPrayer && (
+        <TouchableOpacity
+          onPress={() => setExpandSentPrayer(!expandSentPrayer)}
+        >
+          <View
+            className="rounded-md p-2 mt-2"
+            style={{ backgroundColor: themeColors.surfaceSecondary }}
+          >
+            <TText
+              className="text-xs font-bold"
+              style={{ color: themeColors.textTertiary }}
+            >
+              You left a prayer:
+            </TText>
+            <TText
+              className="text-sm"
+              style={{ color: themeColors.text }}
+              numberOfLines={expandSentPrayer ? undefined : 2}
+            >
+              {sentPrayer.content}
+            </TText>
+          </View>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+function getSessionStreak(sessionGraphData: { date: string; count: number }[]) {
+  let streak = 0;
+
+  const dates = new Set<string>();
+  for (let session of sessionGraphData) {
+    if (session.count <= 0) continue;
+    dates.add(startOfDay(new Date(session.date)).toISOString());
+  }
+
+  let currentDate = startOfDay(new Date());
+  while (dates.has(currentDate.toISOString())) {
+    streak++;
+    currentDate = subDays(currentDate, 1);
+  }
+
+  // No such thing as a 1 day streak, so we return 0
+  return streak <= 1 ? 0 : streak;
 }
