@@ -12,7 +12,7 @@ import { TView } from "@/src/components/core/TView";
 import { TText } from "@/src/components/core/TText";
 import { useNotificationPermissions } from "@/src/hooks/useNotificationPermissions";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
-import Google from '@/assets/images/google.svg';
+import Google from "@/assets/images/google.svg";
 
 type LoginScreenProps = unknown;
 
@@ -29,7 +29,7 @@ const GoogleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
         {
           backgroundColor: themeColors.permanentWhite,
           borderColor: themeColors.border,
-        }
+        },
       ]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -39,10 +39,7 @@ const GoogleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
           <Google style={{ width: 20, height: 20 }} />
         </View>
         <TText
-          style={[
-            styles.buttonText,
-            { color: themeColors.permanentBlack }
-          ]}
+          style={[styles.buttonText, { color: themeColors.permanentBlack }]}
           type="defaultSemiBold"
         >
           Continue with Google
@@ -63,20 +60,21 @@ const AppleSignInButton: FC<{ onPress: () => void }> = ({ onPress }) => {
         {
           backgroundColor: themeColors.permanentBlack,
           borderColor: themeColors.permanentBlack,
-        }
+        },
       ]}
       onPress={onPress}
       activeOpacity={0.8}
     >
       <View style={styles.buttonContent}>
         <View style={styles.appleIcon}>
-          <Ionicons name="logo-apple" size={20} color={themeColors.permanentWhite} />
+          <Ionicons
+            name="logo-apple"
+            size={20}
+            color={themeColors.permanentWhite}
+          />
         </View>
         <TText
-          style={[
-            styles.buttonText,
-            { color: themeColors.permanentWhite }
-          ]}
+          style={[styles.buttonText, { color: themeColors.permanentWhite }]}
           type="defaultSemiBold"
         >
           Continue with Apple
@@ -91,10 +89,10 @@ const LoginScreen: FC<LoginScreenProps> = () => {
   const themeColors = useThemeColors();
   const { getExpoPushToken } = useNotificationPermissions();
   const insertUserNotificationToken = useMutation(
-    api.pushNotifications.insertUserNotificationToken,
+    api.pushNotifications.insertUserNotificationToken
   );
 
-  const handleSignIn = async (provider: 'google' | 'apple') => {
+  const handleSignIn = async (provider: "google" | "apple") => {
     const signInResponse = await signIn(provider, { redirectTo });
     const { redirect } = signInResponse;
     if (!redirect) throw new Error("No redirect found");
@@ -115,37 +113,24 @@ const LoginScreen: FC<LoginScreenProps> = () => {
   };
 
   return (
-    <TSafeAreaView>
+    <TSafeAreaView style={{ flex: 1 }}>
       <TView
-        style={[
-          styles.container,
-          { backgroundColor: themeColors.surface }
-        ]}
+        style={[styles.container, { backgroundColor: themeColors.surface }]}
       >
         {/* Header Section */}
         <View style={styles.headerSection}>
           <View style={styles.logoContainer}>
-            <Ionicons
-              name="book"
-              size={48}
-              color={themeColors.primary}
-            />
+            <Ionicons name="book" size={48} color={themeColors.primary} />
           </View>
           <TText
             type="title"
-            style={[
-              styles.appTitle,
-              { color: themeColors.text }
-            ]}
+            style={[styles.appTitle, { color: themeColors.text }]}
           >
             Bible with Friends
           </TText>
           <TText
             type="subtitle"
-            style={[
-              styles.appSubtitle,
-              { color: themeColors.textSecondary }
-            ]}
+            style={[styles.appSubtitle, { color: themeColors.textSecondary }]}
           >
             Study the Bible, encourage one another
           </TText>
@@ -153,28 +138,9 @@ const LoginScreen: FC<LoginScreenProps> = () => {
 
         {/* Login Section */}
         <View style={styles.loginSection}>
-          <TText
-            type="defaultSemiBold"
-            style={[
-              styles.welcomeText,
-              { color: themeColors.text }
-            ]}
-          >
-            Welcome back
-          </TText>
-          <TText
-            type="paragraph"
-            style={[
-              styles.signInText,
-              { color: themeColors.textSecondary }
-            ]}
-          >
-            Sign in to continue your Bible study journey
-          </TText>
-
           <View style={styles.buttonContainer}>
-            <GoogleSignInButton onPress={() => handleSignIn('google')} />
-            <AppleSignInButton onPress={() => handleSignIn('apple')} />
+            <GoogleSignInButton onPress={() => handleSignIn("google")} />
+            <AppleSignInButton onPress={() => handleSignIn("apple")} />
           </View>
         </View>
 
@@ -182,10 +148,7 @@ const LoginScreen: FC<LoginScreenProps> = () => {
         <View style={styles.footerSection}>
           <TText
             type="paragraph"
-            style={[
-              styles.footerText,
-              { color: themeColors.textTertiary }
-            ]}
+            style={[styles.footerText, { color: themeColors.textTertiary }]}
           >
             By signing in, you agree to our Terms of Service and Privacy Policy
           </TText>
@@ -202,38 +165,38 @@ const styles = StyleSheet.create({
   },
   headerSection: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingTop: 60,
   },
   logoContainer: {
     width: 80,
     height: 80,
     borderRadius: 20,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(59, 130, 246, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 24,
   },
   appTitle: {
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   appSubtitle: {
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: 20,
   },
   loginSection: {
-    flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingBottom: 40,
+    marginTop: 40,
   },
   welcomeText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 8,
   },
   signInText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 32,
   },
   buttonContainer: {
@@ -243,9 +206,9 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 12,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -258,9 +221,9 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 12,
     borderWidth: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -270,32 +233,32 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   googleIcon: {
     width: 20,
     height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   appleIcon: {
     width: 20,
     height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   footerSection: {
     paddingBottom: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   footerText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 14,
     lineHeight: 20,
     paddingHorizontal: 20,
