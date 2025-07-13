@@ -1,5 +1,8 @@
 import type { ExpoConfig, ConfigContext } from "expo/config";
 
+// For local builds where the file is present, otherwise it's in EAS env variable
+const localGoogleServicesFile = "./google-services.json";
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "Bible w Frens",
@@ -22,7 +25,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#ffffff",
     },
-    package: "com.moosedev.biblestudy"
+    package: "com.moosedev.biblestudy",
+    googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? localGoogleServicesFile,
   },
   web: {
     bundler: "metro",
