@@ -27,7 +27,6 @@ export const SearchUserBottomSheet = React.forwardRef<
 >(({ onSelectUser }, ref) => {
   const [searchText, setSearchText] = useState("");
   const insets = useSafeAreaInsets();
-  const snapPoints = ["70%"];
   const themeColors = useThemeColors();
   const renderBackdrop = useBottomSheetBackdrop();
 

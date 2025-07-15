@@ -23,6 +23,8 @@ import {
 } from "./bible-search-input";
 import { BibleSearchResults } from "./bible-search-results";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Dimensions } from "react-native";
 
 interface BibleSearchBottomSheetProps {
   isVisible: boolean;
@@ -31,6 +33,7 @@ interface BibleSearchBottomSheetProps {
   onSearchResultSelect?: (result: SearchResultItem) => void;
 }
 
+const screenHeight = Dimensions.get("window").height;
 export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   isVisible,
   onClose,
@@ -42,9 +45,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
   const searchInputRef = useRef<BibleSearchInputRef>(null);
   const renderBackdrop = useBottomSheetBackdrop({ opacity: 0.3 });
   const [isFocused, setIsFocused] = useState(false);
-
-  // Snap points for the bottom sheet
-  const snapPoints = useMemo(() => ["90%"], []);
+  const insets = useSafeAreaInsets();
 
   // Search hook
   const {
@@ -200,7 +201,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       keyboardBehavior="extend"
       ref={bottomSheetRef}
       index={0}
-      snapPoints={snapPoints}
+      snapPoints={[`${100 - insets.top / (screenHeight / 100)}`]}
       onChange={handleSheetChanges}
       enablePanDownToClose
       handleIndicatorStyle={{

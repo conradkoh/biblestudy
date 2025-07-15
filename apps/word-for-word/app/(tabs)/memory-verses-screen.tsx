@@ -8,21 +8,19 @@ import { useBibleStore } from "@/src/stores/bible-store";
 import { useSettingsStore } from "@/src/stores/settings-store";
 import { api } from "@backend/convex/_generated/api";
 import type { Doc, Id } from "@backend/convex/_generated/dataModel";
-import { getVerseNameFormatted, isBookId } from "@common/utils/bible-data-utils";
+import {
+  getVerseNameFormatted,
+  isBookId,
+} from "@common/utils/bible-data-utils";
 import {
   calculateExpirationInfo,
-  getExpirationStatus
+  getExpirationStatus,
 } from "@common/utils/memory-verse-utils";
 import { isDefined } from "@common/utils/typecheck";
 import { Ionicons } from "@expo/vector-icons";
 import classNames from "classnames";
 import { useMutation, useQuery } from "convex/react";
-import {
-  addDays,
-  isSameDay,
-  startOfDay,
-  startOfWeek
-} from "date-fns";
+import { addDays, isSameDay, startOfDay, startOfWeek } from "date-fns";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useCallback, useRef, type FC } from "react";
@@ -33,16 +31,20 @@ import { mapSortToInfo, sortMemoryVerses } from "@/src/utils/memory-verse-sort";
 
 const MemorizeScreen: FC = () => {
   const themeColors = useThemeColors();
-  const getVersesText = useBibleStore(s => s.getVersesText);
+  const getVersesText = useBibleStore((s) => s.getVersesText);
   const router = useRouter();
   const swipeableRefs = useRef<{ [key: string]: Swipeable | null }>({});
-  const memoryVerseSortOption = useSettingsStore(s => s.memoryVerseSortOption);
-  const setMemoryVerseSortOption = useSettingsStore(s => s.setMemoryVerseSortOption);
+  const memoryVerseSortOption = useSettingsStore(
+    (s) => s.memoryVerseSortOption
+  );
+  const setMemoryVerseSortOption = useSettingsStore(
+    (s) => s.setMemoryVerseSortOption
+  );
 
   const memoryVerses = usePersistedQuery(
     api.memoryVerses.getMemoryVerses,
     [{}],
-    { storageKey: 'CACHE_MEMORY_VERSES' }
+    { storageKey: "CACHE_MEMORY_VERSES" }
   );
 
   const removeMemoryVerse = useMutation(api.memoryVerses.removeMemoryVerse);
@@ -62,7 +64,7 @@ const MemorizeScreen: FC = () => {
         },
       });
     },
-    [router],
+    [router]
   );
 
   const handleDelete = useCallback(
@@ -74,7 +76,7 @@ const MemorizeScreen: FC = () => {
         console.error("Failed to delete memory verse:", error);
       }
     },
-    [removeMemoryVerse],
+    [removeMemoryVerse]
   );
 
   const renderRightActions = useCallback(
@@ -88,18 +90,17 @@ const MemorizeScreen: FC = () => {
         </TouchableOpacity>
       );
     },
-    [handleDelete],
+    [handleDelete]
   );
 
   const handleSortPress = useCallback(() => {
-
     CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {
       title: "Sort Memory Verses",
-      options: Object.values(mapSortToInfo).map(info => ({
+      options: Object.values(mapSortToInfo).map((info) => ({
         id: info.id,
         label: info.label,
         description: info.description,
-        onSelect: () => setMemoryVerseSortOption(info.id)
+        onSelect: () => setMemoryVerseSortOption(info.id),
       })),
     });
   }, [setMemoryVerseSortOption]);
@@ -112,8 +113,8 @@ const MemorizeScreen: FC = () => {
         [
           {
             text: "OK",
-            style: "default"
-          }
+            style: "default",
+          },
         ]
       );
       return;
@@ -122,8 +123,8 @@ const MemorizeScreen: FC = () => {
     const today = startOfDay(new Date());
 
     // Filter out verses that have been recited today
-    const versesNotRecitedToday = memoryVerses.filter(verse => {
-      const todayEntries = verse.memoryEntries.filter(entry => {
+    const versesNotRecitedToday = memoryVerses.filter((verse) => {
+      const todayEntries = verse.memoryEntries.filter((entry) => {
         const entryDate = startOfDay(new Date(entry.createdAt));
         return entryDate.valueOf() === today.valueOf();
       });
@@ -131,7 +132,8 @@ const MemorizeScreen: FC = () => {
     });
 
     // If we don't have enough verses, use all verses
-    const availableVerses = versesNotRecitedToday.length < 5 ? memoryVerses : versesNotRecitedToday;
+    const availableVerses =
+      versesNotRecitedToday.length < 5 ? memoryVerses : versesNotRecitedToday;
 
     // Randomly select 5 verses
     const selectedVerses = [];
@@ -151,8 +153,8 @@ const MemorizeScreen: FC = () => {
         [
           {
             text: "OK",
-            style: "default"
-          }
+            style: "default",
+          },
         ]
       );
       return;
@@ -166,18 +168,20 @@ const MemorizeScreen: FC = () => {
       pathname: "/recite-verse-screen",
       params: {
         verseId: firstVerse._id,
-        verseIdsStr: selectedVerses.map(v => v?._id).filter(isDefined).join(','),
-      }
+        verseIdsStr: selectedVerses
+          .map((v) => v?._id)
+          .filter(isDefined)
+          .join(","),
+      },
     });
   };
 
   const renderItem = useCallback(
     ({ item }: { item: Doc<"memoryVerses"> }) => {
-
       if (!isBookId(item.bookId)) {
         console.error("Invalid bookId", item.bookId);
-        return null
-      };
+        return null;
+      }
 
       const cursorStart = {
         version: item.version,
@@ -186,16 +190,26 @@ const MemorizeScreen: FC = () => {
         verse: item.verse,
       };
 
-      const cursorEnd = (isDefined(item.endVerse) && isDefined(item.endChapter) && isDefined(item.endBookId) && isBookId(item.endBookId)) ? {
-        verse: item.endVerse,
-        chapter: item.endChapter,
-        bookId: item.endBookId,
-      } : undefined;
+      const cursorEnd =
+        isDefined(item.endVerse) &&
+        isDefined(item.endChapter) &&
+        isDefined(item.endBookId) &&
+        isBookId(item.endBookId)
+          ? {
+              verse: item.endVerse,
+              chapter: item.endChapter,
+              bookId: item.endBookId,
+            }
+          : undefined;
 
       const verseName = getVerseNameFormatted(cursorStart, cursorEnd);
       const expirationInfo = calculateExpirationInfo(item.memoryEntries);
       const verseText = getVersesText(cursorStart, cursorEnd);
-      const expirationStatus = getExpirationStatus(expirationInfo.daysUntilExpiration, item.memoryEntries.length, item.memoryEntries);
+      const expirationStatus = getExpirationStatus(
+        expirationInfo.daysUntilExpiration,
+        item.memoryEntries.length,
+        item.memoryEntries
+      );
 
       // Map status to theme colors
       const statusColorMap = {
@@ -239,11 +253,7 @@ const MemorizeScreen: FC = () => {
                   >
                     {expirationInfo.currentStreak}
                   </TText>
-                  <Ionicons
-                    name="flame"
-                    size={16}
-                    color={themeColors.orange}
-                  />
+                  <Ionicons name="flame" size={16} color={themeColors.orange} />
                 </TView>
               )}
             </TView>
@@ -260,13 +270,15 @@ const MemorizeScreen: FC = () => {
                 className="mr-1 text-xs"
                 style={{ color: statusColorMap[expirationStatus.status] }}
               >
-                {expirationStatus.status === 'completed'
+                {expirationStatus.status === "completed"
                   ? "Completed today"
                   : expirationInfo.isExpired
-                    ? item.memoryEntries.length > 0 ? "Expired" : "Recite"
+                    ? item.memoryEntries.length > 0
+                      ? "Expired"
+                      : "Recite"
                     : expirationInfo.daysUntilExpiration === 0
                       ? "Expires today"
-                      : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? 's' : ''}`}
+                      : `Expires in ${expirationInfo.daysUntilExpiration} day${expirationInfo.daysUntilExpiration > 1 ? "s" : ""}`}
               </TText>
               <Ionicons
                 name={expirationStatus.icon}
@@ -278,12 +290,12 @@ const MemorizeScreen: FC = () => {
         </Swipeable>
       );
     },
-    [themeColors, handleVersePress, renderRightActions, getVersesText],
+    [themeColors, handleVersePress, renderRightActions, getVersesText]
   );
 
   if (!memoryVerses) {
     return (
-      <TSafeAreaView className="items-center justify-center" edges={['top']}>
+      <TSafeAreaView className="items-center justify-center" edges={["top"]}>
         <TText>Loading...</TText>
       </TSafeAreaView>
     );
@@ -291,7 +303,7 @@ const MemorizeScreen: FC = () => {
 
   if (memoryVerses.length === 0) {
     return (
-      <TSafeAreaView className="items-center justify-center" edges={['top']}>
+      <TSafeAreaView className="items-center justify-center" edges={["top"]}>
         <TView className="items-center">
           <Ionicons
             name="heart-outline"
@@ -310,15 +322,14 @@ const MemorizeScreen: FC = () => {
   }
 
   return (
-    <TSafeAreaView edges={['top']}>
+    <TSafeAreaView edges={["top"]} className="h-full">
       <TView className="flex-row items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-800">
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
-          
+        {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => {
           const weekStart = startOfWeek(new Date());
           const dateForDay = addDays(weekStart, index);
-          
-          const hasMemoryVerseForDay = memoryVerses.some(verse => {
-            return verse.memoryEntries.some(entry => {
+
+          const hasMemoryVerseForDay = memoryVerses.some((verse) => {
+            return verse.memoryEntries.some((entry) => {
               const entryDate = startOfDay(new Date(entry.createdAt));
               return isSameDay(entryDate, dateForDay);
             });
@@ -327,27 +338,47 @@ const MemorizeScreen: FC = () => {
 
           return (
             <View className="flex-1 items-center justify-center" key={index}>
-              <TText className="font-bold" style={{ color: themeColors.textSecondary }}>{day}</TText>
-              <View className={classNames("p-2 rounded-full mt-2", {
-                "bg-orange-100 dark:bg-orange-900": hasMemoryVerseForDay,
-                "border-2 border-orange-500 dark:border-orange-500": isToday,
-              })} style={{ ...!hasMemoryVerseForDay && {
-                backgroundColor: themeColors.surfaceTertiary,
-              } }}>
+              <TText
+                className="font-bold"
+                style={{ color: themeColors.textSecondary }}
+              >
+                {day}
+              </TText>
+              <View
+                className={classNames("p-2 rounded-full mt-2", {
+                  "bg-orange-100 dark:bg-orange-900": hasMemoryVerseForDay,
+                  "border-2 border-orange-500 dark:border-orange-500": isToday,
+                })}
+                style={{
+                  ...(!hasMemoryVerseForDay && {
+                    backgroundColor: themeColors.surfaceTertiary,
+                  }),
+                }}
+              >
                 <Ionicons
                   name="flame"
                   size={16}
-                  color={hasMemoryVerseForDay ? themeColors.warning : themeColors.textTertiary}
+                  color={
+                    hasMemoryVerseForDay
+                      ? themeColors.warning
+                      : themeColors.textTertiary
+                  }
                 />
               </View>
             </View>
           );
         })}
       </TView>
-      
+
       {/* Header with sort button */}
-      <TView className="flex-row items-center justify-between px-4 py-3 border-b" style={{ borderBottomColor: themeColors.border }}>
-        <TText className="text-lg font-bold" style={{ color: themeColors.text }}>
+      <TView
+        className="flex-row items-center justify-between px-4 py-3 border-b"
+        style={{ borderBottomColor: themeColors.border }}
+      >
+        <TText
+          className="text-lg font-bold"
+          style={{ color: themeColors.text }}
+        >
           Memory Verses
         </TText>
         <TouchableOpacity
@@ -361,19 +392,22 @@ const MemorizeScreen: FC = () => {
             color={themeColors.textSecondary}
             style={{ marginRight: 4 }}
           />
-          <TText className="text-sm" style={{ color: themeColors.textSecondary }}>
+          <TText
+            className="text-sm"
+            style={{ color: themeColors.textSecondary }}
+          >
             {mapSortToInfo[memoryVerseSortOption].label}
           </TText>
         </TouchableOpacity>
       </TView>
-      
+
       <FlatList
         data={sortedMemoryVerses}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={{ paddingBottom: 16 }}
       />
-      <Button
+      {/* <Button
         className="py-3 m-3 mt-2 items-center justify-center rounded-full"
         style={{ backgroundColor: themeColors.orange }}
         onPress={handleStartDailyTest}
@@ -382,7 +416,7 @@ const MemorizeScreen: FC = () => {
         {props => {
           return <TText {...props} style={[props.style, { color: themeColors.permanentWhite }]} className="font-bold">Start Daily Test</TText>
         }}
-      </Button>
+      </Button> */}
     </TSafeAreaView>
   );
 };
