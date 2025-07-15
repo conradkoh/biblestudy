@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { TouchableOpacity, View } from "react-native";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
 import { Ionicons } from "@expo/vector-icons";
 import {
   BottomSheetFlatList,
-  type BottomSheetModal,
+  BottomSheetModal,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { useThemeColors } from "@/src/hooks/useThemeColors";
@@ -14,17 +14,20 @@ import { usePaginatedQuery } from "convex/react";
 import { api } from "@backend/convex/_generated/api";
 import useBottomSheetBackdrop from "@/src/hooks/useBottomSheetBackdrop";
 import TBottomSheetModal from "@/src/components/core/TBottomSheetModal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type SearchUserBottomSheetProps = {
   onSelectUser?: (userId: Id<"users">) => void;
 };
 
+const screenHeight = Dimensions.get("window").height;
 export const SearchUserBottomSheet = React.forwardRef<
   BottomSheetModal,
   SearchUserBottomSheetProps
 >(({ onSelectUser }, ref) => {
   const [searchText, setSearchText] = useState("");
-  const snapPoints = useMemo(() => ["50%", "80%"], []);
+  const insets = useSafeAreaInsets();
+  const snapPoints = ["70%"];
   const themeColors = useThemeColors();
   const renderBackdrop = useBottomSheetBackdrop();
 
@@ -73,11 +76,10 @@ export const SearchUserBottomSheet = React.forwardRef<
     <TBottomSheetModal
       ref={ref}
       index={0}
-      snapPoints={snapPoints}
-      bottomSheetViewProps={undefined}
-      safeAreaProps={{
-        style: { height: "100%" },
-      }}
+      snapPoints={[`${100 - insets.top / (screenHeight / 100)}`]}
+      keyboardBehavior="extend"
+      // safeAreaProps={false}
+      // bottomSheetViewProps={false}
     >
       <TView className="px-4 pb-2">
         <TText className="text-lg font-bold mb-2">Search Users</TText>
@@ -88,17 +90,19 @@ export const SearchUserBottomSheet = React.forwardRef<
           <Ionicons name="search" size={16} color={themeColors.text} />
           <BottomSheetTextInput
             autoFocus
-            className="flex-1 font-medium"
             value={searchText}
             onChangeText={setSearchText}
+            autoCapitalize="none"
+            autoComplete="off"
+            autoCorrect={false}
             placeholder="Search by username"
             placeholderTextColor={themeColors.textSecondary}
-            style={{ color: themeColors.text }}
+            style={{ color: themeColors.text, flex: 1, fontWeight: "bold" }}
           />
         </View>
       </TView>
 
-      <BottomSheetFlatList
+      {/* <BottomSheetFlatList
         data={results}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
@@ -106,7 +110,7 @@ export const SearchUserBottomSheet = React.forwardRef<
         onEndReachedThreshold={0.5}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 3 }}
         style={{ backgroundColor: themeColors.surface }}
-      />
+      /> */}
     </TBottomSheetModal>
   );
 });
