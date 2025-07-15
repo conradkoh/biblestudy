@@ -11,10 +11,12 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "environment": "preview"
     },
     "production": {
       "channel": "production",
+      "environment": "production",
       "ios": {
         "image": "macos-sequoia-15.3-xcode-16.2"
       }
