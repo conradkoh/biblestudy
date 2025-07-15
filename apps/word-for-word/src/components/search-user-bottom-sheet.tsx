@@ -78,8 +78,10 @@ export const SearchUserBottomSheet = React.forwardRef<
       index={0}
       snapPoints={[`${100 - insets.top / (screenHeight / 100)}`]}
       keyboardBehavior="extend"
-      // safeAreaProps={false}
-      // bottomSheetViewProps={false}
+      safeAreaProps={{
+        style: { height: "100%" },
+      }}
+      bottomSheetViewProps={false}
     >
       <TView className="px-4 pb-2">
         <TText className="text-lg font-bold mb-2">Search Users</TText>
@@ -102,7 +104,7 @@ export const SearchUserBottomSheet = React.forwardRef<
         </View>
       </TView>
 
-      {/* <BottomSheetFlatList
+      <BottomSheetFlatList
         data={results}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
@@ -110,7 +112,7 @@ export const SearchUserBottomSheet = React.forwardRef<
         onEndReachedThreshold={0.5}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 3 }}
         style={{ backgroundColor: themeColors.surface }}
-      /> */}
+      />
     </TBottomSheetModal>
   );
 });
