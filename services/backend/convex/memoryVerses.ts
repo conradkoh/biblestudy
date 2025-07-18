@@ -198,7 +198,11 @@ export const getAllMemoryVerses = internalQuery({
   args: {
     userId: v.optional(v.id("users")),
   },
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    if (args.userId) {
+      return await ctx.db.query("memoryVerses").filter((q) => q.eq(q.field("userId"), args.userId)).collect();
+    }
+
     return await ctx.db.query("memoryVerses").collect();
   },
 });
@@ -213,25 +217,26 @@ export const sendMemoryVerseReminders = internalAction({
 
     // Group memory verses by user
     const versesByUser = memoryVerses.reduce((acc: Record<Id<"users">, Doc<"memoryVerses">[]>, verse: Doc<"memoryVerses">) => {
-      if (!acc[verse.userId]) {
-        acc[verse.userId] = [];
-      }
+      acc[verse.userId] ??= [];
       acc[verse.userId].push(verse);
       return acc;
     }, {});
 
     // Send a notification to each user
     for (const [userId, verses] of Object.entries(versesByUser)) {
+
+      if (args.userId && userId !== args.userId) continue;
+
       const now = new Date();
 
       const versesExpiringToday = verses.filter(verse => {
         const expirationInfo = calculateExpirationInfo(verse.memoryEntries, now);
-        return expirationInfo.daysUntilExpiration === 0;
+        return !expirationInfo.isExpired && expirationInfo.daysUntilExpiration === 0;
       });
 
       if (versesExpiringToday.length > 0) {
         // send a push notification
-        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+        ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `${versesExpiringToday.length} ${versesExpiringToday.length === 1 ? "verse" : "verses"} expiring today!`,
           body: `Refresh your memory before it expires!`,
@@ -244,12 +249,12 @@ export const sendMemoryVerseReminders = internalAction({
 
       const versesExpiringSoon = verses.filter(verse => {
         const expirationInfo = calculateExpirationInfo(verse.memoryEntries, now);
-        return expirationInfo.daysUntilExpiration <= 1;
+        return !expirationInfo.isExpired && expirationInfo.daysUntilExpiration <= 1;
       });
 
       if (versesExpiringSoon.length > 0) {
         // send a push notification
-        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+        ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `${versesExpiringSoon.length} ${versesExpiringSoon.length === 1 ? "verse" : "verses"} expiring soon!`,
           body: `Refresh your memory before it expires!`,
@@ -267,7 +272,7 @@ export const sendMemoryVerseReminders = internalAction({
 
       if (versesExpired.length > 0) {
         // send a push notification
-        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+        ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `Refresh your expired verses!`,
           body: `You have ${versesExpired.length} waiting to be refreshed!`,
@@ -284,7 +289,7 @@ export const sendMemoryVerseReminders = internalAction({
 
       if (unattemptedVerses.length > 0) {
         // send a push notification
-        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+        ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `Memorize ${unattemptedVerses.length} verses!`,
           body: `You have ${unattemptedVerses.length} ${unattemptedVerses.length === 1 ? "verse" : "verses"} waiting to be memorized!`,
@@ -305,7 +310,7 @@ export const sendMemoryVerseReminders = internalAction({
         });
 
         // send a push notification
-        await ctx.runMutation(api.pushNotifications.sendPushNotification, {
+        ctx.runMutation(api.pushNotifications.sendPushNotification, {
           to: userId as Id<"users">,
           title: `Memorize ${verseName}!`,
           body: randomVerse.text,
