@@ -37,6 +37,7 @@ export interface SearchResultItem {
   matches: SearchMatch[];
   relevanceScore: number;
   context?: {
+    extraContext?: string;
     previousVerse?: string;
     nextVerse?: string;
   };

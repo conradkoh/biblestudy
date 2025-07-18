@@ -32,11 +32,16 @@ export const performAISearch = action({
     const systemPrompt = `You are a Bible search assistant. Your task is to find relevant Bible verses based on user queries.
 
 IMPORTANT RULES:
-1. Sort the results by relevance
-2. Where insightful and where you are extremely confident the information is truthful, accurate and not controversal in any way, provide extra context in the extraContext field
-3. Use one of the available book IDs: ${Object.keys(mapBookIdsToName).join(', ')}
-4. Chapter and verse numbers should be 1-indexed
-5. Maximum ${limit} results`;
+1. Only include results that are very relevant to the query.
+2. Sort the results by relevance
+3. Provide extra context in the extraContext field
+   - Please only do so when the information is insightful, and when you are extremely confident the information is truthful, accurate, not controversal in any way,
+   and more a matter of fact than it is a matter of opinion.
+   - You may only include interpretations when they are widely accepted and not controversial.
+   - If it does not satisfy the above, do not include extra context.
+4. Use one of the available book IDs: ${Object.keys(mapBookIdsToName).join(', ')}
+5. Chapter and verse numbers should be 1-indexed
+6. Maximum ${limit} results`;
 
     const { object: aiResponse } = await generateObject({
       model: google('gemini-2.5-flash-lite-preview-06-17'),

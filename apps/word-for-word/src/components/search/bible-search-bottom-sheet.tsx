@@ -24,7 +24,9 @@ import {
 import { BibleSearchResults } from "./bible-search-results";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Dimensions } from "react-native";
+import { Dimensions, Keyboard } from "react-native";
+import { View } from "react-native";
+import { TouchableWithoutFeedback } from "react-native";
 
 interface BibleSearchBottomSheetProps {
   isVisible: boolean;
@@ -194,7 +196,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [isVisible, searchQuery, setQuery, performSearch, selectedStrategy]);
+  }, [isVisible]);
 
   return (
     <TBottomSheetModal
@@ -204,6 +206,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
       snapPoints={[`${100 - insets.top / (screenHeight / 100)}`]}
       onChange={handleSheetChanges}
       enablePanDownToClose
+      enableOverDrag={false}
       handleIndicatorStyle={{
         backgroundColor: themeColors.textTertiary,
       }}
@@ -216,7 +219,7 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
         style: { height: "100%" },
       }}
     >
-      <TView className="flex-1 px-4">
+      <TView className="flex-1 flex-col px-4">
         {/* Search Input */}
         <TView className="mb-4">
           <BibleSearchInput
@@ -233,45 +236,54 @@ export const BibleSearchBottomSheet: React.FC<BibleSearchBottomSheetProps> = ({
           />
         </TView>
 
-        {/* Results Count */}
-        {!isInitialLoading && totalCount > 0 && (
-          <TView className="mb-3">
-            <TText
-              className="text-sm"
-              style={{ color: themeColors.textSecondary }}
-            >
-              {totalCount} result{totalCount !== 1 ? "s" : ""} found
-            </TText>
-          </TView>
-        )}
+        <TouchableWithoutFeedback
+          className="flex-1"
+          onPress={() => {
+            Keyboard.dismiss();
+          }}
+        >
+          <View className="flex-1">
+            {/* Results Count */}
+            {!isInitialLoading && totalCount > 0 && (
+              <TView className="mb-3">
+                <TText
+                  className="text-sm"
+                  style={{ color: themeColors.textSecondary }}
+                >
+                  {totalCount} result{totalCount !== 1 ? "s" : ""} found
+                </TText>
+              </TView>
+            )}
 
-        {/* Error Message */}
-        {error && (
-          <TView
-            className="mb-3 p-3 rounded-lg"
-            style={{ backgroundColor: themeColors.error + "20" }}
-          >
-            <TText className="text-sm" style={{ color: themeColors.error }}>
-              {error}
-            </TText>
-          </TView>
-        )}
+            {/* Error Message */}
+            {error && (
+              <TView
+                className="mb-3 p-3 rounded-lg"
+                style={{ backgroundColor: themeColors.error + "20" }}
+              >
+                <TText className="text-sm" style={{ color: themeColors.error }}>
+                  {error}
+                </TText>
+              </TView>
+            )}
 
-        {/* Search Results */}
-        <TView className="flex-1">
-          <BibleSearchResults
-            results={searchResults}
-            onResultPress={handleResultPress}
-            isLoading={isLoading}
-            hasMore={hasMore}
-            onLoadMore={loadMore}
-            emptyStateMessage={
-              searchQuery.trim() && searchResults
-                ? "No results found for your search"
-                : "Press enter to search"
-            }
-          />
-        </TView>
+            {/* Search Results */}
+            <TView className="flex-1">
+              <BibleSearchResults
+                results={searchResults}
+                onResultPress={handleResultPress}
+                isLoading={isLoading}
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                emptyStateMessage={
+                  searchQuery.trim() && searchResults
+                    ? "No results found for your search"
+                    : "Press enter to search"
+                }
+              />
+            </TView>
+          </View>
+        </TouchableWithoutFeedback>
       </TView>
     </TBottomSheetModal>
   );

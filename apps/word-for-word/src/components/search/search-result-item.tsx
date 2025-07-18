@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { TText } from "@/src/components/core/TText";
 import { TView } from "@/src/components/core/TView";
@@ -6,6 +6,7 @@ import { HITSLOP_DEFAULT } from "@/src/consts/hitslop";
 import type { SearchResultItem } from "@/src/types/search";
 import { getVerseNameFormatted } from "@common/utils/bible-data-utils";
 import type { BibleCursor } from "@common/utils/bible-data-utils";
+import { Ionicons } from "@expo/vector-icons";
 
 interface SearchResultItemProps {
   item: SearchResultItem;
@@ -16,8 +17,10 @@ interface SearchResultItemProps {
 export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
   item,
   onPress,
-  themeColors
+  themeColors,
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const handlePress = useCallback(() => {
     onPress(item);
   }, [item, onPress]);
@@ -27,11 +30,14 @@ export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
     bookId: item.bookId,
     chapter: item.chapter,
     verse: item.verse,
-    version: item.version
+    version: item.version,
   };
 
   // Highlight matches in text
-  const renderHighlightedText = (text: string, matches: SearchResultItem['matches']) => {
+  const renderHighlightedText = (
+    text: string,
+    matches: SearchResultItem["matches"]
+  ) => {
     if (matches.length === 0) {
       return <TText style={{ color: themeColors.text }}>{text}</TText>;
     }
@@ -40,7 +46,9 @@ export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
     let lastIndex = 0;
 
     // Sort matches by start index
-    const sortedMatches = [...matches].sort((a, b) => a.startIndex - b.startIndex);
+    const sortedMatches = [...matches].sort(
+      (a, b) => a.startIndex - b.startIndex
+    );
 
     sortedMatches.forEach((match, index) => {
       // Add text before match
@@ -58,8 +66,8 @@ export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
           key={`match-${index}`}
           style={{
             color: themeColors.textHighlight,
-            fontWeight: 'bold',
-            backgroundColor: themeColors.surfaceHighlight
+            fontWeight: "bold",
+            backgroundColor: themeColors.surfaceHighlight,
           }}
         >
           {text.substring(match.startIndex, match.endIndex)}
@@ -113,10 +121,29 @@ export const SearchResultItemComponent: React.FC<SearchResultItemProps> = ({
         </View>
 
         {/* Verse Text */}
-        <TView>
-          {renderHighlightedText(item.text, item.matches)}
-        </TView>
+        <TView>{renderHighlightedText(item.text, item.matches)}</TView>
+
+        {/* Extra Context */}
+        {item.context?.extraContext && (
+          <TouchableOpacity
+            onPress={() => setIsExpanded(!isExpanded)}
+            className="flex-row items-center mt-2"
+          >
+            <TText
+              className=""
+              style={{ color: themeColors.textTertiary }}
+              numberOfLines={isExpanded ? undefined : 2}
+            >
+              <Ionicons
+                name="sparkles"
+                size={16}
+                color={themeColors.textTertiary}
+              />{" "}
+              {item.context.extraContext}
+            </TText>
+          </TouchableOpacity>
+        )}
       </TView>
     </TouchableOpacity>
   );
-}; 
+};

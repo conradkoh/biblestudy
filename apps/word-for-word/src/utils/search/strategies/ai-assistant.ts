@@ -46,6 +46,7 @@ export const aiAssistantSearch = async (
         chapter: aiResult.chapter,
         verse: aiResult.verse,
         text: "", // Will be populated when we fetch the actual verse text
+        extraContext: aiResult.extraContext,
         matches,
         relevanceScore: aiResult.relevance ?? (1 - index * 0.1), // Use relevance or fallback
       };
@@ -85,7 +86,10 @@ export const aiAssistantSearch = async (
             endIndex: 0, // We don't want to highlight the entire verse text
             text: verse.text,
             isHighlighted: true
-          }]
+          }],
+          context: {
+            extraContext: item.extraContext,
+          }
         };
 
         itemsWithText.push(updatedItem);
