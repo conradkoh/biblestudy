@@ -90,9 +90,10 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
   }, [isVisible, isPristine, bookNameSearch]);
 
   const result = fuse.search(bookNameSearch);
-  const filteredOptions = (!isPristine && bookNameSearch.length)
-    ? result.map((v) => v.item)
-    : bookNames;
+  const filteredOptions =
+    !isPristine && bookNameSearch.length
+      ? result.map((v) => v.item)
+      : bookNames;
 
   const bookId = bookNameSearch ? bookIdFromName(bookNameSearch) : null;
   const maxChapterNumber = bookId ? mapBookIdsToChapterCounts[bookId] : 0;
@@ -103,9 +104,9 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
 
   const maxVerseNumber =
     isValidBookName && isValidChapterSearch
-      ? bible.getBook(bookId, cursorHandler.cursor.version)?.chapters[
-        chapterSearchNum - 1
-      ]?.verses.length ?? 0
+      ? (bible.getBook(bookId, cursorHandler.cursor.version)?.chapters[
+          chapterSearchNum - 1
+        ]?.verses.length ?? 0)
       : 0;
   const verseSearchNum = Number.parseInt(verseSearch);
   const isValidVerseSearch =
@@ -117,6 +118,11 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
     isValidBookName && isValidChapterSearch && isValidVerseSearch;
 
   function onSubmitBook() {
+    if (isPristine) {
+      chapterTextInputRef.current?.focus();
+      return;
+    }
+
     // Select first option, if any
     if (filteredOptions.length > 0) {
       setBookNameSearch(filteredOptions[0] ?? "");
@@ -148,7 +154,7 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
       return;
     }
     const updatedCursor = cursorHandler.updateCursor(delta);
-    CommonEvents.emit('HIGHLIGHT_VERSE', updatedCursor);
+    CommonEvents.emit("HIGHLIGHT_VERSE", updatedCursor);
     setIsVisible(false);
   }
 
@@ -195,6 +201,13 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
                   setBookNameSearch(text);
                   setVerseSearch("1");
                   setIsPristine(false);
+
+                  if (currentFocus === "book") {
+                    scrollViewRef.current?.scrollTo({
+                      y: 0,
+                      animated: false,
+                    });
+                  }
                 }}
                 className="font-bold text-[18px] rounded-md p-2"
                 style={{
@@ -277,7 +290,9 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
                 filteredOptions.map((book, i) => {
                   // When search first opens, we show all books in order. In that case, the current
                   // option is the one that matches the search string.
-                  const isCurrent = isPristine ? book.toLowerCase() === bookNameSearch.toLowerCase() : i === 0;
+                  const isCurrent = isPristine
+                    ? book.toLowerCase() === bookNameSearch.toLowerCase()
+                    : i === 0;
                   return (
                     <TouchableOpacity
                       key={book}
@@ -371,7 +386,7 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
                                 <TText>{number}</TText>
                               </TouchableOpacity>
                             );
-                          },
+                          }
                         )}
                       </View>
                     );
@@ -408,7 +423,6 @@ const ChapterVerseSelector: FC<ChapterVerseSelectorProps> = ({
             </TouchableOpacity>
           </TView>
         </KeyboardStickyView>
-
       </TView>
     </Modal>
   );
