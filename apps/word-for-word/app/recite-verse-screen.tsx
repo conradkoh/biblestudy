@@ -11,7 +11,12 @@ import {
   type BibleCursor,
   type BookId,
 } from "@common/utils/bible-data-utils";
-import { isWord, tokeniseVerses, type Token } from "@/src/utils/verse-tokenizer";
+import {
+  cleanStartDelimiters,
+  isWord,
+  tokeniseVerses,
+  type Token,
+} from "@/src/utils/verse-tokenizer";
 import {
   View,
   ScrollView,
@@ -32,8 +37,10 @@ import { useSettingsStore } from "@/src/stores/settings-store";
 import { usePersistedQuery } from "@/src/hooks/usePersistedQuery";
 
 function memoryVerseToCursor(
-  memoryVerse: Doc<"memoryVerses"> | null | undefined,
-): { cursor: Required<BibleCursor>; endCursor?: BibleCursorRangeEnd } | undefined {
+  memoryVerse: Doc<"memoryVerses"> | null | undefined
+):
+  | { cursor: Required<BibleCursor>; endCursor?: BibleCursorRangeEnd }
+  | undefined {
   if (!memoryVerse) return undefined;
   if (!isBookId(memoryVerse.bookId)) return undefined;
   return {
@@ -45,20 +52,28 @@ function memoryVerseToCursor(
     },
     endCursor:
       isDefined(memoryVerse.endVerse) &&
-        isDefined(memoryVerse.endChapter) &&
-        isDefined(memoryVerse.endBookId) &&
-        isBookId(memoryVerse.endBookId)
+      isDefined(memoryVerse.endChapter) &&
+      isDefined(memoryVerse.endBookId) &&
+      isBookId(memoryVerse.endBookId)
         ? {
-          chapter: memoryVerse.endChapter,
-          verse: memoryVerse.endVerse,
-          bookId: memoryVerse.endBookId,
-        }
+            chapter: memoryVerse.endChapter,
+            verse: memoryVerse.endVerse,
+            bookId: memoryVerse.endBookId,
+          }
         : undefined,
   };
 }
 
 export default function MemoryVersePracticeScreen() {
-  const { verseId, verseIdsStr, isPeekingDefault = 'true' } = useLocalSearchParams<{ verseId: Id<"memoryVerses">, verseIdsStr?: string, isPeekingDefault?: 'false' | 'true' }>();
+  const {
+    verseId,
+    verseIdsStr,
+    isPeekingDefault = "true",
+  } = useLocalSearchParams<{
+    verseId: Id<"memoryVerses">;
+    verseIdsStr?: string;
+    isPeekingDefault?: "false" | "true";
+  }>();
   const themeColors = useThemeColors();
   const bible = useBibleStore();
 
@@ -67,21 +82,27 @@ export default function MemoryVersePracticeScreen() {
     id: verseId,
   });
 
-  const verseIds = verseIdsStr ? verseIdsStr.split(',').map(id => id) : undefined;
-  const currentVerseIndex = verseIds?.findIndex(id => id === verseId) ?? 0;
+  const verseIds = verseIdsStr
+    ? verseIdsStr.split(",").map((id) => id)
+    : undefined;
+  const currentVerseIndex = verseIds?.findIndex((id) => id === verseId) ?? 0;
   const totalVerseCount = verseIds?.length;
   const isMultiVerse = totalVerseCount && totalVerseCount > 1;
 
   const cachedMemoryVerses = usePersistedQuery(
     api.memoryVerses.getMemoryVerses,
     [{}],
-    { storageKey: 'CACHE_MEMORY_VERSES' }
+    { storageKey: "CACHE_MEMORY_VERSES" }
   );
 
-  const cachedOrActualVerse = isDefined(memoryVerse) ? memoryVerse : cachedMemoryVerses?.find(v => v._id === verseId);
+  const cachedOrActualVerse = isDefined(memoryVerse)
+    ? memoryVerse
+    : cachedMemoryVerses?.find((v) => v._id === verseId);
   const isOffline = !isDefined(memoryVerse);
   const [showIsOffline, setShowIsOffline] = useState(false);
-  const isOfflineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isOfflineTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   useEffect(() => {
     isOfflineTimeoutRef.current && clearTimeout(isOfflineTimeoutRef.current);
@@ -96,19 +117,22 @@ export default function MemoryVersePracticeScreen() {
     isOfflineTimeoutRef.current = setTimeout(() => {
       setShowIsOffline(isOffline);
     }, 5000);
-  }, [isOffline])
+  }, [isOffline]);
 
   const addMemoryEntry = useMutation(api.memoryVerses.addMemoryEntry);
-  const { cursor: memoryVerseCursor, endCursor: memoryVerseEndCursor } = memoryVerseToCursor(cachedOrActualVerse) ?? {};
+  const { cursor: memoryVerseCursor, endCursor: memoryVerseEndCursor } =
+    memoryVerseToCursor(cachedOrActualVerse) ?? {};
 
   const verseRef = useRef<ScrollView>(null);
   const inputRef = useRef<TextInput>(null);
 
-  const [isPeeking, setIsPeeking] = useState(isPeekingDefault === 'true');
+  const [isPeeking, setIsPeeking] = useState(isPeekingDefault === "true");
   const [userText, setUserText] = useState("");
 
-  const memoryVerses = memoryVerseCursor ? bible.getVersesInRange(memoryVerseCursor, memoryVerseEndCursor) : undefined;
-  const memoryVersesTexts = memoryVerses?.map(v => v.text) || [];
+  const memoryVerses = memoryVerseCursor
+    ? bible.getVersesInRange(memoryVerseCursor, memoryVerseEndCursor)
+    : undefined;
+  const memoryVersesTexts = memoryVerses?.map((v) => v.text) || [];
 
   useEffect(() => {
     if (isPeeking) {
@@ -120,13 +144,13 @@ export default function MemoryVersePracticeScreen() {
   }, [isPeeking]);
 
   useEffect(() => {
-    if (settingsStore.memoryVerseMode === 'first_letter') {
+    if (settingsStore.memoryVerseMode === "first_letter") {
       inputRef.current?.setSelection(userText.length, userText.length);
     }
-  }, [userText, settingsStore.memoryVerseMode])
+  }, [userText, settingsStore.memoryVerseMode]);
 
   const handleTextChange = (text: string) => {
-    if (settingsStore.memoryVerseMode !== 'full_word') return;
+    if (settingsStore.memoryVerseMode !== "full_word") return;
     if (text === " ") {
       setUserText("");
       return;
@@ -148,7 +172,7 @@ export default function MemoryVersePracticeScreen() {
   };
 
   const handleKeyDown = (key: string) => {
-    if (settingsStore.memoryVerseMode !== 'first_letter') return;
+    if (settingsStore.memoryVerseMode !== "first_letter") return;
     if (key.length > 1) return; // ignore state changes
 
     if (!memoryVersesTexts.length) return;
@@ -158,10 +182,15 @@ export default function MemoryVersePracticeScreen() {
 
     const latestTokens = tokeniseVerses(memoryVersesTexts, userText).flat();
 
-    const nextWordIndex = latestTokens.findIndex(t => !t.isDelimiter && !t.userAttempted);
+    const nextWordIndex = latestTokens.findIndex(
+      (t) => !t.isDelimiter && !t.userAttempted
+    );
     const nextWord = latestTokens[nextWordIndex];
 
-    const isCorrectFirstWord = key.toLowerCase() === nextWord?.text.toLowerCase()[0];
+    const isCorrectFirstWord =
+      nextWord &&
+      key.toLowerCase() ===
+        cleanStartDelimiters(nextWord.text).toLowerCase()[0];
     if (isCorrectFirstWord) {
       // We want to add the word, and any possible de-limiters before this word
       const textToAppend = [nextWord.text];
@@ -172,7 +201,7 @@ export default function MemoryVersePracticeScreen() {
         textToAppend.unshift(token.text);
       }
 
-      const finalText = userText + textToAppend.join('');
+      const finalText = userText + textToAppend.join("");
       setUserText(finalText);
 
       // Check if the verse is complete
@@ -183,15 +212,15 @@ export default function MemoryVersePracticeScreen() {
         .every((token: Token) => token.userAttempted && token.match);
       if (isComplete) handleVerseComplete();
     } else {
-      Vibration.vibrate()
+      Vibration.vibrate();
     }
-  }
+  };
 
   const handleVerseComplete = async () => {
     if (!memoryVerseCursor) return;
     Alert.alert(
       "Well done!",
-      `You have successfully recited ${getVerseNameFormatted(memoryVerseCursor)}`,
+      `You have successfully recited ${getVerseNameFormatted(memoryVerseCursor)}`
     );
 
     if (verseId) addMemoryEntry({ memoryVerseId: verseId });
@@ -207,7 +236,10 @@ export default function MemoryVersePracticeScreen() {
     }
 
     // go next verse
-    router.replace({ pathname: "/recite-verse-screen", params: { verseId: nextVerseId, verseIdsStr, isPeekingDefault: 'false' } });
+    router.replace({
+      pathname: "/recite-verse-screen",
+      params: { verseId: nextVerseId, verseIdsStr, isPeekingDefault: "false" },
+    });
   };
 
   const togglePeek = () => {
@@ -239,7 +271,9 @@ export default function MemoryVersePracticeScreen() {
         <Button onPress={() => router.back()}>
           {(props) => <TText {...props}>Back</TText>}
         </Button>
-        <TText>{getVerseNameFormatted(memoryVerseCursor, memoryVerseEndCursor, true)}</TText>
+        <TText>
+          {getVerseNameFormatted(memoryVerseCursor, memoryVerseEndCursor, true)}
+        </TText>
       </View>
       <ScrollView ref={verseRef} className="flex-1 p-4">
         <View className="flex-row flex-wrap">
@@ -251,7 +285,7 @@ export default function MemoryVersePracticeScreen() {
               <React.Fragment key={`verse-${verse.verse}`}>
                 <TText
                   style={{
-                    color: themeColors.textSecondary
+                    color: themeColors.textSecondary,
                   }}
                 >
                   {` ${toSuperscript(verse.verse)}`}
@@ -301,12 +335,26 @@ export default function MemoryVersePracticeScreen() {
       </ScrollView>
 
       <KeyboardAvoidingView behavior="padding">
-        {showIsOffline && <View style={{ backgroundColor: themeColors.warning }} className="px-3 py-2">
-          <Text className="text-center">You are offline, completion might not be tracked.</Text>
-        </View>}
-        {isMultiVerse && <View style={{ backgroundColor: themeColors.secondary }} className="px-3 py-2">
-          <Text className="text-center">Verse {currentVerseIndex + 1} of {totalVerseCount}</Text>
-        </View>}
+        {showIsOffline && (
+          <View
+            style={{ backgroundColor: themeColors.warning }}
+            className="px-3 py-2"
+          >
+            <Text className="text-center">
+              You are offline, completion might not be tracked.
+            </Text>
+          </View>
+        )}
+        {isMultiVerse && (
+          <View
+            style={{ backgroundColor: themeColors.secondary }}
+            className="px-3 py-2"
+          >
+            <Text className="text-center">
+              Verse {currentVerseIndex + 1} of {totalVerseCount}
+            </Text>
+          </View>
+        )}
         <View
           className="p-4"
           style={{
@@ -321,14 +369,20 @@ export default function MemoryVersePracticeScreen() {
               leadingIcon={(props) => (
                 <Ionicons
                   {...props}
-                  name={settingsStore.memoryVerseMode === 'full_word' ? 'chatbox-ellipses' : 'flash'}
+                  name={
+                    settingsStore.memoryVerseMode === "full_word"
+                      ? "chatbox-ellipses"
+                      : "flash"
+                  }
                   size={16}
                 />
               )}
             >
               {(props) => (
                 <TText className="ml-1" {...props}>
-                  {settingsStore.memoryVerseMode === 'full_word' ? "Full Text" : "First Letter"}
+                  {settingsStore.memoryVerseMode === "full_word"
+                    ? "Full Text"
+                    : "First Letter"}
                 </TText>
               )}
             </Button>
@@ -362,8 +416,16 @@ export default function MemoryVersePracticeScreen() {
             onFocus={() => setIsPeeking(false)}
             placeholderTextColor={themeColors.textSecondary}
             value={userText}
-            onKeyPress={settingsStore.memoryVerseMode === 'first_letter' ? e => handleKeyDown(e.nativeEvent.key) : undefined}
-            onChangeText={settingsStore.memoryVerseMode === 'full_word' ? handleTextChange : undefined}
+            onKeyPress={
+              settingsStore.memoryVerseMode === "first_letter"
+                ? (e) => handleKeyDown(e.nativeEvent.key)
+                : undefined
+            }
+            onChangeText={
+              settingsStore.memoryVerseMode === "full_word"
+                ? handleTextChange
+                : undefined
+            }
             className="p-2 rounded-md min-h-[100px]"
             style={{
               color: themeColors.text,

@@ -178,3 +178,10 @@ export function tokeniseVerses(verses: string[], userText: string): Token[][] {
 
   return result;
 }
+
+// For memory verses, sometimes the start of the string is "'". We don't consider those delimiters as we want
+// Words like john's to be a single word.
+export function cleanStartDelimiters(text: string): string {
+  // Remove all non-text/number characters from the start of the string
+  return text.replace(/^[^a-zA-Z0-9]+/, '');
+}
