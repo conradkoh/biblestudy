@@ -17,7 +17,7 @@ export default function SettingsScreen() {
   const { handleSignOut } = useSignOut();
 
   return (
-    <TSafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+    <TSafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingVertical: 16 }}
@@ -26,15 +26,15 @@ export default function SettingsScreen() {
         <SettingsSection title="Appearance">
           <ChevronSettingsItem
             title="Typography"
-            subtitle="Font style and selection" // , size, and spacing
+            subtitle="Font style, size, and selection"
             icon="text"
-            onPress={() => router.push('/settings/typography')}
+            onPress={() => router.push("/settings/typography")}
           />
           <ChevronSettingsItem
             title="Theme"
             subtitle="Dark, light, or auto"
             icon="moon"
-            onPress={() => router.push('/settings/theme')}
+            onPress={() => router.push("/settings/theme")}
           />
         </SettingsSection>
 
@@ -43,7 +43,7 @@ export default function SettingsScreen() {
             title="Push Notifications"
             subtitle="Reminders and updates"
             icon="notifications"
-            onPress={() => router.push('/settings/notifications')}
+            onPress={() => router.push("/settings/notifications")}
           />
         </SettingsSection>
 
@@ -52,7 +52,7 @@ export default function SettingsScreen() {
             title="Account Management"
             subtitle="Security and data settings"
             icon="shield-checkmark"
-            onPress={() => router.push('/settings/account')}
+            onPress={() => router.push("/settings/account")}
           />
         </SettingsSection>
 
@@ -66,17 +66,19 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
 
-        <View style={{
-          alignItems: 'center',
-          marginTop: 32,
-          marginBottom: 16,
-          paddingHorizontal: 16,
-        }}>
+        <View
+          style={{
+            alignItems: "center",
+            marginTop: 32,
+            marginBottom: 16,
+            paddingHorizontal: 16,
+          }}
+        >
           <TText
             style={{
               fontSize: 12,
               color: themeColors.textTertiary,
-              textAlign: 'center',
+              textAlign: "center",
             }}
           >
             {getVersionString()}

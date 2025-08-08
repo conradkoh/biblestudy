@@ -20,7 +20,8 @@ const SAMPLE_VERSE =
 
 export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
   const themeColors = useThemeColors();
-  const { paragraphFontFamily, setParagraphFontFamily } = useSettingsStore();
+  const { paragraphFontFamily, setParagraphFontFamily, textSize } =
+    useSettingsStore();
 
   const snapPoints = useMemo(() => ["80%"], []);
   const renderBackdrop = useBottomSheetBackdrop();
@@ -76,8 +77,8 @@ export const FontSelectionSheet = forwardRef<BottomSheetModal>((_, ref) => {
             <TText
               style={{
                 fontFamily: key,
-                fontSize: 16,
-                lineHeight: 24,
+                fontSize: textSize,
+                lineHeight: textSize * 1.4,
                 color: themeColors.text,
               }}
             >

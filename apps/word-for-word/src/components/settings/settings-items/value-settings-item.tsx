@@ -8,9 +8,6 @@ interface ValueSettingsItemProps {
   subtitle?: string;
   value?: string | number;
   onPress?: () => void;
-  showPreview?: boolean;
-  previewText?: string;
-  previewFontFamily?: string;
   style?: ViewStyle;
 }
 
@@ -19,31 +16,38 @@ export function ValueSettingsItem({
   subtitle,
   value,
   onPress,
-  showPreview = false,
-  previewText,
-  previewFontFamily,
-  style
+  style,
 }: ValueSettingsItemProps) {
   const themeColors = useThemeColors();
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 16,
-        backgroundColor: themeColors.surface,
-        borderBottomWidth: 1,
-        borderBottomColor: themeColors.divider,
-      }, style]}
+      style={[
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 16,
+          backgroundColor: themeColors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: themeColors.divider,
+        },
+        style,
+      ]}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, paddingHorizontal: 16 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          flex: 1,
+          paddingHorizontal: 16,
+        }}
+      >
         <View style={{ flex: 1 }}>
           <TText
             style={{
               fontSize: 16,
-              fontWeight: '500',
+              fontWeight: "500",
               color: themeColors.text,
               marginBottom: subtitle ? 2 : 0,
             }}
@@ -55,27 +59,14 @@ export function ValueSettingsItem({
               style={{
                 fontSize: 14,
                 color: themeColors.textSecondary,
-                marginBottom: showPreview ? 8 : 0,
               }}
             >
               {subtitle}
             </TText>
           )}
-          {showPreview && previewText && (
-            <TText
-              style={{
-                fontSize: 14,
-                lineHeight: 20,
-                color: themeColors.textSecondary,
-                fontFamily: previewFontFamily,
-              }}
-            >
-              {previewText}
-            </TText>
-          )}
         </View>
 
-        <View style={{ alignItems: 'flex-end' }}>
+        <View style={{ alignItems: "flex-end" }}>
           {value && (
             <TText
               style={{
@@ -96,4 +87,4 @@ export function ValueSettingsItem({
       </View>
     </TouchableOpacity>
   );
-} 
+}

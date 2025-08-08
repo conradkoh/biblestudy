@@ -35,6 +35,8 @@ interface SettingsState {
 
 interface SettingsActions {
   setParagraphFontFamily: (font: keyof typeof PARAGRAPH_FONT_OPTIONS) => void;
+  setTextSize: (size: number) => void;
+  setLineHeight: (height: number) => void;
   toggleMemoryVerseMode: () => void;
   setMemoryVerseSortOption: (option: MemoryVerseSortOption) => void;
   setTheme: (theme: 'light' | 'dark' | undefined) => void;
@@ -60,6 +62,8 @@ export const useSettingsStore = create<SettingsStore>()(
     (set, get) => ({
       ...initialState,
       setParagraphFontFamily: (font) => set({ paragraphFontFamily: font }),
+      setTextSize: (size) => set({ textSize: size }),
+      setLineHeight: (height) => set({ lineHeight: height }),
       toggleMemoryVerseMode: () =>
         set({
           memoryVerseMode:
