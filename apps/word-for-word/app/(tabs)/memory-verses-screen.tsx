@@ -303,8 +303,11 @@ const MemorizeScreen: FC = () => {
 
   if (memoryVerses.length === 0) {
     return (
-      <TSafeAreaView className="items-center justify-center" edges={["top"]}>
-        <TView className="items-center">
+      <TSafeAreaView
+        className="items-center justify-center flex-1"
+        edges={["top"]}
+      >
+        <TView className="flex-1 items-center justify-center">
           <Ionicons
             name="heart-outline"
             size={48}
