@@ -395,9 +395,13 @@ function getSessionStreak(sessionGraphData: { date: string; count: number }[]) {
   }
 
   let currentDate = startOfDay(new Date());
-  while (dates.has(currentDate.toISOString())) {
-    streak++;
+  let isToday = true;
+  while (dates.has(currentDate.toISOString()) || isToday) {
+    if (dates.has(currentDate.toISOString())) {
+      streak++;
+    }
     currentDate = subDays(currentDate, 1);
+    isToday = false;
   }
 
   // No such thing as a 1 day streak, so we return 0
