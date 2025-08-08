@@ -31,6 +31,7 @@ type BibleChapterView = {
   onScrollBegin?: () => void;
   marginBottom?: SharedValue<number>;
   verseHighlightsMap?: Map<number, string>;
+  setIsChapterVerseSelectorVisible?: (isVisible: boolean) => void;
 };
 
 export type BibleChapterViewRef = {
@@ -51,6 +52,7 @@ const BibleChapterView = React.forwardRef<
       onScrollBegin,
       marginBottom,
       verseHighlightsMap,
+      setIsChapterVerseSelectorVisible,
     },
     forwardRef
   ) => {
@@ -126,10 +128,16 @@ const BibleChapterView = React.forwardRef<
       >
         <TView className="px-6">
           <TView className="flex-row items-end mb-2 mt-6">
-            <TText type="title">
-              {mapBookIdsToName[cursorHandler.cursor.bookId]}{" "}
-              {cursorHandler.cursor.chapter}
-            </TText>
+            <TouchableOpacity
+              onPress={() => {
+                setIsChapterVerseSelectorVisible?.(true);
+              }}
+            >
+              <TText type="title">
+                {mapBookIdsToName[cursorHandler.cursor.bookId]}{" "}
+                {cursorHandler.cursor.chapter}
+              </TText>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 CommonEvents.emit("SHOW_OPTION_SELECTOR_BOTTOM_SHEET", {

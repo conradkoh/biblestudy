@@ -25,7 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import ChapterVerseSelector from "@/src/components/chapter-verse-selector";
 import { api } from "@backend/convex/_generated/api";
 import { CommonEvents } from "@/src/hooks/useEvents";
@@ -47,7 +47,13 @@ export default function ReadScreen() {
 
   const chapterViewMarginBottom = useDerivedValue(() => {
     if (!bottomSheetAnimatedValue.value) return 0;
-    return Math.max(dimensions.height - bottomSheetAnimatedValue.value - tabBarHeight - BIBLE_CHAPTER_CONTROLS_HEIGHT, 0);
+    return Math.max(
+      dimensions.height -
+        bottomSheetAnimatedValue.value -
+        tabBarHeight -
+        BIBLE_CHAPTER_CONTROLS_HEIGHT,
+      0
+    );
   }, [bottomSheetAnimatedValue]);
 
   const onCursorChange = useCallback((delta: Partial<BibleCursor>) => {
@@ -72,36 +78,44 @@ export default function ReadScreen() {
   const cursorHandler = useBibleCursorHandler(onCursorChange);
 
   useBibleBookmark(bible, cursorHandler);
-  const [isChapterVerseSelectorVisible, setIsChapterVerseSelectorVisible] = useState(false);
+  const [isChapterVerseSelectorVisible, setIsChapterVerseSelectorVisible] =
+    useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [showFocusVerseSingle, setShowFocusVerseSingle] = useState(false);
   const [showFocusVerseRange, setShowFocusVerseRange] = useState(false);
-  const [isSelectingRange, setIsSelectingRange] = useState(false)
+  const [isSelectingRange, setIsSelectingRange] = useState(false);
   const focusCursorHandler = useBibleCursorHandler();
 
   // Fetch memory verses with caching
   const memoryVerses = usePersistedQuery(
     api.memoryVerses.getMemoryVerses,
     [{}],
-    { storageKey: 'CACHE_MEMORY_VERSES' }
+    { storageKey: "CACHE_MEMORY_VERSES" }
   );
 
   const memoryVersesNumbersInCurrentChapter = useMemo(() => {
-    return memoryVerses?.filter(verse =>
-      verse.bookId === cursorHandler.cursor.bookId &&
-      verse.chapter === cursorHandler.cursor.chapter
-    ).map(verse => verse.verse);
-  }, [memoryVerses, cursorHandler.cursor.chapter]);
+    return memoryVerses
+      ?.filter(
+        (verse) =>
+          verse.bookId === cursorHandler.cursor.bookId &&
+          verse.chapter === cursorHandler.cursor.chapter
+      )
+      .map((verse) => verse.verse);
+  }, [memoryVerses, cursorHandler.cursor.bookId, cursorHandler.cursor.chapter]);
 
   // Fetch verse highlights for the current chapter with caching
   const chapterHighlights = usePersistedQuery(
     api.verseHighlights.getChapterHighlights,
-    [{
-      version: cursorHandler.cursor.version,
-      bookId: cursorHandler.cursor.bookId,
-      chapter: cursorHandler.cursor.chapter,
-    }],
-    { storageKey: `CHAPTER_HIGHLIGHTS_${cursorHandler.cursor.version}_${cursorHandler.cursor.bookId}_${cursorHandler.cursor.chapter}` }
+    [
+      {
+        version: cursorHandler.cursor.version,
+        bookId: cursorHandler.cursor.bookId,
+        chapter: cursorHandler.cursor.chapter,
+      },
+    ],
+    {
+      storageKey: `CHAPTER_HIGHLIGHTS_${cursorHandler.cursor.version}_${cursorHandler.cursor.bookId}_${cursorHandler.cursor.chapter}`,
+    }
   );
 
   // Create a map of verse numbers to highlight colors
@@ -110,15 +124,23 @@ export default function ReadScreen() {
 
     const highlightsMap = new Map<number, string>();
 
-    Object.entries(chapterHighlights).forEach(([verseNumber, highlight]) => {
-      const verse = parseInt(verseNumber, 10);
-      if (!isNaN(verse) && highlight && typeof highlight === 'object' && 'color' in highlight) {
+    for (let [verseNumber, highlight] of Object.entries(chapterHighlights)) {
+      const verse = Number.parseInt(verseNumber, 10);
+      if (
+        !Number.isNaN(verse) &&
+        highlight &&
+        typeof highlight === "object" &&
+        "color" in highlight
+      ) {
         const color = highlight.color;
         if (color && color in themeColors) {
-          highlightsMap.set(verse, themeColors[color as keyof typeof themeColors]);
+          highlightsMap.set(
+            verse,
+            themeColors[color as keyof typeof themeColors]
+          );
         }
       }
-    });
+    }
 
     return highlightsMap;
   }, [chapterHighlights, themeColors]);
@@ -127,8 +149,13 @@ export default function ReadScreen() {
 
   // Handle search result selection to trigger highlighting
   const handleSearchResultSelect = useCallback((result: SearchResultItem) => {
-    const cursor: BibleCursor = { bookId: result.bookId, chapter: result.chapter, verse: result.verse, version: result.version };
-    CommonEvents.emit('HIGHLIGHT_VERSE', cursor);
+    const cursor: BibleCursor = {
+      bookId: result.bookId,
+      chapter: result.chapter,
+      verse: result.verse,
+      version: result.version,
+    };
+    CommonEvents.emit("HIGHLIGHT_VERSE", cursor);
   }, []);
 
   function onPressVerse(verse: number) {
@@ -139,13 +166,11 @@ export default function ReadScreen() {
     setShowFocusVerseSingle(true);
     focusCursorHandler.updateCursor({
       ...cursorHandler.cursor,
-      verse
+      verse,
     });
   }
 
-
   const handleLongPressVerse = (longPressVerse: number) => {
-
     if (!showFocusVerseSingle && !showFocusVerseRange) return;
 
     setShowFocusVerseSingle(false);
@@ -159,7 +184,6 @@ export default function ReadScreen() {
     }
 
     if (longPressVerse > focusCursorHandler.cursor.verse) {
-
       focusCursorHandler.setCursorRangeEnd({
         chapter: focusCursorHandler.cursor.chapter,
         bookId: focusCursorHandler.cursor.bookId,
@@ -192,7 +216,7 @@ export default function ReadScreen() {
         style={{
           flex: 1,
         }}
-        edges={['top']}
+        edges={["top"]}
       >
         <TView
           style={{
@@ -205,25 +229,44 @@ export default function ReadScreen() {
             isScrolling={isScrolling}
             onNext={cursorHandler.goNext}
             onPrev={cursorHandler.goPrev}
-            nextHint={cursorHandler.hasNextChapterInSameBook() ?
-              <TText
-                style={{
-                  fontSize: 24,
-                  color: themeColors.text,
-                  fontWeight: "bold",
-                }}
-              >
-                {cursorHandler.cursor.chapter + 1}
-              </TText> : <Ionicons name="arrow-forward-sharp" size={24} color={themeColors.text} />}
-            prevHint={cursorHandler.hasPrevChapterInSameBook() ? <TText
-              style={{
-                fontSize: 24,
-                color: themeColors.text,
-                fontWeight: "bold",
-              }}
-            >
-              {cursorHandler.cursor.chapter - 1}
-            </TText> : <Ionicons name="arrow-back-sharp" size={24} color={themeColors.text} />}
+            nextHint={
+              cursorHandler.hasNextChapterInSameBook() ? (
+                <TText
+                  style={{
+                    fontSize: 24,
+                    color: themeColors.text,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {cursorHandler.cursor.chapter + 1}
+                </TText>
+              ) : (
+                <Ionicons
+                  name="arrow-forward-sharp"
+                  size={24}
+                  color={themeColors.text}
+                />
+              )
+            }
+            prevHint={
+              cursorHandler.hasPrevChapterInSameBook() ? (
+                <TText
+                  style={{
+                    fontSize: 24,
+                    color: themeColors.text,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {cursorHandler.cursor.chapter - 1}
+                </TText>
+              ) : (
+                <Ionicons
+                  name="arrow-back-sharp"
+                  size={24}
+                  color={themeColors.text}
+                />
+              )
+            }
           >
             <BibleChapterView
               ref={bibleChapterViewRef}
@@ -231,14 +274,23 @@ export default function ReadScreen() {
               onPressVerse={onPressVerse}
               onLongPressVerse={handleLongPressVerse}
               selectedVerses={
-                (showFocusVerseRange && focusCursorHandler.cursorRangeEnd?.verse !== undefined) ? getVersesFromRange(focusCursorHandler.cursor, focusCursorHandler.cursorRangeEnd) :
-                  (showFocusVerseSingle && focusCursorHandler.cursor.verse !== undefined)
+                showFocusVerseRange &&
+                focusCursorHandler.cursorRangeEnd?.verse !== undefined
+                  ? getVersesFromRange(
+                      focusCursorHandler.cursor,
+                      focusCursorHandler.cursorRangeEnd
+                    )
+                  : showFocusVerseSingle &&
+                      focusCursorHandler.cursor.verse !== undefined
                     ? [focusCursorHandler.cursor.verse]
                     : undefined
               }
               memorisedVerses={memoryVersesNumbersInCurrentChapter}
               verseHighlightsMap={verseHighlightsMap}
               marginBottom={chapterViewMarginBottom}
+              setIsChapterVerseSelectorVisible={
+                setIsChapterVerseSelectorVisible
+              }
             />
           </SwipeableContainer>
 
@@ -246,7 +298,7 @@ export default function ReadScreen() {
             className="flex flex-row items-center px-2"
             style={{
               backgroundColor: themeColors.surfaceSecondary,
-              height: BIBLE_CHAPTER_CONTROLS_HEIGHT
+              height: BIBLE_CHAPTER_CONTROLS_HEIGHT,
             }}
           >
             <TouchableOpacity
