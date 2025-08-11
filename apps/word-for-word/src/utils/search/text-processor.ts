@@ -88,15 +88,19 @@ export function findOrderedSequenceMatch(
     return { score: 0, positions: [], matchType: 'unordered' };
   }
 
-  // Try exact phrase match first
+  // Try exact phrase match first with word boundary awareness
   // Example: queryTerms=["wages", "sin", "death"] -> "wages sin death"
   const exactPhrase = queryTerms.join(' ');
   const textPhrase = textWords.join(' ');
-  const exactIndex = textPhrase.indexOf(exactPhrase);
-  if (exactIndex !== -1) {
+  
+  // Use word boundary aware matching to avoid substring matches
+  // This prevents "joy" from matching inside "enjoy"
+  const wordBoundaryRegex = new RegExp(`\\b${exactPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  const exactMatch = textPhrase.match(wordBoundaryRegex);
+  if (exactMatch && exactMatch.index !== undefined) {
     // Calculate word positions for exact match
     // Example: If "wages sin death" starts at word position 2, then positions=[2,3,4]
-    const beforeWords = textPhrase.substring(0, exactIndex).split(' ').filter(w => w.length > 0);
+    const beforeWords = textPhrase.substring(0, exactMatch.index).split(' ').filter(w => w.length > 0);
     const startPos = beforeWords.length;
     const positions = Array.from({ length: queryTerms.length }, (_, i) => startPos + i);
     return {
