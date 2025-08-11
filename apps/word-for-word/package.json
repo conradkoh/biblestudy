@@ -5,7 +5,7 @@
   "scripts": {
     "ios": "npx expo run:ios",
     "android": "EXPO_USE_METRO_WORKSPACE_ROOT=1 expo run:android",
-    "ios:clean": "rm -rf ios/Pods ios/build ios/.xcode.env.local && npx pod-install",
+    "clean": "npx expo prebuild --clean",
     "build-ios-preview": "eas build --profile preview --platform ios",
     "update-ios-preview": "eas update --branch preview",
     "test": "jest --watchAll",
